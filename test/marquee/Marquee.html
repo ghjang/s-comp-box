@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marquee Test</title>
+    <link rel="stylesheet" href="/build/dev/Marquee.css">
+</head>
+<body>
+    <div id="marquee"></div>
+
+    <script type="module">
+        import Marquee from '/build/dev/Marquee.js';
+
+        new Marquee({
+            target: document.querySelector('#marquee'),
+            props: {
+                text: 'This is a test marquee.',
+                duration: 3,
+                debug: true
+            }
+        });
+    </script>
+</body>
+</html>
