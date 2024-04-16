@@ -1,10 +1,12 @@
+<svelte:options customElement="s-marquee" />
+
 <script>
   import { onMount } from "svelte";
 
-  export let text;
+  export let text = "";
   export let direction = "rtl";
-  export let duration;
-  export let debug;
+  export let duration = 3;
+  export let debug = false;
 
   let container;
   let marquee;
@@ -29,7 +31,7 @@
   $: enableDebug(debug, container, marquee);
 </script>
 
-<div class="marquee-container" bind:this={container}>
+<div class="marquee-wrapper" bind:this={container}>
   <div
     bind:this={marquee}
     class:marquee-rtl={direction === "rtl"}
@@ -37,7 +39,11 @@
     class:marquee-ttb={direction === "ttb"}
     class:marquee-btt={direction === "btt"}
   >
-    {text}
+    {#if text}
+      {text}
+    {:else}
+      <slot />
+    {/if}
   </div>
 </div>
 
@@ -78,7 +84,7 @@
     }
   }
 
-  .marquee-container {
+  .marquee-wrapper {
     overflow: hidden;
     white-space: nowrap;
   }

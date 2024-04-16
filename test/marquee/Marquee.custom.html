@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marquee Web Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/Marquee.custom.css">
+    <script type="module" src="/build/dev/Marquee.custom.js"></script>
+</head>
+
+<body>
+    <style>
+        .marquee-cell {
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
+    <table>
+        <tr>
+            <td class="marquee-cell">
+                <s-marquee
+                           text="This is a test marquee with direction rtl."
+                           direction="rtl"
+                           duration="3"
+                           debug="true" />
+            </td>
+            <td class="marquee-cell">
+                <s-marquee
+                           direction="ltr"
+                           duration="3"
+                           debug="true">This is a test marquee with direction ltr.</s-marquee>
+            </td>
+        </tr>
+        <tr>
+            <td class="marquee-cell">
+                <script>
+                    const marquee3 = document.createElement('s-marquee');
+                    marquee3.setAttribute('text', 'This is a test marquee with direction ltr.');
+                    marquee3.setAttribute('direction', 'ttb');
+                    marquee3.setAttribute('duration', '3');
+                    marquee3.setAttribute('debug', 'true');
+                    document.write(marquee3.outerHTML);
+                </script>
+            </td>
+            <td id="last-marquee-cell" class="marquee-cell">
+                <script>
+                    const marquee4 = document.createElement('s-marquee');
+                    marquee4.text = 'This is a test marquee with direction btt.';
+                    marquee4.direction = 'btt';
+                    marquee4.duration = 3;
+                    marquee4.debug = true;
+                    const lastMarqueeCell = document.getElementById('last-marquee-cell');
+                    lastMarqueeCell.appendChild(marquee4);
+                </script>
+            </td>
+        </tr>
+    </table>
+
+</html>
