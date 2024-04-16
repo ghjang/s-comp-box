@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
 
   export let text;
+  export let direction = "rtl";
   export let duration;
   export let debug;
 
@@ -15,10 +16,12 @@
   }
 
   function setAnimation() {
-    const width = marquee.getBoundingClientRect().width;
+    const { width, height } = marquee.getBoundingClientRect();
+    container.style.width = `${width}px`;
+    container.style.height = `${height}px`;
+
     animationDuration = duration || width / 100;
     marquee.style.animationDuration = `${animationDuration}s`;
-    container.style.width = `${width}px`;
   }
 
   onMount(setAnimation);
@@ -27,11 +30,17 @@
 </script>
 
 <div class="marquee-container" bind:this={container}>
-  <div class="marquee" bind:this={marquee}>{text}</div>
+  <div
+    bind:this={marquee}
+    class:marquee-rtl={direction === "rtl"}
+    class:marquee-ltr={direction === "ltr"}
+  >
+    {text}
+  </div>
 </div>
 
 <style>
-  @keyframes marquee {
+  @keyframes marquee-rtl {
     from {
       transform: translateX(100%);
     }
@@ -40,14 +49,31 @@
     }
   }
 
+  @keyframes marquee-ltr {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
   .marquee-container {
     overflow: hidden;
     white-space: nowrap;
   }
 
-  .marquee {
+  .marquee-rtl {
     display: inline-block;
-    animation-name: marquee;
+    animation-name: marquee-rtl;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+  }
+
+  .marquee-ltr {
+    display: inline-block;
+    animation-name: marquee-ltr;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-fill-mode: forwards;
