@@ -7,18 +7,65 @@
     <link rel="stylesheet" href="/build/dev/Marquee.css">
 </head>
 <body>
-    <div id="marquee"></div>
+    <style>
+        .marquee-container {
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
+    <table>
+        <tr>
+            <td class="marquee-container"><div id="marquee1"></div></td>
+            <td class="marquee-container"><div id="marquee4"></div></td>
+        </tr>
+        <tr>
+            <td class="marquee-container"><div id="marquee2"></div></td>
+            <td class="marquee-container"><div id="marquee3"></div></td>
+        </tr>
+    </table>
 
     <script type="module">
         import Marquee from '/build/dev/Marquee.js';
 
+        const debug = true;
+
         new Marquee({
-            target: document.querySelector('#marquee'),
+            target: document.querySelector('#marquee1'),
             props: {
-                text: 'This is a test marquee.',
+                text: 'This is a test marquee with direction rtl.',
+                direction: 'rtl',
+                duration: 3,
+                debug: debug
+            }
+        });
+
+        new Marquee({
+            target: document.querySelector('#marquee2'),
+            props: {
+                text: 'This is a test marquee with direction ltr.',
                 direction: 'ltr',
                 duration: 3,
-                debug: true
+                debug: debug // Use the variable for the debug attribute value
+            }
+        });
+
+        new Marquee({
+            target: document.querySelector('#marquee3'),
+            props: {
+                text: 'This is a test marquee with direction ttb.',
+                direction: 'ttb',
+                duration: 3,
+                debug: debug // Use the variable for the debug attribute value
+            }
+        });
+
+        new Marquee({
+            target: document.querySelector('#marquee4'),
+            props: {
+                text: 'This is a test marquee with direction btt.',
+                direction: 'btt',
+                duration: 3,
+                debug: debug // Use the variable for the debug attribute value
             }
         });
     </script>

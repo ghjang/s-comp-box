@@ -34,6 +34,8 @@
     bind:this={marquee}
     class:marquee-rtl={direction === "rtl"}
     class:marquee-ltr={direction === "ltr"}
+    class:marquee-ttb={direction === "ttb"}
+    class:marquee-btt={direction === "btt"}
   >
     {text}
   </div>
@@ -58,24 +60,57 @@
     }
   }
 
+  @keyframes marquee-ttb {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes marquee-btt {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(-100%);
+    }
+  }
+
   .marquee-container {
     overflow: hidden;
     white-space: nowrap;
   }
 
-  .marquee-rtl {
+  .marquee-rtl,
+  .marquee-ltr,
+  .marquee-ttb,
+  .marquee-btt {
     display: inline-block;
-    animation-name: marquee-rtl;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-fill-mode: forwards;
   }
 
+  .marquee-rtl {
+    animation-name: marquee-rtl;
+  }
+
   .marquee-ltr {
-    display: inline-block;
     animation-name: marquee-ltr;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-fill-mode: forwards;
+  }
+
+  .marquee-ttb,
+  .marquee-btt {
+    writing-mode: vertical-rl;
+  }
+
+  .marquee-btt {
+    animation-name: marquee-btt;
+  }
+
+  .marquee-ttb {
+    animation-name: marquee-ttb;
   }
 </style>
