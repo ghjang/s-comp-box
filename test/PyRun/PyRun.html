@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PyRun Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/PyRun.css">
+    <script type="module" src="/build/dev/PyRun.js" defer></script>
+
+    <style>
+        #pyrun-container {
+            width: 800px;
+            height: 600px;
+            border: 1px solid grey;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="pyrun-container"></div>
+    <script type="module">
+        import PyRun from '/build/dev/PyRun.js';
+
+        const pyrun = new PyRun({
+            target: document.querySelector('#pyrun-container')
+        });
+
+        /*
+        pyrun.$on('ready', () => {
+            console.log('PyRun component is ready');
+        });
+        */
+    </script>
+</body>
+
+</html>

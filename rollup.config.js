@@ -2,8 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import svelte from 'rollup-plugin-svelte';
 import css from 'rollup-plugin-css-only';
+import { string } from 'rollup-plugin-string';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
+import { terser } from '@rollup/plugin-terser';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -16,12 +17,14 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function createConfig(name, outputFilename, customElement = false) {
+function createConfig(name, outputFilename, customElement = false, useMonaco = false) {
     const componentName = capitalizeFirstLetter(name);
     return {
         input: `src/${name}/${componentName}.svelte`,
         output: {
-            file: production ? `build/dist/${outputFilename}` : `build/dev/${outputFilename}`,
+            dir: production ? `build/dist` : `build/dev`,
+            entryFileNames: outputFilename,
+            chunkFileNames: 'chunks/[name]-[hash].js',
             format: 'esm',
             sourcemap: true
         },
@@ -33,6 +36,12 @@ function createConfig(name, outputFilename, customElement = false) {
                 }
             }),
             css({ output: `${componentName}${customElement ? '.custom' : ''}.css` }),
+            useMonaco && string({
+                include: [
+                    "**/node_modules/monaco-editor/**/workerMain.js",
+                    "**/node_modules/monaco-editor/**/*.worker.js"
+                ]
+            }),
             nodeResolve({
                 browser: true,
                 dedupe: ['svelte']
@@ -56,7 +65,25 @@ function createConfig(name, outputFilename, customElement = false) {
 }
 
 
-export default components.flatMap(name => [
-    createConfig(name, `${capitalizeFirstLetter(name)}.js`),
-    createConfig(name, `${capitalizeFirstLetter(name)}.custom.js`, true)
+const configs = components.flatMap(name => [
+    {
+        ...createConfig(
+            name,
+            `${capitalizeFirstLetter(name)}.js`,
+            false,
+            name === "MonacoEditor"
+        ),
+        context: 'globalThis'
+    },
+    {
+        ...createConfig(
+            name,
+            `${capitalizeFirstLetter(name)}.custom.js`,
+            true,
+            name === "MonacoEditor"
+        ),
+        context: 'globalThis'
+    }
 ]);
+
+export default configs;
