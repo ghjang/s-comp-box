@@ -5,6 +5,8 @@ import css from 'rollup-plugin-css-only';
 import { string } from 'rollup-plugin-string';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from '@rollup/plugin-terser';
+import { execSync } from 'child_process';
+import execute from 'rollup-plugin-execute';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -17,9 +19,11 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function createConfig(name, outputFilename, customElement = false, useMonaco = false) {
+function createConfig(name, outputFilename, customElement = false) {
     const componentName = capitalizeFirstLetter(name);
-    return {
+    const postActionScriptPath = `src/${name}/rollup.${name}.post-action.sh`;
+
+    const config = {
         input: `src/${name}/${componentName}.svelte`,
         output: {
             dir: production ? `build/dist` : `build/dev`,
@@ -36,12 +40,6 @@ function createConfig(name, outputFilename, customElement = false, useMonaco = f
                 }
             }),
             css({ output: `${componentName}${customElement ? '.custom' : ''}.css` }),
-            useMonaco && string({
-                include: [
-                    "**/node_modules/monaco-editor/**/workerMain.js",
-                    "**/node_modules/monaco-editor/**/*.worker.js"
-                ]
-            }),
             nodeResolve({
                 browser: true,
                 dedupe: ['svelte']
@@ -62,26 +60,31 @@ function createConfig(name, outputFilename, customElement = false, useMonaco = f
             warn(warning);
         }
     };
-}
 
+    if (fs.existsSync(postActionScriptPath)) {
+        try {
+            execSync(`chmod 744 ${postActionScriptPath}`);
+        }
+        catch (error) {
+            console.error(`Failed to change the permission of the post-action script file: ${postActionScriptPath}`);
+            console.error(error);
+        }
+
+        config.plugins.push(
+            execute(`sh ${postActionScriptPath}`)
+        );
+    }
+
+    return config;
+}
 
 const configs = components.flatMap(name => [
     {
-        ...createConfig(
-            name,
-            `${capitalizeFirstLetter(name)}.js`,
-            false,
-            name === "MonacoEditor"
-        ),
+        ...createConfig(name, `${capitalizeFirstLetter(name)}.js`, false),
         context: 'globalThis'
     },
     {
-        ...createConfig(
-            name,
-            `${capitalizeFirstLetter(name)}.custom.js`,
-            true,
-            name === "MonacoEditor"
-        ),
+        ...createConfig(name, `${capitalizeFirstLetter(name)}.custom.js`, true),
         context: 'globalThis'
     }
 ]);

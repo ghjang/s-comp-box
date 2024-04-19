@@ -5,17 +5,18 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import url from '@rollup/plugin-url';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const outputDir = isProduction ? 'build/dist/monaco-editor' : 'build/dev/monaco-editor';
+const outputDirBaseName = isProduction ? 'dist' : 'dev';
+const outputDirPath = `../../build/${outputDirBaseName}/monaco-editor`;
 
 const inputs = {
-    'monaco-editor-small-python': './src/monaco-editor-bundling/monaco-editor-small-python.js',
-    'editor.worker': 'node_modules/monaco-editor/esm/vs/editor/editor.worker.js'
+    'monaco-editor-small-python': './monaco-editor-small-python.js',
+    'editor.worker': '../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js'
 };
 
 export default Object.keys(inputs).map(name => ({
     input: inputs[name],
     output: {
-        dir: path.resolve(__dirname, outputDir),
+        dir: path.resolve(__dirname, outputDirPath),
         format: 'esm',
         sourcemap: true,
         entryFileNames: '[name].bundle.js',

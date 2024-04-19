@@ -152,6 +152,7 @@ self.MonacoEnvironment = {
 	}
 };
 
+/*
 monaco.editor.create(document.getElementById('container'), {
 	value: [
 		'from banana import *',
@@ -169,3 +170,8 @@ monaco.editor.create(document.getElementById('container'), {
 	].join('\n'),
 	language: 'python'
 });
+*/
+
+export function createMonacoEditor(element, options) {
+	return monaco.editor.create(element, options);
+}
