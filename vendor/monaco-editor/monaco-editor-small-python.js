@@ -175,3 +175,10 @@ monaco.editor.create(document.getElementById('container'), {
 export function createMonacoEditor(element, options) {
 	return monaco.editor.create(element, options);
 }
+
+export function getMonacoKeyBindingConstant() {
+	return {
+		keyMod: monaco.KeyMod,
+		keyCode: monaco.KeyCode
+	};
+}

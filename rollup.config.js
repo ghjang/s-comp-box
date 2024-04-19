@@ -46,6 +46,7 @@ function createConfig(name, outputFilename, customElement = false) {
             }),
             production && terser()
         ],
+        external: ['node-fetch'],
         onwarn: function (warning, warn) {
             // FIXME: 1개의 '.svelte' 파일로 '보통의 스벨트 컴포넌트 번들링'과 '표준 웹 커스텀 컴포넌트 번들링'을 모두 하는 경우에 발생하는 경고를 무시한다.
             //        이 경고는 '.svelte' 파일에 '<svelte:options customElement="s-marquee" />' 옵션이 설정되어 있는 상태에서
