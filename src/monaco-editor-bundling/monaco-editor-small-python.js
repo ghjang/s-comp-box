@@ -1,6 +1,9 @@
 // (1) Desired editor features:
 // BEGIN_FEATURES
-import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
+
+//import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
+import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
+
 // import 'monaco-editor/esm/vs/editor/browser/widget/codeEditorWidget.js';
 // import 'monaco-editor/esm/vs/editor/browser/widget/diffEditorWidget.js';
 // import 'monaco-editor/esm/vs/editor/browser/widget/diffNavigator.js';
