@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splitter Web Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/Splitter.custom.css">
+    <link rel="stylesheet" href="/build/dev/Marquee.custom.css">
+    <script type="module" src="/build/dev/Splitter.custom.js"></script>
+    <script type="module" src="/build/dev/Marquee.custom.js"></script>
+</head>
+
+<body>
+    <div style="height: 50px;">
+        <s-splitter orientation="horizontal">
+            <div slot="left">Left DIV text</div>
+            <div slot="right">Right DIV text</div>
+        </s-splitter>
+    </div>
+
+    <br>
+
+    <div style="height: 50px;">
+        <s-splitter orientation="horizontal">
+            <s-marquee slot="left">Left Marquee</s-marquee>
+            <s-marquee slot="right">Right Marquee</s-marquee>
+        </s-splitter>
+    </div>
+
+    <br>
+
+    <div style="width: 400px; height: 100px;">
+        <s-splitter orientation="vertical">
+            <s-marquee slot="top">Top Marquee</s-marquee>
+            <s-marquee slot="bottom">Bottom Marquee</s-marquee>
+        </s-splitter>
+    </div>
+
+    <br>
+
+    <div style="width: 400px; height: 100px">
+        <s-splitter orientation="horizontal">
+            <s-marquee slot="left">Left Marquee</s-marquee>
+            <s-splitter slot="right" orientation="vertical">
+                <s-marquee slot="top">Top Marquee</s-marquee>
+                <s-marquee slot="bottom">Bottom Marquee</s-marquee>
+            </s-splitter>
+        </s-splitter>
+    </div>
+
+    <br>
+
+    <div style="width: 400px; height: 100px">
+        <s-splitter orientation="horizontal">
+            <div slot="left">Left DIV text</div>
+            <s-splitter slot="right" orientation="vertical">
+                <s-marquee slot="top">Top Marquee</s-marquee>
+                <s-marquee slot="bottom">Bottom Marquee</s-marquee>
+            </s-splitter>
+        </s-splitter>
+    </div>
+
+    <br>
+
+    <div style="width: 400px; height: 100px">
+        <s-splitter orientation="horizontal">
+            <s-splitter slot="left" orientation="vertical">
+                <s-marquee slot="top">Top Marquee</s-marquee>
+                <s-marquee slot="bottom">Bottom Marquee</s-marquee>
+            </s-splitter>
+            <div slot="right">Right DIV text</div>
+        </s-splitter>
+    </div>
+
+    <br>
+
+    <div id="dynamic-content" style="width: 400px; height: 50px"></div>
+
+    <script>
+        window.onload = function () {
+            const splitter = document.createElement('s-splitter');
+            splitter.setAttribute('orientation', 'horizontal');
+
+            const marqueeLeft = document.createElement('s-marquee');
+            marqueeLeft.setAttribute('slot', 'left');
+            marqueeLeft.textContent = 'Dynamic Left Marquee';
+
+            const marqueeRight = document.createElement('s-marquee');
+            marqueeRight.setAttribute('slot', 'right');
+            marqueeRight.textContent = 'Dynamic Right Marquee';
+
+            splitter.appendChild(marqueeLeft);
+            splitter.appendChild(marqueeRight);
+
+            document.getElementById('dynamic-content').appendChild(splitter);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Splitter Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/Splitter.css">
+    <link rel="stylesheet" href="/build/dev/Marquee.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script type="module">
+        import Splitter from '/build/dev/Splitter.js';
+        import Marquee from '/build/dev/Marquee.js';
+
+        /*
+            NOTE: 다음과 같이 자바스크립트 코드를 통해서 동적으로 Marquee 생성자를 전달하는 방식은
+                  제대로 동작하지 않는 것으로 테스트 결과 확인됨. 컴파일된 스플리터 컴포넌트 코드내에서
+                  지정한 컴포넌트의 '부모 컨텍스트'를 제대로 설정할 수 없는 것으로 '크롬 개발자 도구'
+                  오류 메시지에서 확인됨. 뭔가 'workaround' 적인 방법이 있을지도 모르겠으나
+                  일단 안되는 것 같음. 추후 점검을 위해서 일단 테스트 코드를 남겨둠.
+        */
+        const splitter = new Splitter({
+            target: document.querySelector('#container'),
+            props: {
+                orientation: 'horizontal',
+
+                component_0: {
+                    component: Marquee,
+                    props: {
+                        text: 'Marquee 1'
+                    }
+                },
+
+                component_1: {
+                    component: Marquee,
+                    props: {
+                        text: 'Marquee 2'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

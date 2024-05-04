@@ -7,6 +7,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from '@rollup/plugin-terser';
 import { execSync } from 'child_process';
 import execute from 'rollup-plugin-execute';
+import sveltePreprocess from 'svelte-preprocess';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -37,7 +38,17 @@ function createConfig(name, outputFilename, customElement = false) {
                 compilerOptions: {
                     dev: !production,
                     customElement
-                }
+                },
+                preprocess: sveltePreprocess({
+                    scss: {
+                        includePaths: ['src']
+                    },
+                    postcss: {
+                        plugins: [
+                            require('autoprefixer')()
+                        ]
+                    }
+                })
             }),
             css({ output: `${componentName}${customElement ? '.custom' : ''}.css` }),
             nodeResolve({
