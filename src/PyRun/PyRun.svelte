@@ -1,24 +1,32 @@
 <svelte:options customElement="s-pyrun" />
 
 <script>
-  import { onMount } from "svelte";
   import Pyodide from "./Pyodide.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
+  import Splitter from "../Splitter/Splitter.svelte";
 
   export let pyodideIndexURL = ".";
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
 
   const customConsole = {
-    log: (output) => {
+    log: (output, autoScrollDown = true) => {
       if (pyrunConsoleOutputElem) {
         pyrunConsoleOutputElem.innerHTML += `<div>${output}</div>`;
+        if (autoScrollDown) {
+          pyrunConsoleOutputElem.scrollTop =
+            pyrunConsoleOutputElem.scrollHeight;
+        }
       }
     },
 
-    error: (output) => {
+    error: (output, autoScrollDown = true) => {
       if (pyrunConsoleOutputElem) {
         pyrunConsoleOutputElem.innerHTML += `<div style="color: red;">${output}</div>`;
+        if (autoScrollDown) {
+          pyrunConsoleOutputElem.scrollTop =
+            pyrunConsoleOutputElem.scrollHeight;
+        }
       }
     },
   };
@@ -27,7 +35,16 @@
   let pyrunConsoleOutputElem;
 
   export const isPyodideLoaded = () => pyodide && pyodide.isLoaded();
-  export const runCode = (code = "") => pyodide && pyodide.runCode(code);
+
+  export const runCode = (code = "") => {
+    if (pyodide) {
+      try {
+        pyodide.runCode(code);
+      } catch (error) {
+        customConsole.error(error);
+      }
+    }
+  };
 
   function pyodideLoaded() {
     if (runCodeWhenPyodideLoaded && code) {
@@ -39,6 +56,19 @@
     const code = event.detail.value;
     runCode(code);
   }
+
+  let editor;
+  let customConsoleHeight = "100%";
+
+  function handlePanelSizeChange(event) {
+    if (editor) {
+      editor.layout(true);
+    }
+
+    // NOTE: 높이가 '100%'로 설정되면 'overflow: auto'가 동작하지 않음.
+    //       스플릿터의 해당 컨텐트 패널의 높이로 커스텀 콘솔의 높이를 고정시킴.
+    customConsoleHeight = `${event.detail.panel_1.height}px`;
+  }
 </script>
 
 <Pyodide
@@ -49,34 +79,38 @@
 />
 
 <div class="pyrun-box">
-  <div class="pyrun-code-editor">
+  <Splitter
+    orientation="vertical"
+    content_panel_0_length={"60%"}
+    on:panelSizeChanged={handlePanelSizeChange}
+  >
     <MonacoEditor
+      slot="top"
       width="100%"
       height="100%"
       value={code}
+      bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />
-  </div>
-  <div bind:this={pyrunConsoleOutputElem} class="pyrun-console-output"></div>
+    <div
+      slot="bottom"
+      bind:this={pyrunConsoleOutputElem}
+      class="pyrun-console-output"
+      style:height={customConsoleHeight}
+    ></div>
+  </Splitter>
 </div>
 
 <style>
   .pyrun-box {
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
     border: 3px solid #333;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
   }
-  .pyrun-code-editor {
-    width: 100%;
-    height: 70%;
-    border-bottom: 2px solid #333;
-  }
+
   .pyrun-console-output {
     width: 100%;
-    height: 30%;
     background-color: black;
     color: lime;
     padding: 10px;

@@ -20,7 +20,13 @@
 </head>
 
 <body>
+    <!--
+        NOTE: '표준 웹 컴포넌트' 방식으로 사용시에 '모나코 에디터'의 스타일이 뭔가 제대로 적용되지 않아서
+              에디터 영역등이 제대로 표시되지 않는 문제가 있음. 웹 컴포넌트의 '쉐도우 돔'내에서
+              모나코 에디터와 관련된 CSS가 제대로 안먹는 것일지도 모름.
+    -->
     <s-pyrun></s-pyrun>
+
     <script>
         /*
         document.querySelector('s-pyrun').addEventListener('ready', () => {

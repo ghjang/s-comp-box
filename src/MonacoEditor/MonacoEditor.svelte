@@ -22,6 +22,16 @@
   let editorContainer;
   let editor;
 
+  export function layout(revealPosition = false) {
+    if (editor) {
+      const pos = editor.getPosition();
+      editor.layout();
+      if (revealPosition) {
+        editor.revealPosition(pos);
+      }
+    }
+  }
+
   onDestroy(() => {
     if (editor) {
       editor.dispose();
@@ -35,6 +45,7 @@
         language,
         theme,
         contextmenu: false,
+        scrollBeyondLastLine: false,
       });
 
       editor.getModel().onDidChangeContent(async () => {

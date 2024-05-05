@@ -12,18 +12,30 @@
     <script type="module" src="/build/dev/PyRun.js" defer></script>
 
     <style>
+        #shadow-container {
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
         #pyrun-container {
             width: 600px;
             height: 400px;
+            resize: both;
+            overflow: hidden;
         }
     </style>
 </head>
 
 <body>
-    <div id="pyrun-container"></div>
+    <div id="shadow-container">
+        <div id="pyrun-container"></div>
+    </div>
+
     <script type="module">
         import PyRun from '/build/dev/PyRun.js';
 
+        // NOTE: '코드 에디터 창'내에서 'Alt(Option) + Shift + R'을 누르면
+        //       에디터내 '파이썬 코드'가 실행되고 결과가 '간이 콘솔' 영역에 표시됨.
         const pyrun = new PyRun({
             target: document.querySelector('#pyrun-container'),
             props: {
@@ -31,6 +43,8 @@
                 code: 'print("Hello, Pyodide!")'
             }
         });
+
+        window.addEventListener('unload', () => pyrun.$destroy());
     </script>
 </body>
 
