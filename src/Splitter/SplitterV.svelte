@@ -1,6 +1,7 @@
 <script>
-  import { onMount, createEventDispatcher } from "svelte";
-  import { draggable } from "./draggable.js";
+  import { createEventDispatcher } from "svelte";
+  import { resizeObserver } from "./resizeObserver.js";
+  import { dragGrip } from "./dragGrip.js";
 
   const dispatch = createEventDispatcher();
 
@@ -10,22 +11,9 @@
   let panel_1;
   let splitterPanelLength = "2px";
 
-  onMount(() => {
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry.target === panel_0) {
-        const panelSizeInfo = {
-          panel_0: panel_0.getBoundingClientRect(),
-          panel_1: panel_1.getBoundingClientRect(),
-        };
-        dispatch("panelSizeChanged", panelSizeInfo);
-      }
-    });
-
-    observer.observe(panel_0);
-
-    return () => observer.unobserve(panel_0);
-  });
+  function onPanelSizeChanged(panelSizeInfo) {
+    dispatch("panelSizeChanged", panelSizeInfo);
+  }
 </script>
 
 <div id="svelte-splitter-container">
@@ -34,18 +22,19 @@
     class="content-panel"
     bind:this={panel_0}
     style:height={content_panel_0_length}
+    use:resizeObserver={{panel_1, onPanelSizeChanged}}
   >
     <slot name="top"></slot>
   </div>
   <div id="splitter-panel" style:height={splitterPanelLength}>
     <div
       class="splitter-grip"
-      use:draggable={{ direction: "vertical", panel: panel_0 }}
+      use:dragGrip={{ direction: "vertical", panel: panel_0 }}
     ></div>
     <div id="splitter-content"></div>
     <div
       class="splitter-grip"
-      use:draggable={{ direction: "vertical", panel: panel_0 }}
+      use:dragGrip={{ direction: "vertical", panel: panel_0 }}
     ></div>
   </div>
   <div id="content-panel-1" class="content-panel" bind:this={panel_1}>

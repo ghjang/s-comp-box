@@ -1,4 +1,4 @@
-export function draggable(node, initialParams) {
+export function dragGrip(node, initialParams) {
     let params = initialParams;
     
     let isDragging = false;
