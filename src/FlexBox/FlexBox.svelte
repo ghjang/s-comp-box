@@ -1,5 +1,6 @@
 <script>
   import Bubble from "./Bubble.svelte";
+  import Card from "./Card.svelte";
 
   export let direction = "column";
   export let items = [];
@@ -13,6 +14,8 @@
     {@const deleted = delete item.type}
     {#if type === "bubble"}
       <Bubble {...item} />
+    {:else if type === "card"}
+      <Card {...item} />
     {:else if deleted}
       {@html JSON.stringify({ type: type, ...item })}
     {/if}
@@ -22,5 +25,7 @@
 <style>
   .flex-box {
     display: flex;
+    flex-wrap: nowrap;
+    overflow: auto;
   }
 </style>
