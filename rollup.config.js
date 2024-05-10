@@ -12,7 +12,7 @@ import sveltePreprocess from 'svelte-preprocess';
 const production = !process.env.ROLLUP_WATCH;
 
 const componentsDir = 'src';
-const components = fs.readdirSync(componentsDir).filter(file =>
+const componentDirNames = fs.readdirSync(componentsDir).filter(file =>
     fs.statSync(path.join(componentsDir, file)).isDirectory()
 );
 
@@ -20,12 +20,12 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function createConfig(name, outputFilename, customElement = false) {
-    const componentName = capitalizeFirstLetter(name);
-    const postActionScriptPath = `src/${name}/rollup.${name}.post-action.sh`;
+function createConfig(dirName, componentName, customElement = false) {
+    const outputFilename = customElement ? `${componentName}.custom.js` : `${componentName}.js`;
+    const postActionScriptPath = `src/${dirName}/rollup.${dirName}.post-action.sh`;
 
     const config = {
-        input: `src/${name}/${componentName}.svelte`,
+        input: `src/${dirName}/${componentName}.svelte`,
         output: {
             dir: production ? `build/dist` : `build/dev`,
             entryFileNames: outputFilename,
@@ -50,13 +50,13 @@ function createConfig(name, outputFilename, customElement = false) {
                     }
                 })
             }),
-            css({ output: `${componentName}${customElement ? '.custom' : ''}.css` }),
+            !customElement && css({ output: `${componentName}.css` }),
             nodeResolve({
                 browser: true,
                 dedupe: ['svelte']
             }),
             production && terser()
-        ],
+        ].filter(Boolean),
         external: ['node-fetch'],
         onwarn: function (warning, warn) {
             // FIXME: 1개의 '.svelte' 파일로 '보통의 스벨트 컴포넌트 번들링'과 '표준 웹 커스텀 컴포넌트 번들링'을 모두 하는 경우에 발생하는 경고를 무시한다.
@@ -90,15 +90,27 @@ function createConfig(name, outputFilename, customElement = false) {
     return config;
 }
 
-const configs = components.flatMap(name => [
-    {
-        ...createConfig(name, `${capitalizeFirstLetter(name)}.js`, false),
-        context: 'globalThis'
-    },
-    {
-        ...createConfig(name, `${capitalizeFirstLetter(name)}.custom.js`, true),
-        context: 'globalThis'
+const configs = componentDirNames.flatMap(dirName => {
+    const componentName = capitalizeFirstLetter(dirName);
+
+    const configsForComponent = [
+        {
+            ...createConfig(dirName, componentName, false),
+            context: 'globalThis'
+        }
+    ];
+
+    const svelteFileContent = fs.readFileSync(`src/${dirName}/${componentName}.svelte`, 'utf-8');
+    const hasCustomElementOption = svelteFileContent.includes('<svelte:options customElement');
+
+    if (hasCustomElementOption) {
+        configsForComponent.push({
+            ...createConfig(dirName, componentName, true),
+            context: 'globalThis'
+        });
     }
-]);
+
+    return configsForComponent;
+});
 
 export default configs;
