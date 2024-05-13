@@ -1,22 +1,96 @@
 <script>
+  import { tick } from "svelte";
+  import ContextMenu from "./ContextMenu.svelte";
+
   export let pattern = "honeycomb";
 
-  export function getAvailableFloorPatterns() {
-    return ["honeycomb", "dots", "checkerboard", "squares", "stripes"];
+  export const getAvailableFloorPatterns = () => [
+    "honeycomb",
+    "dots",
+    "checkerboard",
+    "squares",
+    "stripes",
+  ];
+
+  export const setFloorPattern = (newPattern) => (pattern = newPattern);
+
+  const menuItems = [
+    { text: "Menu Item 1", handler: () => console.log("Menu Item 1 clicked") },
+    { text: "Menu Item 2", handler: () => console.log("Menu Item 2 clicked") },
+    { text: "Menu Item 3", handler: () => console.log("Menu Item 3 clicked") },
+    {
+      text: "Menu Item 4",
+      subMenu: [
+        {
+          text: "Sub Menu Item 1",
+          handler: () => console.log("Sub Menu Item 1 clicked"),
+        },
+        {
+          text: "Sub Menu Item 2",
+          handler: () => console.log("Sub Menu Item 2 clicked"),
+        },
+        {
+          text: "Sub Menu Item 3",
+          handler: () => console.log("Sub Menu Item 3 clicked"),
+        },
+      ],
+    },
+    { text: "Menu Item 5", handler: () => console.log("Menu Item 5 clicked") },
+  ];
+
+  let floorBox;
+  let menuSize;
+  let menuVisible = false;
+  let menuPos = { x: 0, y: 0 };
+
+  async function showContextMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await hideContextMenu();
+
+    menuVisible = true;
+    await tick();
+
+    const boxWidth = floorBox.offsetWidth;
+    const boxHeight = floorBox.offsetHeight;
+
+    let x = event.clientX;
+    let y = event.clientY;
+
+    if (boxWidth - x < menuSize.width) {
+      x -= menuSize.width;
+    }
+
+    if (boxHeight - y < menuSize.height) {
+      y -= menuSize.height;
+    }
+
+    menuPos = { x, y };
   }
 
-  export const setFloorPattern = (newPattern) => pattern = newPattern;
+  async function hideContextMenu() {
+    menuVisible = false;
+    await tick();
+  }
 </script>
 
-<div class="floor-box {pattern}">
-  <!-- 컴포넌트의 내용을 여기에 작성합니다. -->
-</div>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+  class="floor-box {pattern}"
+  bind:this={floorBox}
+  on:contextmenu={showContextMenu}
+></div>
+
+<svelte:window on:click={hideContextMenu} />
+
+{#if menuVisible}
+  <ContextMenu {menuItems} {menuPos} bind:menuSize />
+{/if}
 
 <style lang="scss">
   @import "./floor-pattern.scss";
-
-  $primary-color: #333;
-  $secondary-color: #444;
+  @import "./colors.scss";
 
   .floor-box {
     height: 100vh;
