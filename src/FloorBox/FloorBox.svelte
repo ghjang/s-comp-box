@@ -16,8 +16,9 @@
 
   const menuItems = [
     { text: "Menu Item 1", handler: () => console.log("Menu Item 1 clicked") },
-    { text: "Menu Item 2", handler: () => console.log("Menu Item 2 clicked") },
+    { text: "Menu Item 2(second item)", handler: () => console.log("Menu Item 2 clicked") },
     { text: "Menu Item 3", handler: () => console.log("Menu Item 3 clicked") },
+    { divider: { style: ""}},
     {
       text: "Menu Item 4",
       subMenu: [
@@ -26,7 +27,7 @@
           handler: () => console.log("Sub Menu Item 1 clicked"),
         },
         {
-          text: "Sub Menu Item 2",
+          text: "Sub Menu Item 2(second item)",
           handler: () => console.log("Sub Menu Item 2 clicked"),
         },
         {
@@ -64,6 +65,14 @@
 
     if (boxHeight - y < menuSize.height) {
       y -= menuSize.height;
+    }
+
+    if (x < 0) {
+      x = 0;
+    }
+
+    if (y < 0) {
+      y = 0;
     }
 
     menuPos = { x, y };
