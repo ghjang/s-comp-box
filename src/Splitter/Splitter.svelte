@@ -20,6 +20,11 @@
     panelSize = { panelSize: event.detail };
   }
 
+  function handleContextMenu(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   /**
    * NOTE
    * - 'slot' 태그가 부모 태그 하위에 직접 오지 않으면 스벨트 컴파일러(플러그인)이 오류를 발생시킴.
@@ -32,102 +37,115 @@
    */
 </script>
 
-{#if orientation === "horizontal"}
-  {#if component_0.component && component_1.component}
-    <SplitterH
-      {content_panel_0_length}
-      on:panelSizeChanged={handlePanelSizeChange}
-    >
-      <svelte:component
-        this={component_0.component}
-        {...component_0_props}
-        slot="left"
-      />
-      <svelte:component
-        this={component_1.component}
-        {...component_1_props}
-        slot="right"
-      />
-    </SplitterH>
-  {:else if component_0.component}
-    <SplitterH
-      {content_panel_0_length}
-      on:panelSizeChanged={handlePanelSizeChange}
-    >
-      <svelte:component
-        this={component_0.component}
-        {...component_0_props}
-        slot="left"
-      />
-      <slot name="right" slot="right" />
-    </SplitterH>
-  {:else if component_1.component}
-    <SplitterH
-      {content_panel_0_length}
-      on:panelSizeChanged={handlePanelSizeChange}
-    >
-      <slot name="left" slot="left" />
-      <svelte:component
-        this={component_1.component}
-        {...component_1_props}
-        slot="right"
-      />
-    </SplitterH>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="dummy-splitter-container" on:contextmenu={handleContextMenu}>
+  {#if orientation === "horizontal"}
+    {#if component_0.component && component_1.component}
+      <SplitterH
+        {content_panel_0_length}
+        on:panelSizeChanged={handlePanelSizeChange}
+      >
+        <svelte:component
+          this={component_0.component}
+          {...component_0_props}
+          slot="left"
+        />
+        <svelte:component
+          this={component_1.component}
+          {...component_1_props}
+          slot="right"
+        />
+      </SplitterH>
+    {:else if component_0.component}
+      <SplitterH
+        {content_panel_0_length}
+        on:panelSizeChanged={handlePanelSizeChange}
+      >
+        <svelte:component
+          this={component_0.component}
+          {...component_0_props}
+          slot="left"
+        />
+        <slot name="right" slot="right" />
+      </SplitterH>
+    {:else if component_1.component}
+      <SplitterH
+        {content_panel_0_length}
+        on:panelSizeChanged={handlePanelSizeChange}
+      >
+        <slot name="left" slot="left" />
+        <svelte:component
+          this={component_1.component}
+          {...component_1_props}
+          slot="right"
+        />
+      </SplitterH>
+    {:else}
+      <SplitterH {content_panel_0_length} on:panelSizeChanged>
+        <slot name="left" slot="left" />
+        <slot name="right" slot="right" />
+      </SplitterH>
+    {/if}
+  {:else if orientation === "vertical"}
+    {#if component_0.component && component_1.component}
+      <SplitterV
+        {content_panel_0_length}
+        on:panelSizeChanged={handlePanelSizeChange}
+      >
+        <svelte:component
+          this={component_0.component}
+          {...component_0_props}
+          slot="top"
+        />
+        <svelte:component
+          this={component_1.component}
+          {...component_1_props}
+          slot="bottom"
+        />
+      </SplitterV>
+    {:else if component_0.component}
+      <SplitterV
+        {content_panel_0_length}
+        on:panelSizeChanged={handlePanelSizeChange}
+      >
+        <svelte:component
+          this={component_0.component}
+          {...component_0_props}
+          slot="top"
+        />
+        <slot name="bottom" slot="bottom" />
+      </SplitterV>
+    {:else if component_1.component}
+      <SplitterV
+        {content_panel_0_length}
+        on:panelSizeChanged={handlePanelSizeChange}
+      >
+        <slot name="top" slot="top" />
+        <svelte:component
+          this={component_1.component}
+          {...component_1_props}
+          slot="bottom"
+        />
+      </SplitterV>
+    {:else}
+      <SplitterV {content_panel_0_length} on:panelSizeChanged>
+        <slot name="top" slot="top" />
+        <slot name="bottom" slot="bottom" />
+      </SplitterV>
+    {/if}
   {:else}
-    <SplitterH {content_panel_0_length} on:panelSizeChanged>
-      <slot name="left" slot="left" />
-      <slot name="right" slot="right" />
-    </SplitterH>
+    <script>
+      console.log(`Invalid orientation: ${orientation}`);
+    </script>
   {/if}
-{:else if orientation === "vertical"}
-  {#if component_0.component && component_1.component}
-    <SplitterV
-      {content_panel_0_length}
-      on:panelSizeChanged={handlePanelSizeChange}
-    >
-      <svelte:component
-        this={component_0.component}
-        {...component_0_props}
-        slot="top"
-      />
-      <svelte:component
-        this={component_1.component}
-        {...component_1_props}
-        slot="bottom"
-      />
-    </SplitterV>
-  {:else if component_0.component}
-    <SplitterV
-      {content_panel_0_length}
-      on:panelSizeChanged={handlePanelSizeChange}
-    >
-      <svelte:component
-        this={component_0.component}
-        {...component_0_props}
-        slot="top"
-      />
-      <slot name="bottom" slot="bottom" />
-    </SplitterV>
-  {:else if component_1.component}
-    <SplitterV
-      {content_panel_0_length}
-      on:panelSizeChanged={handlePanelSizeChange}
-    >
-      <slot name="top" slot="top" />
-      <svelte:component
-        this={component_1.component}
-        {...component_1_props}
-        slot="bottom"
-      />
-    </SplitterV>
-  {:else}
-    <SplitterV {content_panel_0_length} on:panelSizeChanged>
-      <slot name="top" slot="top" />
-      <slot name="bottom" slot="bottom" />
-    </SplitterV>
-  {/if}
-{:else}
-  <script>
-    console.log(`Invalid orientation: ${orientation}`);
-  </script>
-{/if}
+</div>
+
+<style>
+  .dummy-splitter-container {
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 100%;
+    height: 100%;
+  }
+</style>

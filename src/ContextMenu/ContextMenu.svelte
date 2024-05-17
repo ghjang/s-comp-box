@@ -1,5 +1,8 @@
 <script>
-  import { getContext, setContext } from "svelte";
+  import { createEventDispatcher, getContext, setContext } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
   import { writable } from "svelte/store";
 
   export let menuItems = [];
@@ -165,7 +168,9 @@
         <hr />
       {:else if item.text}
         {#if item.handler}
-          <button on:click|preventDefault={item.handler}>
+          <button
+            on:click|preventDefault={() => dispatch("menuItemClicked", item)}
+          >
             {item.text}
           </button>
         {:else}
@@ -175,7 +180,11 @@
         {/if}
         {#if item.subMenu}
           <div class="sub-menu">
-            <svelte:self menuLevel={menuLevel + 1} menuItems={item.subMenu} />
+            <svelte:self
+              menuLevel={menuLevel + 1}
+              menuItems={item.subMenu}
+              on:menuItemClicked
+            />
           </div>
         {/if}
       {/if}

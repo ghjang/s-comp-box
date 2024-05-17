@@ -29,6 +29,8 @@
                 orientation: 'horizontal'
             }
         });
+
+        window.addEventListener('unload', () => splitter.$destroy());
     </script>
 </body>
 
