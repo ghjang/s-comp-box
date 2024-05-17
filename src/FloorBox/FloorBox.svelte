@@ -1,7 +1,8 @@
 <script>
   import { tick } from "svelte";
-  import ContextMenu from "./ContextMenu.svelte";
+  import ContextMenu from "../ContextMenu/ContextMenu.svelte";
 
+  export let menuItems = [];
   export let pattern = "honeycomb";
 
   export const getAvailableFloorPatterns = () => [
@@ -13,31 +14,6 @@
   ];
 
   export const setFloorPattern = (newPattern) => (pattern = newPattern);
-
-  const menuItems = [
-    { text: "Menu Item 1", handler: () => console.log("Menu Item 1 clicked") },
-    { text: "Menu Item 2(second item)", handler: () => console.log("Menu Item 2 clicked") },
-    { text: "Menu Item 3", handler: () => console.log("Menu Item 3 clicked") },
-    { divider: { style: ""}},
-    {
-      text: "Menu Item 4",
-      subMenu: [
-        {
-          text: "Sub Menu Item 1",
-          handler: () => console.log("Sub Menu Item 1 clicked"),
-        },
-        {
-          text: "Sub Menu Item 2(second item)",
-          handler: () => console.log("Sub Menu Item 2 clicked"),
-        },
-        {
-          text: "Sub Menu Item 3",
-          handler: () => console.log("Sub Menu Item 3 clicked"),
-        },
-      ],
-    },
-    { text: "Menu Item 5", handler: () => console.log("Menu Item 5 clicked") },
-  ];
 
   let floorBox;
   let menuSize;
