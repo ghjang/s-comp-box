@@ -2,15 +2,14 @@
   import { getContext, setContext } from "svelte";
   import { writable } from "svelte/store";
 
-  export let menuLevel = 0;
-
   export let menuItems = [];
-  export let menuPos = { x: 0, y: 0 };
 
+  export let menuLevel = 0;
+  export let menuPos = { x: 0, y: 0 };
   export let menuSize = { width: 0, height: 0 };
 
   const context = initContext();
-  $: menuLevel > 0 && updateSubMenuPos($context);
+  $: updateMenuState($context);
 
   let contextMenu;
 
@@ -22,6 +21,9 @@
 
     // NOTE: '디버깅'시 유용할 수 있다. 필요시 주석처리 해제하고 사용할 것.
     console.log(menuLevel ? "sub menu" : "main menu", menuSize);
+
+    // NOTE: '상하위 메뉴' 내용이 겹쳐서 표시되지 않도록 'z-index' 값을 설정한다.
+    contextMenu.style.zIndex = 1000 + menuLevel;
 
     /* 
       NOTE: 다음과 같이 'div.context-menu'에 바인딩된 'menuPos' 변수를 참조해 로그를 출력하면
@@ -61,15 +63,19 @@
     return context;
   }
 
-  function handleMenuItemHover(event) {
+  function handleMenuItemHoverEnter(event) {
     context.update((value) => {
       value[`level-${menuLevel}`].lastHoveredMenuItem = event.currentTarget;
       return value;
     });
   }
 
-  function updateSubMenuPos(context) {
-    if (!contextMenu || !context) {
+  function handleMenuItemHoverLeave(event) {
+    context.update((value) => value);
+  }
+
+  function updateMenuState(context) {
+    if (menuLevel <= 0 || !contextMenu || !context) {
       return;
     }
 
@@ -80,9 +86,33 @@
       context[`level-${menuLevel - 1}`].lastHoveredMenuItem;
 
     if (parentMenuItem !== parentHoveredMenuItem) {
+      subMenu.style.display = "none";
+      updateParentMenuItemState(subMenu, parentMenuItem);
       return;
     }
 
+    // NOTE: '메뉴 항목' 자체에 ':hover' CSS로 처리하면 마우스 이동시
+    //       하위 메뉴 위치가 제대로 계산되지 않는 경우가 있어서 JavaScript로 처리함.
+    subMenu.style.display = "block";
+    updateParentMenuItemState(subMenu, parentMenuItem);
+    updateSubMenuPos(subMenu, parentMenuItem);
+  }
+
+  function isElementHidden(el) {
+    return window.getComputedStyle(el).display === "none";
+  }
+
+  function updateParentMenuItemState(subMenu, parentMenuItem) {
+    const parentMenuItemBtn = parentMenuItem.querySelector("button");
+
+    if (isElementHidden(subMenu)) {
+      parentMenuItemBtn.classList.remove("parent-menu-item-hovered");
+    } else {
+      parentMenuItemBtn.classList.add("parent-menu-item-hovered");
+    }
+  }
+
+  function updateSubMenuPos(subMenu, parentMenuItem) {
     // NOTE: 'subMenu' 자체는 '크기 값'이 '0'이다.
     const subMenuWidth = contextMenu.offsetWidth;
     const subMenuHeight = contextMenu.offsetHeight;
@@ -92,13 +122,14 @@
 
     const parentMenuItemWidth = parentMenuItem.offsetWidth;
 
-    const offsetDiff = (parentMenuWidth - parentMenuItemWidth) / 2;
+    // NOTE: '+ 2'는 '부모 메뉴 항목'의 영역과 '자식 메뉴'의 영역이 살짝 겹치게 하기 위함.
+    const offsetDiff = (parentMenuWidth - parentMenuItemWidth) / 2 + 2;
 
     let x = parentMenu.offsetLeft + parentMenu.offsetWidth - offsetDiff;
     let y = parentMenu.offsetTop + parentMenuItem.offsetTop;
 
     if (x + subMenuWidth > window.innerWidth) {
-      x = parentMenu.offsetLeft - subMenuWidth + offsetDiff + 1;
+      x = parentMenu.offsetLeft - subMenuWidth + offsetDiff;
     }
 
     if (y + subMenuHeight > window.innerHeight) {
@@ -125,14 +156,22 @@
 >
   {#each menuItems as item}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="menu-item" on:mouseenter={handleMenuItemHover}>
+    <div
+      class="menu-item"
+      on:mouseenter={handleMenuItemHoverEnter}
+      on:mouseleave={handleMenuItemHoverLeave}
+    >
       {#if item.divider}
         <hr />
       {:else if item.text}
         {#if item.handler}
-          <button on:click|preventDefault={item.handler}>{item.text}</button>
+          <button on:click|preventDefault={item.handler}>
+            {item.text}
+          </button>
         {:else}
-          <button on:click|preventDefault|stopPropagation>{item.text}</button>
+          <button class="sub-menu-btn" on:click|preventDefault|stopPropagation>
+            {item.text}
+          </button>
         {/if}
         {#if item.subMenu}
           <div class="sub-menu">
@@ -147,6 +186,19 @@
 <style lang="scss">
   @import "./colors.scss";
 
+  /*
+    FIXME: 자바스크립트를 이용해 동적으로 추가한 'parent-menu-item-hovered' 클래스가
+           'global'로 선언되지 않으면 'context-menu' 내부의 'button' 요소에 적용되지 않음.
+           가능하면 'global'로 선언하지 않고 'context-menu' 내부의 'button' 요소에 직접 적용하는
+           방법을 찾아보는 것이 좋을 것 같음.
+
+           '서브 메뉴'가 나타나 있는 상황에서 '부모 메뉴'의 해당 '메뉴 항목'을 통해서 '서브 메뉴'가
+           나타났다는 것을 사용자에게 알려주기 위해 해당 메뉴 항목의 배경색을 변경하는 것이 목적임.
+   */
+  :global(.context-menu .menu-item > button.parent-menu-item-hovered) {
+    background-color: lighten($secondary-color, 10%) !important;
+  }
+
   .context-menu {
     position: fixed;
     display: block;
@@ -156,23 +208,6 @@
     border-radius: 2px;
     font-family: Arial, sans-serif;
 
-    button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 1px;
-      border-radius: 1px;
-      font-size: 0.5em;
-      color: $context-menu-text-color;
-      background: none;
-      border: none;
-      cursor: pointer;
-
-      &:hover {
-        background-color: lighten($secondary-color, 10%);
-      }
-    }
-
     .menu-item {
       position: relative;
 
@@ -181,16 +216,34 @@
         border: none;
         border-top: 1px solid #ccc;
       }
-      
+
+      button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 1px 5px;
+        border-radius: 1px;
+        font-size: 0.5em;
+        color: $context-menu-text-color;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+          background-color: lighten($secondary-color, 10%);
+        }
+
+        &.sub-menu-btn:after {
+          content: ">";
+          float: right;
+          padding-left: 10px;
+          padding-right: 0;
+        }
+      }
+
       .sub-menu {
         position: absolute;
         display: none;
-      }
-
-      &:hover {
-        .sub-menu {
-          display: block;
-        }
       }
     }
   }

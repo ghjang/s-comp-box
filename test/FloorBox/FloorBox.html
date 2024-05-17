@@ -35,11 +35,55 @@
     <div id="floor-box"></div>
 
     <script type="module">
+        const menuItems = [
+            { text: "Menu Item 1", handler: () => console.log("Menu Item 1 clicked") },
+            { text: "Menu Item 2(second item)", handler: () => console.log("Menu Item 2 clicked") },
+            { text: "Menu Item 3", handler: () => console.log("Menu Item 3 clicked") },
+            { divider: { style: "" } },
+            {
+                text: "Menu Item 4",
+                subMenu: [
+                    {
+                        text: "Sub Menu Item 1",
+                        handler: () => console.log("Sub Menu Item 1 clicked"),
+                    },
+                    {
+                        text: "Sub Menu Item 2(second item)",
+                        handler: () => console.log("Sub Menu Item 2 clicked"),
+                    },
+                    {
+                        text: "Sub Menu Item 3",
+                        handler: () => console.log("Sub Menu Item 3 clicked"),
+                    },
+                ],
+            },
+            { text: "Menu Item 5", handler: () => console.log("Menu Item 5 clicked") },
+            { divider: { style: "" } },
+            { text: "Menu Item 6", handler: () => console.log("Menu Item 6 clicked") },
+            { text: "Menu Item 7",
+                subMenu: [
+                    {
+                        text: "Sub Menu Item 1",
+                        handler: () => console.log("Sub Menu Item 1 clicked"),
+                    },
+                    {
+                        text: "Sub Menu Item 2(second item)",
+                        handler: () => console.log("Sub Menu Item 2 clicked"),
+                    },
+                    {
+                        text: "Sub Menu Item 3",
+                        handler: () => console.log("Sub Menu Item 3 clicked"),
+                    },
+                ],
+            }
+        ];
+
         import FloorBox from '/build/dev/FloorBox.js';
 
         const floorBox = new FloorBox({
             target: document.getElementById('floor-box'),
             props: {
+                menuItems
             }
         });
 
