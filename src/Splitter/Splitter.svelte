@@ -20,11 +20,6 @@
     panelSize = { panelSize: event.detail };
   }
 
-  function handleContextMenu(event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
   /**
    * NOTE
    * - 'slot' 태그가 부모 태그 하위에 직접 오지 않으면 스벨트 컴파일러(플러그인)이 오류를 발생시킴.
@@ -38,7 +33,10 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="dummy-splitter-container" on:contextmenu={handleContextMenu}>
+<div
+  class="dummy-splitter-container"
+  on:contextmenu|preventDefault|stopPropagation
+>
   {#if orientation === "horizontal"}
     {#if component_0.component && component_1.component}
       <SplitterH
