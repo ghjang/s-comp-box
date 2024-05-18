@@ -1,6 +1,5 @@
 <script>
-  import { tick } from "svelte";
-  import ContextMenu from "../ContextMenu/ContextMenu.svelte";
+  import ContextMenuMediator from "../ContextMenu/ContextMenuMediator.svelte";
 
   export let menuItems = [];
   export let childComponentInfo = null;
@@ -16,49 +15,7 @@
 
   export const setFloorPattern = (newPattern) => (pattern = newPattern);
 
-  let floorBox;
-  let menuSize;
-  let menuVisible = false;
-  let menuPos = { x: 0, y: 0 };
-
-  async function showContextMenu(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    await hideContextMenu();
-
-    menuVisible = true;
-    await tick();
-
-    const boxWidth = floorBox.offsetWidth;
-    const boxHeight = floorBox.offsetHeight;
-
-    let x = event.clientX;
-    let y = event.clientY;
-
-    if (boxWidth - x < menuSize.width) {
-      x -= menuSize.width;
-    }
-
-    if (boxHeight - y < menuSize.height) {
-      y -= menuSize.height;
-    }
-
-    if (x < 0) {
-      x = 0;
-    }
-
-    if (y < 0) {
-      y = 0;
-    }
-
-    menuPos = { x, y };
-  }
-
-  async function hideContextMenu() {
-    menuVisible = false;
-    await tick();
-  }
+  let contextMenu;
 
   function handleMenuItemClicked(event) {
     const handler = event.detail.handler;
@@ -78,8 +35,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="floor-box {pattern}"
-  bind:this={floorBox}
-  on:contextmenu={showContextMenu}
+  on:contextmenu={(e) => contextMenu.showContextMenu(e)}
 >
   {#if childComponentInfo}
     {#if childComponentInfo.constructor}
@@ -87,7 +43,7 @@
         this={childComponentInfo.constructor}
         {...childComponentInfo.props}
       />
-    {:else}
+    {:else if childComponentInfo.name}
       <svelte:element
         this={childComponentInfo.name}
         {...childComponentInfo.props}
@@ -97,24 +53,22 @@
   <slot />
 </div>
 
-<svelte:window on:click={hideContextMenu} />
-
-{#if menuVisible}
-  <ContextMenu
-    {menuItems}
-    {menuPos}
-    bind:menuSize
-    on:menuItemClicked={handleMenuItemClicked}
-  />
-{/if}
+<ContextMenuMediator
+  {menuItems}
+  bind:this={contextMenu}
+  on:menuItemClicked={handleMenuItemClicked}
+/>
 
 <style lang="scss">
   @import "./pattern.scss";
   @import "./color.scss";
 
   .floor-box {
+    margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
+    border: none;
 
     &.dots {
       @include dots-pattern($primary-color, $secondary-color);
