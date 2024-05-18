@@ -109,8 +109,8 @@
 {/if}
 
 <style lang="scss">
-  @import "./floor-pattern.scss";
-  @import "./colors.scss";
+  @import "./pattern.scss";
+  @import "./color.scss";
 
   .floor-box {
     width: 100%;

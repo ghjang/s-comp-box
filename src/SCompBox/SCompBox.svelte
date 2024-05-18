@@ -2,7 +2,7 @@
 
 <script>
   import SCompInfo from "./SCompInfo.svelte";
-  import FloorBox from "../FloorBox/FloorBox.svelte";
+  import Floor from "../Floor/Floor.svelte";
 
   export let compProps = {};
 
@@ -43,4 +43,4 @@
 
 <SCompInfo bind:this={sCompInfo} />
 
-<FloorBox {menuItems} />
+<Floor {menuItems} />
