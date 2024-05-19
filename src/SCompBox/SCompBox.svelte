@@ -21,17 +21,22 @@
         menuItems.push(item);
       } else {
         let props = item.props || {};
-        const constructorName = item.constructor ? item.constructor.name : null;
+
+        const constructorName = item.componentClass
+          ? item.componentClass.name
+          : null;
         if (constructorName && compProps[constructorName]) {
           props = { ...props, ...compProps[constructorName] };
+        } else if (item.componentName && compProps[item.componentName]) {
+          props = { ...props, ...compProps[item.componentName] };
         }
 
         menuItems.push({
           text: item.description,
           handler: () => {
             return {
-              name: item.customElementName,
-              constructor: item.constructor,
+              customElementName: item.customElementName,
+              componentClass: item.componentClass,
               props,
             };
           },

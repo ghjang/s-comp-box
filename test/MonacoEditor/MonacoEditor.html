@@ -7,7 +7,7 @@
 
     <title>MonacoEditor Component Test</title>
 
-    <link rel="stylesheet" href="/build/dev/monaco-editor-small-python.css">
+    <link rel="stylesheet" href="/build/dev/MonacoEditor.css">
 </head>
 
 <body>
@@ -19,6 +19,7 @@
         const editor = new MonacoEditor({
             target: document.getElementById('editor-container'),
             props: {
+                cssBasePath: '/build/dev',
                 value: `print("Hello, World!")`,
                 width: '800px',
                 height: '600px'

@@ -1,6 +1,5 @@
 <script>
   import Marquee from "../Marquee/Marquee.svelte";
-  import PyRun from "../PyRun/PyRun.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import Floor from "../Floor/Floor.svelte";
 
@@ -14,7 +13,7 @@
       {
         customElementName: "s-splitter",
         description: "Horizontal Splitter",
-        constructor: Splitter,
+        componentClass: Splitter,
         props: {
           orientation: "horizontal",
           component_0: {
@@ -34,7 +33,7 @@
       {
         customElementName: "s-splitter",
         description: "Vertical Splitter",
-        constructor: Splitter,
+        componentClass: Splitter,
         props: {
           orientation: "vertical",
           component_0: {
@@ -59,12 +58,17 @@
       {
         customElementName: "s-marquee",
         description: "Marquee",
-        constructor: Marquee,
+        componentClass: Marquee,
         props: {},
       },
+
+      // NOTE: 'PyRun'의 경우 's-pyrun' 커스텀 엘리먼트를 사용하도록 함.
+      //       'PyRun.svelte' 컴포넌트의 '컴파일 타임' 의존성을 제거해
+      //       '빌드 실패, 빌드 시간' 문제를 해결하기 위함.
       {
+        customElementName: "s-pyrun",
+        componentName: "PyRun",
         description: "PyRun",
-        constructor: PyRun,
         props: {},
       },
     ];

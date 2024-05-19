@@ -89,6 +89,7 @@
       width="100%"
       height="100%"
       value={code}
+      cssBasePath={pyodideIndexURL}
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />

@@ -38,14 +38,14 @@
   on:contextmenu={(e) => contextMenu.showContextMenu(e)}
 >
   {#if childComponentInfo}
-    {#if childComponentInfo.constructor}
+    {#if childComponentInfo.componentClass}
       <svelte:component
-        this={childComponentInfo.constructor}
+        this={childComponentInfo.componentClass}
         {...childComponentInfo.props}
       />
-    {:else if childComponentInfo.name}
+    {:else if childComponentInfo.customElementName}
       <svelte:element
-        this={childComponentInfo.name}
+        this={childComponentInfo.customElementName}
         {...childComponentInfo.props}
       />
     {/if}

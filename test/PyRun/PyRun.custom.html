@@ -10,9 +10,16 @@
     <script type="module" src="/build/dev/PyRun.custom.js" defer></script>
 
     <style>
+        /*
+            NOTE: 's-pyrun'의 'display'의 기본값이 적어도 'block'은 아니다.
+                  '표준 웹 컴포넌트 s-pyrun'으로 사용시 'display'값이 'block'이 아닌
+                  'inline' 계열이 아닌 경우에 'width', 'height'값이 제대로 적용되지 않아
+                  컴포넌트 영역이 제대로 표시되지 않는 문제가 있음.
+         */
         s-pyrun {
-            width: 800px;
-            height: 600px;
+            display: block;
+            width: 80vw;
+            height: 80vh;
             border: 1px solid grey;
         }
     </style>
@@ -24,7 +31,7 @@
               에디터 영역등이 제대로 표시되지 않는 문제가 있음. 웹 컴포넌트의 '쉐도우 돔'내에서
               모나코 에디터와 관련된 CSS가 제대로 안먹는 것일지도 모름.
     -->
-    <s-pyrun></s-pyrun>
+    <s-pyrun pyodideIndexURL='/build/dev' code='print("Hello, Pyodide!")'></s-pyrun>
 
     <script>
         /*
