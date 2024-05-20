@@ -104,10 +104,11 @@
 
 <style>
   .pyrun-box {
+    margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
-    border: 3px solid #333;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    border: none;
   }
 
   .pyrun-console-output {
