@@ -1,13 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 import svelte from 'rollup-plugin-svelte';
-import css from 'rollup-plugin-css-only';
-import { string } from 'rollup-plugin-string';
+//import css from 'rollup-plugin-css-only';
+import postcss from 'rollup-plugin-postcss';
+//import styles from 'rollup-plugin-styles';
+//import { string } from 'rollup-plugin-string';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from '@rollup/plugin-terser';
 import { execSync } from 'child_process';
-import execute from 'rollup-plugin-execute';
 import sveltePreprocess from 'svelte-preprocess';
+import readline from 'readline';
+
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -16,22 +19,39 @@ const componentDirNames = fs.readdirSync(componentsDir).filter(file =>
     fs.statSync(path.join(componentsDir, file)).isDirectory()
 );
 
+
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function createConfig(dirName, componentName, customElement = false) {
-    const outputFilename = customElement ? `${componentName}.custom.js` : `${componentName}.js`;
-    const postActionScriptPath = `src/${dirName}/rollup.${dirName}.post-action.sh`;
+
+function createConfig(targetComponentFilePaths, customElement = false) {
+    const inputs = {};
+    targetComponentFilePaths.forEach(filePath => {
+        const componentName = path.basename(filePath, '.svelte');
+        inputs[componentName] = filePath;
+    });
+
+    let outputDir = production ? 'build/dist' : 'build/dev';
+    outputDir = customElement ? `${outputDir}/custom` : `${outputDir}/default`;
 
     const config = {
-        input: `src/${dirName}/${componentName}.svelte`,
+        input: inputs,
         output: {
-            dir: production ? `build/dist` : `build/dev`,
-            entryFileNames: outputFilename,
+            dir: outputDir,
+            entryFileNames: customElement ? '[name].custom.js' : '[name].js',
             chunkFileNames: 'chunks/[name]-[hash].js',
             format: 'esm',
-            sourcemap: true
+            sourcemap: true,
+
+            // NOTE: 번들간 중복되는 코드를 제거하기 위해 'manualChunks' 옵션을 사용할 수 있다.
+            /*
+            manualChunks: {
+                'svelte-internal': ['svelte/internal'],
+                'Splitter': ['Splitter.svelte'],
+                'Floor': ['Floor.svelte']
+            }
+            */
         },
         plugins: [
             svelte({
@@ -50,7 +70,11 @@ function createConfig(dirName, componentName, customElement = false) {
                     }
                 })
             }),
-            !customElement && css({ output: `${componentName}.css` }),
+            !customElement && postcss({
+                extract: 's-comp.bundle.css',
+                minimize: production,
+                sourceMap: !production
+            }),
             nodeResolve({
                 browser: true,
                 dedupe: ['svelte']
@@ -73,44 +97,83 @@ function createConfig(dirName, componentName, customElement = false) {
         }
     };
 
-    if (fs.existsSync(postActionScriptPath)) {
-        try {
-            execSync(`chmod 744 ${postActionScriptPath}`);
-        }
-        catch (error) {
-            console.error(`Failed to change the permission of the post-action script file: ${postActionScriptPath}`);
-            console.error(error);
-        }
-
-        config.plugins.push(
-            execute(`sh ${postActionScriptPath}`)
-        );
-    }
-
     return config;
 }
 
-const configs = componentDirNames.flatMap(dirName => {
-    const componentName = capitalizeFirstLetter(dirName);
 
-    const configsForComponent = [
-        {
-            ...createConfig(dirName, componentName, false),
-            context: 'globalThis'
-        }
-    ];
+function waitForUserInput() {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
 
-    const svelteFileContent = fs.readFileSync(`src/${dirName}/${componentName}.svelte`, 'utf-8');
-    const hasCustomElementOption = svelteFileContent.includes('<svelte:options customElement');
-
-    if (hasCustomElementOption) {
-        configsForComponent.push({
-            ...createConfig(dirName, componentName, true),
-            context: 'globalThis'
+    return new Promise(resolve => {
+        rl.question('Press Enter to continue...', (answer) => {
+            rl.close();
+            resolve(answer);
         });
+    });
+}
+
+
+async function runPreActionScript(filePath) {
+    const dirName = path.basename(path.dirname(filePath));
+    const preActionScriptPath = `src/${dirName}/rollup.${dirName}.pre-action.sh`;
+
+    if (fs.existsSync(preActionScriptPath)) {
+        try {
+            execSync(`chmod 744 ${preActionScriptPath}`, { stdio: 'inherit' });
+        } catch (error) {
+            console.error(`Failed to change the permission of the pre-action script file: ${preActionScriptPath}`);
+            console.error(error);
+        }
+
+        try {
+            execSync(`sh ${preActionScriptPath}`, { stdio: 'inherit' });
+        } catch (error) {
+            console.error(`Failed to run the pre-action script file: ${preActionScriptPath}`);
+            console.error(error);
+        }
+    } else {
+        console.info(`The pre-action script file does not exist: ${preActionScriptPath}`);
+
+        // NOTE: 디버깅 용으로 임시 사용함.
+        //await waitForUserInput();
+    }
+}
+
+
+const configs = async () => {
+    const svelteComponentFilePaths = componentDirNames.map(dirName => {
+        const componentName = capitalizeFirstLetter(dirName);
+        const filePath = `src/${dirName}/${componentName}.svelte`;
+        const svelteFileContent = fs.readFileSync(filePath, 'utf-8');
+        const hasCustomElementOption = svelteFileContent.includes('<svelte:options customElement');
+        return [filePath, hasCustomElementOption];
+    });
+
+    const defaultBuildTargetFiles
+        = svelteComponentFilePaths
+            .map(([filePath, _]) => filePath);
+
+    // NOTE: '커스텀 요소' 구분없이 모든 스벨트 컴포넌트에 대해서 확인한 것이기 때문에 여기서만 실행하면 된다.
+    for (const filePath of defaultBuildTargetFiles) {
+        await runPreActionScript(filePath);
     }
 
-    return configsForComponent;
-});
+    const defaultBuildConfig = createConfig(defaultBuildTargetFiles, false);
+    defaultBuildConfig.context = 'globalThis';
+
+    const customElementBuildTargetFiles
+        = svelteComponentFilePaths
+            .filter(([_, hasCustomElementOption]) => hasCustomElementOption)
+            .map(([filePath, _]) => filePath);
+
+    const customElementBuildConfig = createConfig(customElementBuildTargetFiles, true);
+    customElementBuildConfig.context = 'globalThis';
+
+    return [defaultBuildConfig, customElementBuildConfig];
+};
+
 
 export default configs;

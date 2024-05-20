@@ -4,8 +4,10 @@
   import Pyodide from "./Pyodide.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
+  import { e } from "../MonacoEditor/monaco-editor-bundle/vendor.monaco-editor.bundle.7cb97afe";
 
   export let pyodideIndexURL = ".";
+  export let editorCssBasePath;
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
 
@@ -89,7 +91,7 @@
       width="100%"
       height="100%"
       value={code}
-      cssBasePath={pyodideIndexURL}
+      cssBasePath={editorCssBasePath}
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />

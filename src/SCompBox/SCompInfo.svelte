@@ -2,6 +2,10 @@
   import Splitter from "../Splitter/Splitter.svelte";
   import Floor from "../Floor/Floor.svelte";
 
+  export let customElementConfigBasePath;
+
+  const configFileName = "s-custom-elements.json";
+
   /*
    * FIXME: 'lodash-es' 패키지를 설치하고 '_.cloneDeep()' 함수를 사용해 '코드 중복'을
    *        제거 시도했지만, 'Splitter, Floor'등의 '생성자 함수'등을 제대로 딥카피
@@ -63,7 +67,7 @@
       참조하도록 할 수도 있음.
    */
   export async function getAvailableCustomElements() {
-    const response = await fetch("/build/dev/s-custom-elements.json");
+    const response = await fetch(`${customElementConfigBasePath}/${configFileName}`);
     const data = await response.json();
 
     let compnentInfo = [

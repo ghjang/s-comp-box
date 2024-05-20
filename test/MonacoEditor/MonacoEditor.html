@@ -7,19 +7,19 @@
 
     <title>MonacoEditor Component Test</title>
 
-    <link rel="stylesheet" href="/build/dev/MonacoEditor.css">
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
 </head>
 
 <body>
     <div id="editor-container"></div>
 
     <script type="module">
-        import MonacoEditor from '/build/dev/MonacoEditor.js';
+        import MonacoEditor from '/build/dev/default/MonacoEditor.js';
 
         const editor = new MonacoEditor({
             target: document.getElementById('editor-container'),
             props: {
-                cssBasePath: '/build/dev',
+                cssBasePath: '/build/dev/vendor/monaco-editor',
                 value: `print("Hello, World!")`,
                 width: '800px',
                 height: '600px'

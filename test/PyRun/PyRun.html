@@ -7,7 +7,7 @@
 
     <title>PyRun Component Test</title>
 
-    <link rel="stylesheet" href="/build/dev/PyRun.css">
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
 
     <style>
         #shadow-container {
@@ -30,14 +30,15 @@
     </div>
 
     <script type="module">
-        import PyRun from '/build/dev/PyRun.js';
+        import PyRun from '/build/dev/default/PyRun.js';
 
         // NOTE: '코드 에디터 창'내에서 'Alt(Option) + Shift + R'을 누르면
         //       에디터내 '파이썬 코드'가 실행되고 결과가 '간이 콘솔' 영역에 표시됨.
         const pyrun = new PyRun({
             target: document.querySelector('#pyrun-container'),
             props: {
-                pyodideIndexURL: '/build/dev',
+                pyodideIndexURL: '/build/dev/vendor/pyodide',
+                editorCssBasePath: '/build/dev/vendor/monaco-editor',
                 code: 'print("Hello, Pyodide!")'
             }
         });

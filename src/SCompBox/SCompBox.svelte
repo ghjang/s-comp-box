@@ -5,6 +5,7 @@
   import Floor from "../Floor/Floor.svelte";
 
   export let compProps = {};
+  export let customElementConfigBasePath;
 
   let menuItems = [];
 
@@ -52,6 +53,6 @@
   }
 </script>
 
-<SCompInfo bind:this={sCompInfo} />
+<SCompInfo bind:this={sCompInfo} {customElementConfigBasePath} />
 
 <Floor {menuItems} />
