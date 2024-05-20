@@ -10,8 +10,8 @@
   export let cssBasePath = null;
   export let bundleName = "monaco-editor-small-python";
 
-  export let width = "400px";
-  export let height = "300px";
+  export let width = "100%";
+  export let height = "100%";
 
   export let value = "";
   export let language = "python";
@@ -31,6 +31,20 @@
       editor.layout();
       if (revealPosition) {
         editor.revealPosition(pos);
+      }
+    }
+  }
+
+  export function setText(text, formatDocument = false) {
+    if (editor) {
+      editor.setValue(text);
+      if (formatDocument) {
+        // FIXME: 'HTML, CSS, JavaScript'등의 기본적인 언어에 대한 코드 텍스트의 포맷팅은
+        //        모나코 에디터 자체에서 기본적으로 지원(?)한다고 하는 것 같음. 확인 필요함.
+        //
+        //        'Python'같은 언어의 경우에는 자체 지원은 없고 'Prettier' 같은
+        //        외부 라이브러리를 사용해야 한다고 함(?).
+        editor.getAction("editor.action.formatDocument").run();
       }
     }
   }
@@ -83,6 +97,15 @@
         dispatch("runCode", { value: ed.getValue() });
       },
     });
+
+    const slotElem = container.querySelector("slot");
+    const firstCodeElem = slotElem
+      .assignedNodes()
+      .find((node) => node.nodeName === "CODE");
+    if (firstCodeElem) {
+      const codeText = firstCodeElem.textContent;
+      setText(codeText, true);
+    }
   }
 
   $: editorContainer && initMonacoEditor(editorContainer);
@@ -93,4 +116,8 @@
   id="svelte-monaco-editor-container"
   style:width
   style:height
-></div>
+>
+  <div style:display="none">
+    <slot />
+  </div>
+</div>
