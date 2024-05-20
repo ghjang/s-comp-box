@@ -23,7 +23,10 @@ import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
 import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
 // import 'monaco-editor/esm/vs/editor/contrib/folding/folding.js';
 // import 'monaco-editor/esm/vs/editor/contrib/fontZoom/fontZoom.js';
-// import 'monaco-editor/esm/vs/editor/contrib/format/formatActions.js';
+
+// FIXME: 기능 활성화에 따른 '번들링 파일 크기 증가' 문제를 어떻게 완화시킬 수 있는지 고민해볼 것.
+import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js';
+
 // import 'monaco-editor/esm/vs/editor/contrib/gotoError/gotoError.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/link/goToDefinitionAtPosition.js';
