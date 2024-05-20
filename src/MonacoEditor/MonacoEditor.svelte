@@ -99,12 +99,15 @@
     });
 
     const slotElem = container.querySelector("slot");
-    const firstCodeElem = slotElem
-      .assignedNodes()
-      .find((node) => node.nodeName === "CODE");
-    if (firstCodeElem) {
-      const codeText = firstCodeElem.textContent;
-      setText(codeText, true);
+    if (slotElem) {
+      const firstCodeElem = slotElem
+        .assignedNodes()
+        .find((node) => node.nodeName === "CODE");
+
+      if (firstCodeElem) {
+        const codeText = firstCodeElem.textContent;
+        setText(codeText, true);
+      }
     }
   }
 
