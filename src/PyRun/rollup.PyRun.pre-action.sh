@@ -1,9 +1,11 @@
 #!/bin/bash
 
-destination_dir="build/dev"
+destination_dir="build/dev/vendor/pyodide"
 if [ "$ROLLUP_WATCH" != "true" ]; then
-    destination_dir="build/dist"
+    destination_dir="build/dist/vendor/pyodide"
 fi
+
+mkdir -p "$destination_dir"
 
 cp src/PyRun/pyodide/pyodide-core-0.25.1/package.json "$destination_dir"
 cp src/PyRun/pyodide/pyodide-core-0.25.1/pyodide-lock.json "$destination_dir"

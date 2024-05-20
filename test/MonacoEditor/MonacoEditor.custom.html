@@ -27,11 +27,11 @@
         스벨트로 작성된 '웹 컴포넌트'의 경우 필요한 CSS는 번들링시에 기본적으로 '.js'내에 inject되어 있어
         'MonacoEditor.css'와 같은 별도 '.css' 파일 링크를 걸어주지 않아도 된다.
      -->
-    <script type="module" src="/build/dev/MonacoEditor.custom.js"></script>
+    <script type="module" src="/build/dev/custom/MonacoEditor.custom.js"></script>
 </head>
 
 <body>
-    <s-monaco-editor cssBasePath="/build/dev">
+    <s-monaco-editor cssBasePath="/build/dev/vendor/monaco-editor">
         <code>
 print('Hello, s-monaco-editor!');
         </code>
