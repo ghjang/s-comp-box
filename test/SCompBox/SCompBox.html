@@ -55,7 +55,7 @@
             }
         });
 
-        window.addEventListener('unload', () => sCompBox.$destroy());
+        window.addEventListener('beforeunload', () => sCompBox.$destroy());
     </script>
 </body>
 

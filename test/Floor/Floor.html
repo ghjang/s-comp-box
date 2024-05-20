@@ -87,7 +87,7 @@
             }
         });
 
-        window.addEventListener('unload', () => floorBox.$destroy());
+        window.addEventListener('beforeunload', () => floorBox.$destroy());
 
         const availablePatterns = floorBox.getAvailableFloorPatterns();
         const selectElem = document.getElementById('floor-pattern-select');

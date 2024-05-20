@@ -30,7 +30,7 @@
             }
         });
 
-        window.addEventListener('unload', () => splitter.$destroy());
+        window.addEventListener('beforeunload', () => splitter.$destroy());
     </script>
 </body>
 

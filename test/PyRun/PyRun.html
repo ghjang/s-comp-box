@@ -42,7 +42,7 @@
             }
         });
 
-        window.addEventListener('unload', () => pyrun.$destroy());
+        window.addEventListener('beforeunload', () => pyrun.$destroy());
     </script>
 </body>
 

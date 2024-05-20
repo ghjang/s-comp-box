@@ -30,7 +30,7 @@
             }
         });
 
-        window.addEventListener('unload', () => flexBox.$destroy());
+        window.addEventListener('beforeunload', () => flexBox.$destroy());
     </script>
 </body>
 

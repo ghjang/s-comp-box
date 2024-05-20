@@ -25,6 +25,8 @@
                 height: '600px'
             }
         });
+
+        window.addEventListener('beforeunload', () => editor.$destroy());
     </script>
 </body>
 

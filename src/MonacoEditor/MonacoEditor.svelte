@@ -7,7 +7,7 @@
     getMonacoKeyBindingConstant,
   } from "./monaco-editor-bundle/monaco-editor-small-python.bundle.js";
 
-  export let cssBasePath = "";
+  export let cssBasePath = null;
   export let bundleName = "monaco-editor-small-python";
 
   export let width = "400px";
@@ -46,16 +46,18 @@
       return;
     }
 
-    // NOTE: 모나코 에디터의 CSS 파일을 동적으로 로드한다.
-    const cssLink = document.createElement("link");
-    cssLink.rel = "stylesheet";
-    cssLink.href = `${cssBasePath}/${bundleName}.css`;
-    const rootNode = container.getRootNode();
-    if (rootNode instanceof ShadowRoot) {
-      // '표준 웹 컴포넌트'로 사용할 때 Shadow DOM에 스타일을 적용한다.
-      rootNode.appendChild(cssLink);
-    } else {
-      document.head.appendChild(cssLink);
+    // NOTE: '모나코 에디터'의 CSS 파일을 동적으로 로드한다.
+    if (cssBasePath) {
+      const cssLink = document.createElement("link");
+      cssLink.rel = "stylesheet";
+      cssLink.href = `${cssBasePath}/${bundleName}.css`;
+      const rootNode = container.getRootNode();
+      if (rootNode instanceof ShadowRoot) {
+        // '표준 웹 컴포넌트'로 사용할 때 Shadow DOM 하위 범위에 해당 스타일을 적용한다.
+        rootNode.appendChild(cssLink);
+      } else {
+        document.head.appendChild(cssLink);
+      }
     }
 
     editor = createMonacoEditor(editorContainer, {
