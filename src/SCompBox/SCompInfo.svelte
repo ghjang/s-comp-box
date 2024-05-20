@@ -1,5 +1,4 @@
 <script>
-  import Marquee from "../Marquee/Marquee.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import Floor from "../Floor/Floor.svelte";
 
@@ -12,8 +11,8 @@
     return [
       {
         customElementName: "s-splitter",
-        description: "Horizontal Splitter",
         componentClass: Splitter,
+        description: "Horizontal Splitter",
         props: {
           orientation: "horizontal",
           component_0: {
@@ -32,8 +31,8 @@
       },
       {
         customElementName: "s-splitter",
-        description: "Vertical Splitter",
         componentClass: Splitter,
+        description: "Vertical Splitter",
         props: {
           orientation: "vertical",
           component_0: {
@@ -53,24 +52,33 @@
     ];
   }
 
-  export function getAvailableCustomElements() {
-    return [
-      {
-        customElementName: "s-marquee",
-        description: "Marquee",
-        componentClass: Marquee,
-        props: {},
-      },
+  /*
+    NOTE:
+      's-custom-elements.json' 파일에는 '커스텀 엘리먼트'의 정보가 담겨 있음.
 
-      // NOTE: 'PyRun'의 경우 's-pyrun' 커스텀 엘리먼트를 사용하도록 함.
-      //       'PyRun.svelte' 컴포넌트의 '컴파일 타임' 의존성을 제거해
-      //       '빌드 실패, 빌드 시간' 문제를 해결하기 위함.
-      {
-        customElementName: "s-pyrun",
-        componentName: "PyRun",
-        description: "PyRun",
-        props: {},
-      },
+      'PyRun'과 같이 크기가 있는 컴포넌트를 직접 참조하는 경우에 '컴파일 실패' 또는
+      '컴파일 시간 느림'의 문제가 있다. '커스텀 엘리먼트'를 사용해 이런 문제를 완화시킴.
+
+      어떤 이유에서인지 커스텀 엘리먼트를 작성할 수 없는 경우에는 직접 '스벩트 컴포넌트 클래스'를
+      참조하도록 할 수도 있음.
+   */
+  export async function getAvailableCustomElements() {
+    const response = await fetch("/build/dev/s-custom-elements.json");
+    const data = await response.json();
+
+    let compnentInfo = [
+      // NOTE: 필요시 여기에 다음과 유사한 형태의 스벨트 컴포넌트 클래스 직접 참조 설정을 넣어줄 것.
+      //       이 예시에서 'componentClass'는 스벨트 '컴포넌트 클래스'를 지정한 것임.
+      /*
+          {
+            customElementName: "s-marquee",
+            description: "Marquee",
+            componentClass: Marquee,
+            props: {},
+          }
+       */
     ];
+
+    return [...compnentInfo, ...data];
   }
 </script>

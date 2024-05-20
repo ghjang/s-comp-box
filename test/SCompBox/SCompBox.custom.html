@@ -22,6 +22,19 @@
         }
     </style>
 
+    <script type="module" src="/build/dev/Marquee.custom.js"></script>
+
+    <!--
+        FIXME: 개별 번들링된 'PyRun.custom.js' 내부에 's-splitter' 커스텀 태그 정의 코드가 포함되어 있다.
+               'SCompBox.custom.js'에서도 'Splitter'를 사용하고 있기 때문에 결과적으로
+               또다시 's-splitter' 커스텀 태그를 런타임에서 정의시도하기 때문에 오류가 발생한다.
+
+               개별 번들링된 '.js'들은 서로 호환되지 않는다. 완전히 다른 모듈로 취급되는 것으로 보인다.
+    -->
+    <!--
+    <script type="module" src="/build/dev/PyRun.custom.js"></script>
+    -->
+
     <script type="module" src="/build/dev/SCompBox.custom.js"></script>
 </head>
 
