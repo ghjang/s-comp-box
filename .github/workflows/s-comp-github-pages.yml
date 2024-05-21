@@ -48,7 +48,8 @@ jobs:
       - name: Copy JS files
         run: |
           mkdir -p pages/docroot/scripts/custom
-          cp -r build/dist/custom/*.js pages/docroot/scripts/custom/
+          cp build/dist/custom/*.js pages/docroot/scripts/custom/
+          cp build/dist/custom/chunks/*.js pages/docroot/scripts/custom/chunks/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
