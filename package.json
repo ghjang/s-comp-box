@@ -11,7 +11,9 @@
     "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild": "rimraf build/dist",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "prebuild-pages": "rimraf build/dist",
+    "build-pages": "rollup -c"
   },
   "keywords": [],
   "author": "",

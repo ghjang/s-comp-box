@@ -35,12 +35,22 @@ function createConfig(targetComponentFilePaths, customElement = false) {
     let outputDir = production ? 'build/dist' : 'build/dev';
     outputDir = customElement ? `${outputDir}/custom` : `${outputDir}/default`;
 
+    const isBuildPages = process.env.npm_lifecycle_event === 'build-pages';
+
+    // NOTE: '[hash]'를 사용하면 출력파일 내용에 대해 계산된 해시값이 바뀔 때마다 파일명이 변경된다.
+    //       이 문제는 웹 브라우저 캐시를 무효화시켜 새로운 파일을 다운로드 받게 만드는 효과가 있다.
+    //
+    //       'GitHub Actions'에서 자동 빌드후 같은 저장소의 'GitHub Pages'에 '직접 커밋'하는 방식으로
+    //       배포하는 경우 캐시 문제보다는 해쉬값이 붙은 파일 이름명 때문에 불필요한 Git 저장소내에 남는 파일들이
+    //       누적되는 문제가 발생할 수 있다. 일단 GitHub Pages에 배포하는 경우는 해쉬값을 사용하지 않도록 한다.
+    const chunkFileNames = isBuildPages ? 'chunks/[name].js' : 'chunks/[name]-[hash].js';
+
     const config = {
         input: inputs,
         output: {
             dir: outputDir,
             entryFileNames: customElement ? '[name].custom.js' : '[name].js',
-            chunkFileNames: 'chunks/[name]-[hash].js',
+            chunkFileNames,
             format: 'esm',
             sourcemap: true,
 

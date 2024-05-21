@@ -1,0 +1,20 @@
+[
+    {
+        "customElementName": "s-marquee",
+        "componentName": "Marquee",
+        "description": "Marquee",
+        "props": {
+            "text": "Hello Marquee!"
+        }
+    },
+    {
+        "customElementName": "s-pyrun",
+        "componentName": "PyRun",
+        "description": "PyRun",
+        "props": {
+            "pyodideIndexURL": "resources/pyodide",
+            "editorCssBasePath": "resources/monaco-editor",
+            "code": "print(\"Hello Python!\")"
+        }
+    }
+]
