@@ -151,4 +151,4 @@ package
 # End of https://www.toptal.com/developers/gitignore/api/node,svelte
 
 build/
-src/MonacoEditor/monaco-editor-bundle/
+vendor/monaco-editor/dist-bundle/

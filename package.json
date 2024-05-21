@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "bundle-monaco-editor": "cd vendor/monaco-editor && sh bundle.sh dist",
     "predev": "rimraf build/dev",
     "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",

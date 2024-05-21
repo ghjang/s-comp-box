@@ -5,7 +5,7 @@
   import {
     createMonacoEditor,
     getMonacoKeyBindingConstant,
-  } from "./monaco-editor-bundle/monaco-editor-small-python.bundle.js";
+  } from "../../vendor/monaco-editor/dist-bundle/monaco-editor-small-python.bundle.js";
 
   export let cssBasePath = null;
   export let bundleName = "monaco-editor-small-python";

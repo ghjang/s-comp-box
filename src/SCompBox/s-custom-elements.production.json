@@ -12,8 +12,8 @@
         "componentName": "PyRun",
         "description": "PyRun",
         "props": {
-            "pyodideIndexURL": "/build/dev/vendor/pyodide",
-            "editorCssBasePath": "/build/dev/vendor/monaco-editor",
+            "pyodideIndexURL": "resources/pyodide",
+            "editorCssBasePath": "resources/monaco-editor",
             "code": "print(\"Hello Python!\")"
         }
     }

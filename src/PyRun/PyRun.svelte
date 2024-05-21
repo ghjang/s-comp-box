@@ -4,7 +4,6 @@
   import Pyodide from "./Pyodide.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
-  import { e } from "../MonacoEditor/monaco-editor-bundle/vendor.monaco-editor.bundle.7cb97afe";
 
   export let pyodideIndexURL = ".";
   export let editorCssBasePath;

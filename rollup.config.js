@@ -137,6 +137,8 @@ async function runPreActionScript(filePath) {
     const preActionScriptPath = `src/${dirName}/rollup.${dirName}.pre-action.sh`;
 
     if (fs.existsSync(preActionScriptPath)) {
+        console.info(`found the pre-action script file: ${preActionScriptPath}`);
+
         try {
             execSync(`chmod 744 ${preActionScriptPath}`, { stdio: 'inherit' });
         } catch (error) {
@@ -151,10 +153,11 @@ async function runPreActionScript(filePath) {
             console.error(error);
         }
     } else {
-        console.info(`The pre-action script file does not exist: ${preActionScriptPath}`);
-
         // NOTE: 디버깅 용으로 임시 사용함.
-        //await waitForUserInput();
+        /*
+        console.info(`The pre-action script file does not exist: ${preActionScriptPath}`);
+        await waitForUserInput();
+        */
     }
 }
 

@@ -4,9 +4,9 @@ import css from 'rollup-plugin-css-only';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import url from '@rollup/plugin-url';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'dist';
 const outputDirBaseName = isProduction ? 'dist' : 'dev';
-const outputDirPath = `../../build/${outputDirBaseName}/monaco-editor`;
+const outputDirPath = `../../build/${outputDirBaseName}/vendor/monaco-editor`;
 
 const inputs = {
     'monaco-editor-small-python': './monaco-editor-small-python.js',
