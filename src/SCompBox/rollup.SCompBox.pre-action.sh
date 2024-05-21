@@ -1,12 +1,19 @@
 #!/bin/bash
 
+build_dir="build/dist"
+src_json="src/SCompBox/s-custom-elements.dist.json"
+dest_json_file_name="s-custom-elements.json"
+
 if [ "$ROLLUP_WATCH" == "true" ]; then
-    mkdir -p build/dev/default build/dev/custom
-    cp src/SCompBox/s-custom-elements.dev.json build/dev/default/s-custom-elements.json
-    cp src/SCompBox/s-custom-elements.dev.json build/dev/custom/s-custom-elements.json
-else
-    mkdir -p build/dist/default build/dist/custom
-    cp src/SCompBox/s-custom-elements.production.json build/dist/default/s-custom-elements.json
-    cp src/SCompBox/s-custom-elements.production.json build/dist/custom/s-custom-elements.json
-    cp src/SCompBox/s-custom-elements.production.json pages/docroot/config/s-custom-elements.json
+    build_dir="build/dev"
+    src_json="src/SCompBox/s-custom-elements.dev.json"
+fi
+
+mkdir -p $build_dir/default $build_dir/custom
+
+cp $src_json $build_dir/default/$dest_json_file_name
+cp $src_json $build_dir/custom/$dest_json_file_name
+
+if [ "$ROLLUP_WATCH" != "true" ]; then
+    cp $src_json pages/docroot/config/$dest_json_file_name
 fi

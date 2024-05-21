@@ -1,16 +1,12 @@
 #!/bin/bash
 
+source_dir="vendor/pyodide/pyodide-core-0.25.1"
 destination_dir="build/dev/vendor/pyodide"
+
 if [ "$ROLLUP_WATCH" != "true" ]; then
     destination_dir="build/dist/vendor/pyodide"
 fi
 
 mkdir -p "$destination_dir"
 
-cp src/PyRun/pyodide/pyodide-core-0.25.1/package.json "$destination_dir"
-cp src/PyRun/pyodide/pyodide-core-0.25.1/pyodide-lock.json "$destination_dir"
-cp src/PyRun/pyodide/pyodide-core-0.25.1/pyodide.asm.js "$destination_dir"
-cp src/PyRun/pyodide/pyodide-core-0.25.1/pyodide.asm.wasm "$destination_dir"
-cp src/PyRun/pyodide/pyodide-core-0.25.1/pyodide.js "$destination_dir"
-cp src/PyRun/pyodide/pyodide-core-0.25.1/pyodide.mjs "$destination_dir"
-cp src/PyRun/pyodide/pyodide-core-0.25.1/python_stdlib.zip "$destination_dir"
+cp "$source_dir"/*.* "$destination_dir"
