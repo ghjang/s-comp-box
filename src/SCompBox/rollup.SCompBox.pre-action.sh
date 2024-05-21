@@ -4,7 +4,7 @@ build_dir="build/dist"
 src_json="src/SCompBox/s-custom-elements.dist.json"
 dest_json_file_name="s-custom-elements.json"
 
-if [ "$ROLLUP_WATCH" == "true" ]; then
+if [ "$ROLLUP_WATCH" = "true" ]; then
     build_dir="build/dev"
     src_json="src/SCompBox/s-custom-elements.dev.json"
 fi
