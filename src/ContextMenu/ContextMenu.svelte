@@ -166,6 +166,13 @@
     >
       {#if item.divider}
         <hr />
+      {:else if item.link}
+        <button
+          class="link-btn"
+          on:click|preventDefault={() => dispatch("menuItemClicked", item)}
+        >
+          {item.link.text}
+        </button>
       {:else if item.text}
         {#if item.handler}
           <button
@@ -242,8 +249,15 @@
           background-color: lighten($secondary-color, 10%);
         }
 
+        &.link-btn:after {
+          content: "🔗";
+          float: right;
+          padding-left: 10px;
+          padding-right: 0;
+        }
+
         &.sub-menu-btn:after {
-          content: ">";
+          content: "➤";
           float: right;
           padding-left: 10px;
           padding-right: 0;

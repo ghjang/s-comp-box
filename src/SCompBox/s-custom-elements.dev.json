@@ -16,5 +16,17 @@
             "editorCssBasePath": "/vendor/monaco-editor/dist-bundle",
             "code": "print(\"Hello Python!\")"
         }
+    },
+    {
+        "divider": {
+            "style": {}
+        }
+    },
+    {
+        "link": {
+            "text": "s-comp GitHub repository",
+            "url": "https://github.com/ghjang/s-comp",
+            "target": "_blank"
+        }
     }
 ]

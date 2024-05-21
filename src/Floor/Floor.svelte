@@ -18,17 +18,27 @@
   let contextMenu;
 
   function handleMenuItemClicked(event) {
-    const handler = event.detail.handler;
-    const newElemInfo = handler();
+    if (event.detail.handler) {
+      const handler = event.detail.handler;
+      const newElemInfo = handler();
 
-    /*
-      FIXME: 'svelte:element'로 동적으로 요소 렌더링시에
-             "<s-marquee> was created with unknown prop 'class'"와 같은
-             '경고'가 '개발자 도구'에 출력된다. 확인결과 커스텀 요소 컴포넌트를 내부에서
-             생성할 때 'class' 속성이 자동으로 추가되는 것으로 보인다.
-             현재로서는 이를 해결할 방법을 찾지 못했다.
-     */
-    childComponentInfo = newElemInfo;
+      /*
+        FIXME: 'svelte:element'로 동적으로 요소 렌더링시에
+               "<s-marquee> was created with unknown prop 'class'"와 같은
+               '경고'가 '개발자 도구'에 출력된다. 확인결과 커스텀 요소 컴포넌트를 내부에서
+               생성할 때 'class' 속성이 자동으로 추가되는 것으로 보인다.
+               현재로서는 이를 해결할 방법을 찾지 못했다.
+       */
+      childComponentInfo = newElemInfo;
+    } else if (event.detail.link) {
+      const url = event.detail.link.url;
+      const target = event.detail.link.target;
+      if (target === "_blank") {
+        window.open(url, "_blank");
+      } else {
+        window.location.href = url;
+      }
+    }
   }
 </script>
 

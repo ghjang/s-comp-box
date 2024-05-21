@@ -12,43 +12,43 @@
   let sCompInfo;
 
   $: if (sCompInfo) {
-    const divider = { divider: { style: "" } };
     const customContainers = sCompInfo.getAvailableCustomContainers(menuItems);
 
     sCompInfo.getAvailableCustomElements().then((customElements) => {
-      const items = [...customContainers, divider, ...customElements];
+      loadCustomElementsInfo(customContainers, customElements);
+    });
+  }
 
-      items.forEach((item) => {
-        if (item.divider) {
-          menuItems.push(item);
-        } else {
-          let props = item.props || {};
+  function loadCustomElementsInfo(customContainers, customElements) {
+    const divider = { divider: { style: "" } };
+    const items = [...customContainers, divider, ...customElements];
 
-          const constructorName = item.componentClass
-            ? item.componentClass.name
-            : null;
-          if (constructorName && compProps[constructorName]) {
-            props = { ...props, ...compProps[constructorName] };
-          } else if (item.componentName && compProps[item.componentName]) {
-            props = { ...props, ...compProps[item.componentName] };
-          }
+    items.forEach((item) => {
+      if (item.divider || item.link) {
+        menuItems.push(item);
+      } else {
+        let props = item.props || {};
 
-          menuItems.push({
-            text: item.description,
-            handler: () => {
-              return {
-                customElementName: item.customElementName,
-                componentClass: item.componentClass,
-                props,
-              };
-            },
-          });
+        const constructorName = item.componentClass
+          ? item.componentClass.name
+          : null;
+        if (constructorName && compProps[constructorName]) {
+          props = { ...props, ...compProps[constructorName] };
+        } else if (item.componentName && compProps[item.componentName]) {
+          props = { ...props, ...compProps[item.componentName] };
         }
-      });
 
-      // NOTE: 다음 코드는 잘못된 스벨트 '반응성 블럭' 예로 남겨둔다.
-      //       이 문맥에서 다음 코드는 이 반응성 블럭을 무한 루프에 빠드리게 한다.
-      //menuItems = [...menuItems];
+        menuItems.push({
+          text: item.description,
+          handler: () => {
+            return {
+              customElementName: item.customElementName,
+              componentClass: item.componentClass,
+              props,
+            };
+          },
+        });
+      }
     });
   }
 </script>
