@@ -6,7 +6,7 @@ import postcss from 'rollup-plugin-postcss';
 //import styles from 'rollup-plugin-styles';
 //import { string } from 'rollup-plugin-string';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { terser } from '@rollup/plugin-terser';
+import terser from '@rollup/plugin-terser';
 import { execSync } from 'child_process';
 import sveltePreprocess from 'svelte-preprocess';
 import readline from 'readline';
@@ -79,7 +79,7 @@ function createConfig(targetComponentFilePaths, customElement = false) {
                 browser: true,
                 dedupe: ['svelte']
             }),
-            production && terser()
+            production && terser({})
         ].filter(Boolean),
         external: ['node-fetch'],
         onwarn: function (warning, warn) {
