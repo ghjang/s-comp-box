@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher, onMount } from "svelte";
+  import { trapFocus } from "../common/action/trapFocus.js";
 
   const dispatch = createEventDispatcher();
 
@@ -9,6 +10,7 @@
   export let background = "white";
 
   let buttonRefs = [];
+  let lastFocusedButton = null;
 
   if (content) {
     content = content.replace(/\n/g, "<br>");
@@ -17,6 +19,7 @@
   onMount(() => {
     if (buttonRefs[0]) {
       buttonRefs[0].focus();
+      lastFocusedButton = buttonRefs[0];
     }
   });
 
@@ -26,6 +29,7 @@
 
   function handleKeydown(event) {
     if (event.key === "Escape") {
+      event.preventDefault();
       handleButtonClick({ text: "esc", value: "cancel" });
     }
   }
@@ -35,25 +39,37 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="popup-container"
-  on:contextmenu|preventDefault|stopPropagation
-  on:click|preventDefault|stopPropagation
-  on:dblclick|preventDefault|stopPropagation
+  on:contextmenu|preventDefault|stopPropagation={lastFocusedButton?.focus()}
+  on:click|preventDefault|stopPropagation={lastFocusedButton?.focus()}
+  on:dblclick|preventDefault|stopPropagation={lastFocusedButton?.focus()}
 >
-  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <div
     class="popup"
     style:background
-    tabindex="0"
-    on:focus|once={(_) => buttonRefs[0]?.focus()}
     on:keydown|stopPropagation={handleKeydown}
   >
     <div class="title">{title}</div>
     <div class="content">{@html content}</div>
-    <div class="button-group">
+    <div class="button-group" use:trapFocus>
       {#each buttons as btn, i}
+        <!--
+            NOTE: tabindex 값에 '9999'를 사용한 것은 'Monaco Editor' 등의 입력을
+                  받을 수 있는 컴포넌트가 '팝업' 아래에 있을 경우 '웹 브라우저 주소줄'을 사용자가
+                  선택후 'Tab'을 눌렀을 때 '팝업' 내에 있는 요소에 포커스가 가는 것이 아니라
+                  팝업 요소 레이어 아래에 있는 요소로 포커스가 이동하는 것을 방지하기 위함이다.
+
+                  FIXME: 'Shift + Tab'의 경우에는 여전히 'Monaco Editor'로 포커스가
+                         이동할 수 있다. 'Floor'나 'PyRun'쪽에서 뭔가 workaround 처리를
+                        해야할 것으로 보인다(?).
+
+            NOTE: 주소줄을 선택후 'Tab'과 'Shift + Tab'의 동작이 '크롬'과 '사파리'가 다르다.
+         -->
+        <!-- svelte-ignore a11y-positive-tabindex -->
         <button
           bind:this={buttonRefs[i]}
-          on:click={(_) => handleButtonClick(btn)}
+          tabindex="9999"
+          on:focus={() => (lastFocusedButton = buttonRefs[i])}
+          on:click={() => handleButtonClick(btn)}
         >
           {btn.text}
         </button>
