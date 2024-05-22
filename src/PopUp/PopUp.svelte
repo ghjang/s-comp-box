@@ -1,5 +1,5 @@
 <script>
-  import { onMount, createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -103,6 +103,19 @@
 
         & button:not(:last-child) {
           margin-right: 5px;
+        }
+
+        /*
+          FIXME: 팝업이 최초에 오픈된 후에 자바스크립트로 첫번째 버튼에 포커스를 설정했을 때
+                 사용자가 직접 탭으로 포커스를 주었을때랑 모양이 다름. 프고그래밍으로 포커스 설정시
+                 '보안' 문제로 정책에 의해서 이렇게 처리된다고 함. ':focus'를 설정해서 최대한
+                 맞춰주려고 했으나 일단 실패함.
+         */
+
+        & button:focus {
+          outline: 1px solid blue;
+          outline-offset: -2px;
+          outline-style: dotted;
         }
       }
     }

@@ -38,6 +38,7 @@
                 {
                     "popup": {
                         "text": "What's this about?",
+                        "title": "About s-comp",
                         "content": "s-comp is a collection of custom elements that are built with Svelte."
                     }
                 }

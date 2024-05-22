@@ -1,5 +1,6 @@
 <script>
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
+  import PopUp from "../PopUp/PopUp.svelte";
 
   export let menuItems = [];
   export let childComponentInfo = null;
@@ -18,6 +19,10 @@
 
   let contextMenu;
 
+  let showPopUp = false;
+  let popUpTitle = "";
+  let popUpContent = "";
+
   function handleMenuItemClicked(event) {
     if (event.detail.link) {
       const url = event.detail.link.url;
@@ -28,7 +33,9 @@
         window.location.href = url;
       }
     } else if (event.detail.popup) {
-      alert("Not implemented yet");
+      popUpTitle = event.detail.popup.title;
+      popUpContent = event.detail.popup.content;
+      showPopUp = true;
     } else if (event.detail.action) {
       let handler = event.detail.action.handler;
 
@@ -89,6 +96,15 @@
   bind:this={contextMenu}
   on:menuItemClicked={handleMenuItemClicked}
 />
+
+{#if showPopUp}
+  <PopUp
+    title={popUpTitle}
+    content={popUpContent}
+    buttons={[{ text: "OK", value: "ok" }]}
+    on:buttonClicked={(e) => showPopUp = false}
+  />
+{/if}
 
 <style lang="scss">
   @import "./pattern.scss";
