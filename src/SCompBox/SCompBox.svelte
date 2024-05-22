@@ -19,35 +19,41 @@
     });
   }
 
+  // FIXME: 현재 '탑 레벨' 메뉴에서만 컴포넌트 설정이 있는 것을 가정하고 있다.
   function loadCustomElementsInfo(customContainers, customElements) {
     const divider = { divider: { style: "" } };
     const items = [...customContainers, divider, ...customElements];
 
     items.forEach((item) => {
-      if (item.divider || item.link) {
+      if (item.divider || item.link || item.popup || item.subMenu) {
         menuItems.push(item);
-      } else {
-        let props = item.props || {};
+      } else if (item.component) {
+        const comp = item.component;
+        let props = comp.props || {};
 
-        const constructorName = item.componentClass
-          ? item.componentClass.name
+        const constructorName = comp.componentClass
+          ? comp.componentClass.name
           : null;
         if (constructorName && compProps[constructorName]) {
           props = { ...props, ...compProps[constructorName] };
-        } else if (item.componentName && compProps[item.componentName]) {
-          props = { ...props, ...compProps[item.componentName] };
+        } else if (comp.name && compProps[comp.name]) {
+          props = { ...props, ...compProps[comp.name] };
         }
 
         menuItems.push({
-          text: item.description,
-          handler: () => {
-            return {
-              customElementName: item.customElementName,
-              componentClass: item.componentClass,
-              props,
-            };
+          action: {
+            text: comp.description,
+            handler: () => {
+              return {
+                customElementName: comp.customElementName,
+                componentClass: comp.componentClass,
+                props,
+              };
+            },
           },
         });
+      } else {
+        // Do nothing
       }
     });
   }

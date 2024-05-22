@@ -173,27 +173,31 @@
         >
           {item.link.text}
         </button>
-      {:else if item.text}
-        {#if item.handler}
-          <button
-            on:click|preventDefault={() => dispatch("menuItemClicked", item)}
-          >
-            {item.text}
-          </button>
-        {:else}
-          <button class="sub-menu-btn" on:click|preventDefault|stopPropagation>
-            {item.text}
-          </button>
-        {/if}
-        {#if item.subMenu}
-          <div class="sub-menu">
-            <svelte:self
-              menuLevel={menuLevel + 1}
-              menuItems={item.subMenu}
-              on:menuItemClicked
-            />
-          </div>
-        {/if}
+      {:else if item.popup}
+        <button
+          class="popup-btn"
+          on:click|preventDefault={() => dispatch("menuItemClicked", item)}
+        >
+          {item.popup.text}...
+        </button>
+      {:else if item.action}
+        <button
+          class="action-btn"
+          on:click|preventDefault={() => dispatch("menuItemClicked", item)}
+        >
+          {item.action.text}
+        </button>
+      {:else if item.subMenu}
+        <button class="sub-menu-btn" on:click|preventDefault|stopPropagation>
+          {item.subMenu.text}
+        </button>
+        <div class="sub-menu">
+          <svelte:self
+            menuLevel={menuLevel + 1}
+            menuItems={item.subMenu.items}
+            on:menuItemClicked
+          />
+        </div>
       {/if}
     </div>
   {/each}
@@ -257,7 +261,7 @@
         }
 
         &.sub-menu-btn:after {
-          content: "➤";
+          content: ">";
           float: right;
           padding-left: 10px;
           padding-right: 0;

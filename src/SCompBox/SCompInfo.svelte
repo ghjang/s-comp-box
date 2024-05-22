@@ -14,41 +14,45 @@
   export function getAvailableCustomContainers(menuItems) {
     return [
       {
-        customElementName: "s-splitter",
-        componentClass: Splitter,
-        description: "Horizontal Splitter",
-        props: {
-          orientation: "horizontal",
-          component_0: {
-            component: Floor,
-            props: {
-              menuItems,
+        component: {
+          componentClass: Splitter,
+          customElementName: "s-splitter",
+          description: "Horizontal Splitter",
+          props: {
+            orientation: "horizontal",
+            component_0: {
+              component: Floor,
+              props: {
+                menuItems,
+              },
             },
-          },
-          component_1: {
-            component: Floor,
-            props: {
-              menuItems,
+            component_1: {
+              component: Floor,
+              props: {
+                menuItems,
+              },
             },
           },
         },
       },
       {
-        customElementName: "s-splitter",
-        componentClass: Splitter,
-        description: "Vertical Splitter",
-        props: {
-          orientation: "vertical",
-          component_0: {
-            component: Floor,
-            props: {
-              menuItems,
+        component: {
+          componentClass: Splitter,
+          customElementName: "s-splitter",
+          description: "Vertical Splitter",
+          props: {
+            orientation: "vertical",
+            component_0: {
+              component: Floor,
+              props: {
+                menuItems,
+              },
             },
-          },
-          component_1: {
-            component: Floor,
-            props: {
-              menuItems,
+            component_1: {
+              component: Floor,
+              props: {
+                menuItems,
+              },
             },
           },
         },
@@ -67,7 +71,9 @@
       참조하도록 할 수도 있음.
    */
   export async function getAvailableCustomElements() {
-    const response = await fetch(`${customElementConfigBasePath}/${configFileName}`);
+    const response = await fetch(
+      `${customElementConfigBasePath}/${configFileName}`
+    );
     const data = await response.json();
 
     let compnentInfo = [

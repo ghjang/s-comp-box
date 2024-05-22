@@ -1,20 +1,47 @@
 [
     {
-        "customElementName": "s-marquee",
-        "componentName": "Marquee",
-        "description": "Marquee",
-        "props": {
-            "text": "Hello Marquee!"
+        "component": {
+            "name": "Marquee",
+            "customElementName": "s-marquee",
+            "description": "Marquee",
+            "props": {
+                "text": "Hello Marquee!"
+            }
         }
     },
     {
-        "customElementName": "s-pyrun",
-        "componentName": "PyRun",
-        "description": "PyRun",
-        "props": {
-            "pyodideIndexURL": "resources/pyodide",
-            "editorCssBasePath": "resources/monaco-editor",
-            "code": "print(\"Hello Python!\")"
+        "component": {
+            "name": "PyRun",
+            "customElementName": "s-pyrun",
+            "description": "PyRun",
+            "props": {
+                "pyodideIndexURL": "resources/pyodide",
+                "editorCssBasePath": "resources/monaco-editor",
+                "code": "print(\"Hello Python!\")"
+            }
+        }
+    },
+    {
+        "divider": { "style": {} }
+    },
+    {
+        "subMenu": {
+            "text": "About",
+            "items": [
+                {
+                    "link": {
+                        "text": "s-comp GitHub repository",
+                        "url": "https://github.com/ghjang/s-comp",
+                        "target": "_blank"
+                    }
+                },
+                {
+                    "popup": {
+                        "text": "What's this about?",
+                        "content": "s-comp is a collection of custom elements that are built with Svelte."
+                    }
+                }
+            ]
         }
     }
 ]

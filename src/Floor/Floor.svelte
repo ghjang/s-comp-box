@@ -18,8 +18,18 @@
   let contextMenu;
 
   function handleMenuItemClicked(event) {
-    if (event.detail.handler) {
-      const handler = event.detail.handler;
+    if (event.detail.link) {
+      const url = event.detail.link.url;
+      const target = event.detail.link.target;
+      if (target === "_blank") {
+        window.open(url, "_blank");
+      } else {
+        window.location.href = url;
+      }
+    } else if (event.detail.popup) {
+      alert("Not implemented yet");
+    } else if (event.detail.action) {
+      const handler = event.detail.action.handler;
       const newElemInfo = handler();
 
       /*
@@ -30,14 +40,8 @@
                현재로서는 이를 해결할 방법을 찾지 못했다.
        */
       childComponentInfo = newElemInfo;
-    } else if (event.detail.link) {
-      const url = event.detail.link.url;
-      const target = event.detail.link.target;
-      if (target === "_blank") {
-        window.open(url, "_blank");
-      } else {
-        window.location.href = url;
-      }
+    } else {
+      // Do nothing
     }
   }
 </script>
