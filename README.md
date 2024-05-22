@@ -2,6 +2,7 @@
 
 Some Svelte components are here:
 
+1. ContextMenu
 1. FlexBox
 1. Floor
 1. marquee

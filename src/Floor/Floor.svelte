@@ -1,9 +1,10 @@
 <script>
-  import ContextMenuMediator from "../ContextMenu/ContextMenuMediator.svelte";
+  import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
 
   export let menuItems = [];
   export let childComponentInfo = null;
   export let pattern = "honeycomb";
+  export let defaultActionHandler = null;
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -29,7 +30,23 @@
     } else if (event.detail.popup) {
       alert("Not implemented yet");
     } else if (event.detail.action) {
-      const handler = event.detail.action.handler;
+      let handler = event.detail.action.handler;
+
+      if (!handler || typeof handler !== "function") {
+        if (
+          defaultActionHandler &&
+          typeof defaultActionHandler === "function"
+        ) {
+          handler = () => defaultActionHandler(event.detail.action);
+        } else {
+          handler = () => {
+            console.warn(
+              `no proper action menu item handler: ${event.detail.action.text}`
+            );
+          };
+        }
+      }
+
       const newElemInfo = handler();
 
       /*

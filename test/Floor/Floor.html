@@ -35,125 +35,41 @@
     <div id="floor-box"></div>
 
     <script type="module">
-        const menuItems = [
-            {
-                action: {
-                    text: "Menu Item 1",
-                    handler: () => console.log("Menu Item 1 clicked")
-                }
-            },
-            {
-                action: {
-                    text: "Menu Item 2(second item)",
-                    handler: () => console.log("Menu Item 2 clicked")
-                }
-            },
-            {
-                action: {
-                    text: "Menu Item 3",
-                    handler: () => console.log("Menu Item 3 clicked")
-                }
-            },
-            {
-                divider: { style: "" }
-            },
-            {
-                subMenu: {
-                    text: "Menu Item 4",
-                    items: [
-                        {
-                            action: {
-                                text: "Sub Menu Item 1",
-                                handler: () => console.log("Sub Menu Item 1 clicked")
-                            }
-                        },
-                        {
-                            action: {
-                                text: "Sub Menu Item 2(second item)",
-                                handler: () => console.log("Sub Menu Item 2 clicked")
-                            }
-                        },
-                        {
-                            action: {
-                                text: "Sub Menu Item 3",
-                                handler: () => console.log("Sub Menu Item 3 clicked")
-                            }
-                        },
-                    ]
-                }
-            },
-            {
-                action: {
-                    text: "Menu Item 5",
-                    handler: () => console.log("Menu Item 5 clicked")
-                }
-            },
-            {
-                divider: { style: "" }
-            },
-            {
-                action: {
-                    text: "Menu Item 6",
-                    handler: () => console.log("Menu Item 6 clicked")
-                }
-            },
-            {
-                subMenu: {
-                    text: "Menu Item 7",
-                    items: [
-                        {
-                            action: {
-                                text: "Sub Menu Item 1",
-                                handler: () => console.log("Sub Menu Item 1 clicked")
-                            }
-                        },
-                        {
-                            action: {
-                                text: "Sub Menu Item 2(second item)",
-                                handler: () => console.log("Sub Menu Item 2 clicked")
-                            }
-                        },
-                        {
-                            action: {
-                                text: "Sub Menu Item 3",
-                                handler: () => console.log("Sub Menu Item 3 clicked")
-                            }
-                        }
-                    ]
-                }
-            }
-        ];
-
         import Floor from '/build/dev/default/Floor.js';
 
-        const floorBox = new Floor({
-            target: document.getElementById('floor-box'),
-            props: {
-                menuItems
-            }
-        });
+        fetch('./menu-items.json')
+            .then(response => response.json())
+            .then(menuItems => {
+                const floorBox = new Floor({
+                    target: document.getElementById('floor-box'),
+                    props: {
+                        menuItems,
+                        defaultActionHandler: (action) => console.log(`clicked: ${action.text}`)
+                    }
+                });
 
-        window.addEventListener('beforeunload', () => floorBox.$destroy());
+                window.addEventListener('beforeunload', () => floorBox.$destroy());
 
-        const availablePatterns = floorBox.getAvailableFloorPatterns();
-        const selectElem = document.getElementById('floor-pattern-select');
+                const availablePatterns = floorBox.getAvailableFloorPatterns();
+                const selectElem = document.getElementById('floor-pattern-select');
 
-        availablePatterns.forEach((pattern, index) => {
-            const optionElem = document.createElement('option');
-            optionElem.value = index;
-            optionElem.text = pattern;
-            selectElem.appendChild(optionElem);
-        });
+                availablePatterns.forEach((pattern, index) => {
+                    const optionElem = document.createElement('option');
+                    optionElem.value = index;
+                    optionElem.text = pattern;
+                    selectElem.appendChild(optionElem);
+                });
 
-        selectElem.addEventListener('change', (event) => {
-            const pattern = availablePatterns[event.target.value];
-            floorBox.setFloorPattern(pattern);
-        });
+                selectElem.addEventListener('change', (event) => {
+                    const pattern = availablePatterns[event.target.value];
+                    floorBox.setFloorPattern(pattern);
+                });
 
-        //selectElem.selectedIndex = 1;
+                //selectElem.selectedIndex = 1;
 
-        // NOTE: 'selectElem.selectedIndex'의 값으로 'change' 이벤트가 발생함.
-        selectElem.dispatchEvent(new Event('change'));
+                // NOTE: 'selectElem.selectedIndex'의 값으로 'change' 이벤트가 발생함.
+                selectElem.dispatchEvent(new Event('change'));
+            });
     </script>
 </body>
 
