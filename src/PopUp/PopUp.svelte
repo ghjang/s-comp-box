@@ -31,14 +31,20 @@
   }
 </script>
 
-<div class="popup-container">
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div
+  class="popup-container"
+  on:contextmenu|preventDefault|stopPropagation
+  on:click|preventDefault|stopPropagation
+  on:dblclick|preventDefault|stopPropagation
+>
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <div
     class="popup"
     style:background
     tabindex="0"
-    on:focus={(_) => buttonRefs[0]?.focus()}
+    on:focus|once={(_) => buttonRefs[0]?.focus()}
     on:keydown|stopPropagation={handleKeydown}
   >
     <div class="title">{title}</div>
@@ -57,14 +63,15 @@
 </div>
 
 <style lang="scss">
+  /* NOTE: 'pointer-events: none;'을 적용하면 해당 div에 대해서 마우스 이벤트 따위가 발생하지 않고 아래에 보이는 요소로 전달된다. */
   .popup-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.1);
-    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
     user-select: none;
 
     & .popup {
@@ -81,19 +88,19 @@
       border-radius: 2px;
       box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
       font-family: Arial, Helvetica, sans-serif;
-      pointer-events: auto;
-      
+
       & .title {
         width: 100%;
         text-align: left;
         font-weight: bold;
       }
-      
+
       & .content {
         width: 100%;
         margin: 10px 5px;
         font-size: 0.7em;
         text-align: left;
+        user-select: text;
       }
 
       & .button-group {
