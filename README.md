@@ -7,6 +7,7 @@ Some Svelte components are here:
 1. Floor
 1. marquee
 1. MonacoEditor
+1. PopUp
 1. PyRun
 1. SCompBox
 1. Splitter
