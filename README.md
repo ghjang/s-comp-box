@@ -10,6 +10,7 @@ Some Svelte components are here:
 1. PopUp
    * Alert: A popup for displaying alert messages to the user.
    * Confirm: A popup for getting user confirmation on certain actions.
+   * Info: A popup for displaying information to the user.
    * Prompt: A popup for getting user input.
    * Custom: A popup for displaying arbitrary content.
 1. PyRun
