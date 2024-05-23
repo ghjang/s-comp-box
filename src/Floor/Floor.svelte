@@ -20,8 +20,7 @@
   let contextMenu;
 
   let showPopUp = false;
-  let popUpTitle = "";
-  let popUpContent = "";
+  let popUpProps = {};
 
   function handleMenuItemClicked(event) {
     if (event.detail.link) {
@@ -33,8 +32,9 @@
         window.location.href = url;
       }
     } else if (event.detail.popup) {
-      popUpTitle = event.detail.popup.title;
-      popUpContent = event.detail.popup.content;
+      // FIXME: 현재 'info' 팝업만을 가정하고 있다.
+      popUpProps = { ...event.detail.popup } ;
+      delete popUpProps.text; // '메뉴 항목' 표시용 'text' 속성을 전달하지 않는다.
       showPopUp = true;
     } else if (event.detail.action) {
       let handler = event.detail.action.handler;
@@ -98,12 +98,7 @@
 />
 
 {#if showPopUp}
-  <PopUp
-    title={popUpTitle}
-    content={popUpContent}
-    buttons={[{ text: "OK", value: "ok" }]}
-    on:buttonClicked={(e) => showPopUp = false}
-  />
+  <PopUp {...popUpProps} on:buttonClicked={(e) => (showPopUp = false)} />
 {/if}
 
 <style lang="scss">

@@ -9,7 +9,7 @@
 
   const dispatch = createEventDispatcher();
 
-  export let kind = defaultEnumValue(PopUpKind);
+  export let kind;
 
   export let title = "";
   export let content = "";
@@ -34,6 +34,7 @@
   function getDefaultButtons(kind) {
     switch (kind) {
       case PopUpKind.ALERT:
+      case PopUpKind.INFO:
         return [{ text: "OK", value: "ok" }];
       case PopUpKind.CONFIRM:
         return [
@@ -56,9 +57,13 @@
   }
 
   function initPopUp() {
+    if (!kind) {
+      kind = defaultEnumValue(PopUpKind);
+    }
+
     kind = findSymbolByDescription(PopUpKind, kind);
     if (!kind) {
-      throw new Error(`Unknown kind: ${kind}`);
+      throw new Error(`Unknown pop-up kind: ${kind}`);
     }
 
     // 'props'로 받은 'buttons' 값이 없을 경우 'kind'에 따라 기본 버튼을 설정한다.
