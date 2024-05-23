@@ -12,9 +12,21 @@
   let buttonRefs = [];
   let lastFocusedButton = null;
 
+  /*
+    NOTE: tabindex 값에 '9999'를 사용한 것은 'Monaco Editor' 등의 입력을
+          받을 수 있는 컴포넌트가 '팝업' 아래에 있을 경우 '웹 브라우저 주소줄'을 사용자가
+          선택후 'Tab'을 눌렀을 때 '팝업' 내에 있는 요소에 포커스가 가는 것이 아니라
+          팝업 요소 레이어 아래에 있는 요소로 포커스가 이동하는 것을 방지하기 위함이다.
+
+    NOTE: 주소줄을 선택후 'Tab'과 'Shift + Tab'의 동작이 '크롬'과 '사파리'가 다르다.
+   */
+  const buttonTabIndex = 9999;
+
   if (content) {
     content = content.replace(/\n/g, "<br>");
   }
+
+  const setFocusOnPopUp = () => lastFocusedButton?.focus();
 
   onMount(() => {
     if (buttonRefs[0]) {
@@ -39,9 +51,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="popup-container"
-  on:contextmenu|preventDefault|stopPropagation={lastFocusedButton?.focus()}
-  on:click|preventDefault|stopPropagation={lastFocusedButton?.focus()}
-  on:dblclick|preventDefault|stopPropagation={lastFocusedButton?.focus()}
+  on:contextmenu|preventDefault|stopPropagation={setFocusOnPopUp}
+  on:click|preventDefault|stopPropagation={setFocusOnPopUp}
+  on:dblclick|preventDefault|stopPropagation={setFocusOnPopUp}
 >
   <div
     class="popup"
@@ -52,22 +64,10 @@
     <div class="content">{@html content}</div>
     <div class="button-group" use:trapFocus>
       {#each buttons as btn, i}
-        <!--
-            NOTE: tabindex 값에 '9999'를 사용한 것은 'Monaco Editor' 등의 입력을
-                  받을 수 있는 컴포넌트가 '팝업' 아래에 있을 경우 '웹 브라우저 주소줄'을 사용자가
-                  선택후 'Tab'을 눌렀을 때 '팝업' 내에 있는 요소에 포커스가 가는 것이 아니라
-                  팝업 요소 레이어 아래에 있는 요소로 포커스가 이동하는 것을 방지하기 위함이다.
-
-                  FIXME: 'Shift + Tab'의 경우에는 여전히 'Monaco Editor'로 포커스가
-                         이동할 수 있다. 'Floor'나 'PyRun'쪽에서 뭔가 workaround 처리를
-                        해야할 것으로 보인다(?).
-
-            NOTE: 주소줄을 선택후 'Tab'과 'Shift + Tab'의 동작이 '크롬'과 '사파리'가 다르다.
-         -->
         <!-- svelte-ignore a11y-positive-tabindex -->
         <button
           bind:this={buttonRefs[i]}
-          tabindex="9999"
+          tabindex={buttonTabIndex}
           on:focus={() => (lastFocusedButton = buttonRefs[i])}
           on:click={() => handleButtonClick(btn)}
         >
@@ -76,6 +76,16 @@
       {/each}
     </div>
   </div>
+
+  <!--
+      NOTE: 다음 조작 상황에서의 문제점을 해결한다:
+        1. 'Floor' 컴포넌트에 '수평 스플릿터'를 설정후 '좌측 팬'에 'PyRun'을 설정
+        2. 'PopUp' 메뉴 발동
+        3. '크롬' 웹 브라우저 주소줄을 선택후 'Shift + Tab'
+        4. 팝업내 버튼 그릅에 포커스가 가지 않고 'Monaco Editor'로 포커스가 이동
+   -->
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <div class="trap-focus-dummy" tabindex="0" on:focus={setFocusOnPopUp}></div>
 </div>
 
 <style lang="scss">
