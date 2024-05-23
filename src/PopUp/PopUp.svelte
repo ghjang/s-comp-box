@@ -99,6 +99,14 @@
       event.preventDefault();
       handleButtonClick({ text: "esc", value: "cancel" });
     }
+
+    if (event.key === "Enter" && event.target === promptInputElem) {
+      handleButtonClick({
+        text: "Enter",
+        value: "ok",
+        userInput: promptInputElem.value,
+      });
+    }
   }
 </script>
 
@@ -117,19 +125,24 @@
   >
     <div class="title">{title}</div>
     <div class="body" use:trapFocus>
-      <div class="content">
-        {@html content}
-        {#if kind === PopUpKind.PROMPT}
+      {#if kind === PopUpKind.PROMPT}
+        <div class="content">
+          {@html content}
           <input
             class="prompt-input-text"
             type="text"
             tabindex={buttonTabIndex}
             bind:this={promptInputElem}
             on:focus={(e) => (lastFocusedElem = e.target)}
-            on:keydown={(e) => (e.key === "Enter") && handleButtonClick(buttons[0])}
+            on:keydown={handleKeydown}
           />
-        {/if}
-      </div>
+        </div>
+      {:else if kind === PopUpKind.CONTENT}
+        <!-- TODO: 여기서 다시 시작! -->
+        <div class="content">{@html content}</div>
+      {:else}
+        <div class="content">{@html content}</div>
+      {/if}
       <div class="button-group">
         {#each buttons as btn, i}
           <!-- svelte-ignore a11y-positive-tabindex -->
@@ -203,6 +216,7 @@
             width: 90%;
             margin-top: 5px;
             padding: 5px;
+            outline: none;
             font-size: 0.7em;
             border: 1px solid black;
             border-radius: 2px;
