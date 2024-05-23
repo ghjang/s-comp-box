@@ -1,16 +1,20 @@
 <script>
   import { createEventDispatcher, onMount } from "svelte";
   import { trapFocus } from "../common/action/trapFocus.js";
+  import {
+    defaultEnumValue,
+    findSymbolByDescription,
+  } from "../common/reflection.js";
+  import { PopUpKind } from "./PopUpKind.js";
 
   const dispatch = createEventDispatcher();
 
+  export let kind = defaultEnumValue(PopUpKind);
+
   export let title = "";
   export let content = "";
-  export let buttons = [{ text: "OK", value: "ok" }];
+  export let buttons = null;
   export let background = "white";
-
-  let buttonRefs = [];
-  let lastFocusedButton = null;
 
   /*
     NOTE: tabindex 값에 '9999'를 사용한 것은 'Monaco Editor' 등의 입력을
@@ -22,20 +26,71 @@
    */
   const buttonTabIndex = 9999;
 
-  if (content) {
-    content = content.replace(/\n/g, "<br>");
+  let promptInputElem;
+  let buttonRefs = [];
+
+  let lastFocusedElem = null;
+
+  function getDefaultButtons(kind) {
+    switch (kind) {
+      case PopUpKind.ALERT:
+        return [{ text: "OK", value: "ok" }];
+      case PopUpKind.CONFIRM:
+        return [
+          { text: "OK", value: "ok" },
+          { text: "Cancel", value: "cancel" },
+        ];
+      case PopUpKind.PROMPT:
+        return [
+          { text: "OK", value: "ok", userInput: "" },
+          { text: "Cancel", value: "cancel", userInput: "" },
+        ];
+      case PopUpKind.CONTENT:
+        return [
+          { text: "OK", value: "ok" },
+          { text: "Cancel", value: "cancel" },
+        ];
+      default:
+        throw new Error(`Unhandled kind: ${kind}`);
+    }
   }
 
-  const setFocusOnPopUp = () => lastFocusedButton?.focus();
+  function initPopUp() {
+    kind = findSymbolByDescription(PopUpKind, kind);
+    if (!kind) {
+      throw new Error(`Unknown kind: ${kind}`);
+    }
+
+    // 'props'로 받은 'buttons' 값이 없을 경우 'kind'에 따라 기본 버튼을 설정한다.
+    buttons = buttons || getDefaultButtons(kind);
+
+    if (content) {
+      if (kind !== PopUpKind.CONTENT) {
+        content = content.replace(/\n/g, "<br>");
+      } else {
+        // TODO: implement this case.
+      }
+    }
+  }
+
+  const setFocusOnPopUp = () => lastFocusedElem?.focus();
+
+  initPopUp();
 
   onMount(() => {
-    if (buttonRefs[0]) {
+    if (kind === PopUpKind.PROMPT && promptInputElem) {
+      promptInputElem.focus();
+      lastFocusedElem = promptInputElem;
+    } else if (buttonRefs[0]) {
       buttonRefs[0].focus();
-      lastFocusedButton = buttonRefs[0];
+      lastFocusedElem = buttonRefs[0];
     }
   });
 
   function handleButtonClick(btn) {
+    if (promptInputElem) {
+      btn.userInput = promptInputElem.value;
+    }
     dispatch("buttonClicked", btn);
   }
 
@@ -62,14 +117,26 @@
   >
     <div class="title">{title}</div>
     <div class="body" use:trapFocus>
-      <div class="content">{@html content}</div>
+      <div class="content">
+        {@html content}
+        {#if kind === PopUpKind.PROMPT}
+          <input
+            class="prompt-input-text"
+            type="text"
+            tabindex={buttonTabIndex}
+            bind:this={promptInputElem}
+            on:focus={(e) => (lastFocusedElem = e.target)}
+            on:keydown={(e) => (e.key === "Enter") && handleButtonClick(buttons[0])}
+          />
+        {/if}
+      </div>
       <div class="button-group">
         {#each buttons as btn, i}
           <!-- svelte-ignore a11y-positive-tabindex -->
           <button
             bind:this={buttonRefs[i]}
             tabindex={buttonTabIndex}
-            on:focus={() => (lastFocusedButton = buttonRefs[i])}
+            on:focus={() => (lastFocusedElem = buttonRefs[i])}
             on:click={() => handleButtonClick(btn)}
           >
             {btn.text}
@@ -130,6 +197,16 @@
           font-size: 0.7em;
           text-align: left;
           user-select: text;
+
+          & .prompt-input-text {
+            display: block;
+            width: 90%;
+            margin-top: 5px;
+            padding: 5px;
+            font-size: 0.7em;
+            border: 1px solid black;
+            border-radius: 2px;
+          }
         }
 
         & .button-group {

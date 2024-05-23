@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PopUp Component Test</title>
+    <title>PopUp Component Test - Alert </title>
 
     <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
 
@@ -26,12 +26,9 @@
         let popUp = new PopUp({
             target: document.getElementById('container'),
             props: {
+                kind: "alert",
                 title: 'Title',
-                content: '팝업 컨텐트 테스트입니다.\n줄 분리 테스트입니다.\n생각보다 괜찮은 결과가 나온 것 같네요. 좋습니다.',
-                buttons: [
-                    { text: 'OK', value: 'ok' },
-                    { text: 'Cancel', value: 'cancel' }
-                ]
+                content: "'alert' 팝업 컨텐트 테스트입니다.\n줄 분리 테스트입니다.\n생각보다 괜찮은 결과가 나온 것 같네요. 좋습니다.",
             }
         });
 
