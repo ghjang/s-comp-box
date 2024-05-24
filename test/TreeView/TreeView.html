@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreeView Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 100vh;
+            background-color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script type="module">
+        import TreeView from '/build/dev/default/TreeView.js';
+
+        const treeData = [
+            {
+                id: 1,
+                name: 'Root',
+                open: false,
+                children: [
+                    {
+                        id: 2,
+                        name:
+                            'Child 1',
+                        open: false
+                    },
+                    {
+                        id: 3,
+                        name: 'Child 2',
+                        open: false,
+                        children: [
+                            { id: 4, name: 'Grandchild', open: false }
+                        ]
+                    },
+                ],
+            },
+        ];
+
+        let treeView = new TreeView({
+            target: document.getElementById('container'),
+            props: {
+                data: treeData
+            }
+        });
+
+        window.addEventListener("beforeunload", () => treeView?.$destroy());
+    </script>
+</body>
+
+</html>
