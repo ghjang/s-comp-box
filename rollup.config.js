@@ -179,14 +179,8 @@ const configs = async () => {
         await runPreActionScript(filePath);
     }
 
-    let defaultBuildConfig = null;
-
-    // NOTE: 'GitHub Pages'에 배포하는 경우는 '커스텀 요소' 빌드만을 사용한다.
-    //       빌드 시간 단축을 위해서 '기본' 방식의 빌드는 생략한다.
-    if (!isBuildPages) {
-        defaultBuildConfig = createConfig(defaultBuildTargetFiles, false);
-        defaultBuildConfig.context = 'globalThis';
-    }
+    let defaultBuildConfig = createConfig(defaultBuildTargetFiles, false);
+    defaultBuildConfig.context = 'globalThis';
 
     const customElementBuildTargetFiles
         = svelteComponentFilePaths
