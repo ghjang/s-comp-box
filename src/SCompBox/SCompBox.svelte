@@ -19,7 +19,7 @@
     });
   }
 
-  // FIXME: 현재 '탑 레벨' 메뉴에서만 컴포넌트 설정이 있는 것을 가정하고 있다.
+  // FIXME: 현재 '탑 레벨' 메뉴에서만 '컴포넌트 설정'이 있는 것을 가정하고 있다.
   function loadCustomElementsInfo(customContainers, customElements) {
     const divider = { divider: { style: "" } };
     const items = [...customContainers, divider, ...customElements];

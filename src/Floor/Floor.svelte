@@ -32,7 +32,7 @@
         window.location.href = url;
       }
     } else if (event.detail.popup) {
-      // FIXME: 현재 'info' 팝업만을 가정하고 있다.
+      // TODO: 'info' 팝업외의 다른 종류의 팝업 처리 추가
       popUpProps = { ...event.detail.popup } ;
       delete popUpProps.text; // '메뉴 항목' 표시용 'text' 속성을 전달하지 않는다.
       showPopUp = true;
@@ -56,13 +56,12 @@
 
       const newElemInfo = handler();
 
-      /*
-        FIXME: 'svelte:element'로 동적으로 요소 렌더링시에
-               "<s-marquee> was created with unknown prop 'class'"와 같은
-               '경고'가 '개발자 도구'에 출력된다. 확인결과 커스텀 요소 컴포넌트를 내부에서
-               생성할 때 'class' 속성이 자동으로 추가되는 것으로 보인다.
-               현재로서는 이를 해결할 방법을 찾지 못했다.
-       */
+      // FIXME: 'svelte:element'로 동적으로 요소 렌더링시에 불필요 '경고' 출력 제거
+      // 'svelte:element'로 동적으로 요소 렌더링시에
+      // "<s-marquee> was created with unknown prop 'class'"와 같은
+      // '경고'가 '개발자 도구'에 출력된다. 확인결과 커스텀 요소 컴포넌트를 내부에서
+      // 생성할 때 'class' 속성이 자동으로 추가되는 것으로 보인다.
+      // 현재로서는 이를 해결할 방법을 찾지 못했다.
       childComponentInfo = newElemInfo;
     } else {
       // Do nothing

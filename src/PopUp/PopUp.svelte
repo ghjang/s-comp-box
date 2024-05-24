@@ -73,7 +73,7 @@
       if (kind !== PopUpKind.CONTENT) {
         content = content.replace(/\n/g, "<br>");
       } else {
-        // TODO: implement this case.
+        // TODO: 'custom' 팝업 컨텐트 처리 추가
       }
     }
   }
@@ -143,7 +143,7 @@
           />
         </div>
       {:else if kind === PopUpKind.CONTENT}
-        <!-- TODO: 여기서 다시 시작! -->
+        <!-- NOTE: 여기서 다시 시작! -->
         <div class="content">{@html content}</div>
       {:else}
         <div class="content">{@html content}</div>
@@ -238,11 +238,11 @@
           }
 
           /*
-          FIXME: 팝업이 최초에 오픈된 후에 자바스크립트로 첫번째 버튼에 포커스를 설정했을 때
-                 사용자가 직접 탭으로 포커스를 주었을때랑 모양이 다름. 프고그래밍으로 포커스 설정시
-                 '보안' 문제로 정책에 의해서 이렇게 처리된다고 함. ':focus'를 설정해서 최대한
-                 맞춰주려고 했으나 일단 실패함.
-         */
+            FIXME: 팝업이 최초에 오픈된 후에 자바스크립트로 첫번째 버튼에 포커스를 설정했을 때
+                  사용자가 직접 탭으로 포커스를 주었을때랑 모양이 다름. 프고그래밍으로 포커스 설정시
+                  '보안' 문제로 정책에 의해서 이렇게 처리된다고 함. ':focus'를 설정해서 최대한
+                  맞춰주려고 했으나 일단 실패함.
+           */
 
           & button:focus {
             outline: 1px solid blue;

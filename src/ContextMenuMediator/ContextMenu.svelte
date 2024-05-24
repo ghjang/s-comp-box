@@ -206,15 +206,15 @@
 <style lang="scss">
   @import "./colors.scss";
 
-  /*
-    FIXME: 자바스크립트를 이용해 동적으로 추가한 'parent-menu-item-hovered' 클래스가
-           'global'로 선언되지 않으면 'context-menu' 내부의 'button' 요소에 적용되지 않음.
-           가능하면 'global'로 선언하지 않고 'context-menu' 내부의 'button' 요소에 직접 적용하는
-           방법을 찾아보는 것이 좋을 것 같음.
-
-           '서브 메뉴'가 나타나 있는 상황에서 '부모 메뉴'의 해당 '메뉴 항목'을 통해서 '서브 메뉴'가
-           나타났다는 것을 사용자에게 알려주기 위해 해당 메뉴 항목의 배경색을 변경하는 것이 목적임.
-   */
+  // FIXME: 'global'로 선언하지 않으면 'context-menu' 내부의 'button' 요소에 'background-color'가 적용되지 않음.
+  // 
+  // 자바스크립트를 이용해 동적으로 추가한 'parent-menu-item-hovered' 클래스가
+  // 'global'로 선언되지 않으면 'context-menu' 내부의 'button' 요소에 적용되지 않음.
+  // 가능하면 'global'로 선언하지 않고 'context-menu' 내부의 'button' 요소에 직접 적용하는
+  // 방법을 찾아보는 것이 좋을 것 같음.
+  //
+  // '서브 메뉴'가 나타나 있는 상황에서 '부모 메뉴'의 해당 '메뉴 항목'을 통해서 '서브 메뉴'가
+  // 나타났다는 것을 사용자에게 알려주기 위해 해당 메뉴 항목의 배경색을 변경하는 것이 목적임.
   :global(.context-menu .menu-item > button.parent-menu-item-hovered) {
     background-color: lighten($secondary-color, 10%) !important;
   }
