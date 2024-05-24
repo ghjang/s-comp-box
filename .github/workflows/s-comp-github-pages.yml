@@ -48,11 +48,21 @@ jobs:
       - name: Build Pages
         run: npm run build-pages-dist
 
-      - name: Copy JS files
+      - name: Copy bundled CSS and JS files
         run: |
+          mkdir -p pages/docroot/scripts/default
+          cp build/dist/default/*.css pages/docroot/scripts/default/
+          cp build/dist/default/*.js pages/docroot/scripts/default/
+          cp build/dist/default/chunks/*.js pages/docroot/scripts/default/chunks/
+
           mkdir -p pages/docroot/scripts/custom
           cp build/dist/custom/*.js pages/docroot/scripts/custom/
           cp build/dist/custom/chunks/*.js pages/docroot/scripts/custom/chunks/
+
+      - name: Copy component unit test files
+        run: |
+          cp -r test pages/docroot/test
+          find pages/docroot/test -type f -name "*.html" -exec sed -i 's|/build/dev|/scripts|g' {} \;
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

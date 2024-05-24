@@ -38,6 +38,13 @@
                     }
                 },
                 {
+                    "link": {
+                        "text": "s-comp Component Unit Test",
+                        "url": "https://github.com/ghjang/s-comp/test/s-comp.html",
+                        "target": "_blank"
+                    }
+                },
+                {
                     "popup": {
                         "text": "What's this about?",
                         "kind": "info",
