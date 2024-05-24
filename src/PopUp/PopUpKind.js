@@ -3,5 +3,5 @@ export const PopUpKind = {
     INFO: Symbol('info'),
     CONFIRM: Symbol('confirm'),
     PROMPT: Symbol('prompt'),
-    CONTENT: Symbol('content')
+    CUSTOM: Symbol('custom')
 };

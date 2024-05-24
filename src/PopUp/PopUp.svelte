@@ -48,7 +48,7 @@
           { text: "OK", value: "ok", userInput: "" },
           { text: "Cancel", value: "cancel", userInput: "" },
         ];
-      case PopUpKind.CONTENT:
+      case PopUpKind.CUSTOM:
         return [
           { text: "OK", value: "ok" },
           { text: "Cancel", value: "cancel" },
@@ -67,7 +67,7 @@
 
       case PopUpKind.CONFIRM:
       case PopUpKind.PROMPT:
-      case PopUpKind.CONTENT:
+      case PopUpKind.CUSTOM:
       default:
         return "";
     }
@@ -89,7 +89,7 @@
     titleIcon = titleIcon || getTitleIcon(kind) ? `${getTitleIcon(kind)} ` : "";
 
     if (content) {
-      if (kind !== PopUpKind.CONTENT) {
+      if (kind !== PopUpKind.CUSTOM) {
         content = content.replace(/\n/g, "<br>");
       } else {
         // TODO: 'custom' 팝업 컨텐트 처리 추가
@@ -161,7 +161,7 @@
             on:keydown={handleKeydown}
           />
         </div>
-      {:else if kind === PopUpKind.CONTENT}
+      {:else if kind === PopUpKind.CUSTOM}
         <!-- NOTE: 여기서 다시 시작! -->
         <div class="content">{@html content}</div>
       {:else}
