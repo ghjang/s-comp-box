@@ -3,7 +3,7 @@
   import { writable } from "svelte/store";
 
   export let nodeLevel = 0;
-  export let data;
+  export let data = [];
 
   const context = initContext();
   $: updateTreeViewState($context);

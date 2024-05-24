@@ -23,7 +23,7 @@
     <script type="module">
         import TreeView from '/build/dev/default/TreeView.js';
 
-        const treeData = [
+        const nodeData = [
             {
                 id: 1,
                 name: 'Root',
@@ -50,7 +50,7 @@
         let treeView = new TreeView({
             target: document.getElementById('container'),
             props: {
-                data: treeData
+                data: nodeData
             }
         });
 

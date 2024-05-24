@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>s-comp Tests</title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script type="module">
+        import Splitter from '/build/dev/default/Splitter.js';
+        import TreeView from '/build/dev/default/TreeView.js';
+        import WebView from '/build/dev/default/WebView.js';
+
+        const splitter = new Splitter({
+            target: document.querySelector('#container'),
+            props: {
+                orientation: 'horizontal',
+
+                component_0: {
+                    component: TreeView,
+                    props: {
+                    }
+                },
+
+                component_1: {
+                    component: WebView,
+                    props: {
+                        url: 'SCompBox/SCompBox.html'
+                    }
+                }
+            }
+        });
+
+        window.addEventListener("beforeunload", () => splitter?.$destroy());
+    </script>
+</body>
+
+</html>

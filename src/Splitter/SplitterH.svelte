@@ -29,12 +29,12 @@
   <div id="splitter-panel" style:width={splitterPanelLength}>
     <div
       class="splitter-grip"
-      use:dragGrip={{ direction: "horizontal", panel: panel_0 }}
+      use:dragGrip={{ direction: "horizontal", panel_0, panel_1 }}
     ></div>
     <div id="splitter-content"></div>
     <div
       class="splitter-grip"
-      use:dragGrip={{ direction: "horizontal", panel: panel_0 }}
+      use:dragGrip={{ direction: "horizontal", panel_0, panel_1 }}
     ></div>
   </div>
   <div id="content-panel-1" class="content-panel" bind:this={panel_1}>

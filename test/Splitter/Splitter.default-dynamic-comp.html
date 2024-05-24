@@ -57,6 +57,8 @@
                 }
             }
         });
+
+        window.addEventListener("beforeunload", () => splitter?.$destroy());
     </script>
 </body>
 
