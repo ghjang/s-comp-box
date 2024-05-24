@@ -151,5 +151,10 @@ package
 # End of https://www.toptal.com/developers/gitignore/api/node,svelte
 
 build/
+pages/docroot/scripts/default/**/*.js
+pages/docroot/scripts/default/**/*.css
+pages/docroot/scripts/default/**/*.json
 pages/docroot/scripts/custom/**/*.js
+pages/docroot/scripts/custom/**/*.css
+pages/docroot/scripts/custom/**/*.json
 vendor/monaco-editor/dist-bundle/
