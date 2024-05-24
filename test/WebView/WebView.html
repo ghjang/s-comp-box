@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebView Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 100vh;
+            background-color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script type="module">
+        import WebView from '/build/dev/default/WebView.js';
+
+        let webView = new WebView({
+            target: document.getElementById('container'),
+            props: {
+                url: "https://ghjang.github.io"
+            }
+        });
+
+        window.addEventListener("beforeunload", () => webView?.$destroy());
+    </script>
+</body>
+
+</html>

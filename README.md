@@ -16,6 +16,7 @@ Some Svelte components are here:
 1. PyRun
 1. SCompBox
 1. Splitter
+1. WebView
 
 ## Demo
 
