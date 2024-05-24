@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PopUp Component Test - Info </title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 100vh;
+            background-color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script type="module">
+        import PopUp from '/build/dev/default/PopUp.js';
+
+        let popUp = new PopUp({
+            target: document.getElementById('container'),
+            props: {
+                kind: "info",
+                title: 'Title',
+                content: "'info' 팝업 컨텐트 테스트입니다.",
+            }
+        });
+
+        popUp.$on('buttonClicked', (e) => {
+            const { text, value } = e.detail;
+            console.log(`Button Clicked: ${text} (${value})`);
+            popUp.$destroy();
+            popUp = null;
+        });
+
+        window.addEventListener("beforeunload", () => popUp?.$destroy());
+    </script>
+</body>
+
+</html>

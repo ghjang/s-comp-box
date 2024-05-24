@@ -26,6 +26,8 @@
    */
   const buttonTabIndex = 9999;
 
+  let titleIcon;
+
   let promptInputElem;
   let buttonRefs = [];
 
@@ -56,6 +58,21 @@
     }
   }
 
+  function getTitleIcon(kind) {
+    switch (kind) {
+      case PopUpKind.ALERT:
+        return "⚠️";
+      case PopUpKind.INFO:
+        return "ℹ️";
+
+      case PopUpKind.CONFIRM:
+      case PopUpKind.PROMPT:
+      case PopUpKind.CONTENT:
+      default:
+        return "";
+    }
+  }
+
   function initPopUp() {
     if (!kind) {
       kind = defaultEnumValue(PopUpKind);
@@ -68,6 +85,8 @@
 
     // 'props'로 받은 'buttons' 값이 없을 경우 'kind'에 따라 기본 버튼을 설정한다.
     buttons = buttons || getDefaultButtons(kind);
+
+    titleIcon = titleIcon || getTitleIcon(kind) ? `${getTitleIcon(kind)} ` : "";
 
     if (content) {
       if (kind !== PopUpKind.CONTENT) {
@@ -128,7 +147,7 @@
     style:background
     on:keydown|stopPropagation={handleKeydown}
   >
-    <div class="title">{title}</div>
+    <div class="title"><span>{titleIcon}</span>{title}</div>
     <div class="body" use:trapFocus>
       {#if kind === PopUpKind.PROMPT}
         <div class="content">
