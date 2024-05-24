@@ -62,7 +62,7 @@ jobs:
       - name: Copy component unit test files
         run: |
           cp -r test pages/docroot/test
-          find pages/docroot/test -type f -name "*.html" -exec sed -i 's|/build/dev|/scripts|g' {} \;
+          find pages/docroot/test -type f -name "*.html" -exec sed -i 's|/build/dev|/s-comp/scripts|g' {} \;
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
