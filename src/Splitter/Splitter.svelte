@@ -16,6 +16,36 @@
   let component_0_props = { ...component_0.props, ...panelSize };
   let component_1_props = { ...component_1.props, ...panelSize };
 
+  let this_component_0;
+  let this_component_1;
+
+  // TODO: Splitter에 설정되는 컴포넌트의 이벤트를 Splitter 컴포넌트의 부모 컴포넌트로 포워딩
+  //
+  // 'this_component_0'와 'this_component_1'은 Splitter 컴포넌트에 설정되는 컴포넌트의 인스턴스를
+  // 참조하는 변수로, 이 변수를 통해 설정되는 컴포넌트의 이벤트를 '$on'을 통해서 수신후 부모 컴포넌트로 포워딩할
+  // 수 있을 것으로 보임.
+  // 
+  // 부모에게 이벤트 포워딩시 2개의 팬 패널 컴포넌트 정보를 모두 보내면 부모 쪽에서 어떤 패널에서 이벤트가 발생했는지
+  // 확인후 다른 쪽 패널 조작 등을 할 수 있을 것으로 보임.
+
+  $: if (this_component_0) {
+    console.log("this_component_0", this_component_0);
+    if (typeof this_component_0.getCustomEventNames === "function") {
+      console.log("this_component_0.getCustomEventNames", this_component_0.getCustomEventNames());
+    }
+  } else {
+    console.log("this_component_0 is null");
+  }
+
+  $: if (this_component_1) {
+    console.log("this_component_1", this_component_1);
+    if (typeof this_component_1.getCustomEventNames === "function") {
+      console.log("this_component_1.getCustomEventNames", this_component_1.getCustomEventNames());
+    }
+  } else {
+    console.log("this_component_1 is null");
+  }
+
   function handlePanelSizeChange(event) {
     panelSize = { panelSize: event.detail };
   }
@@ -45,11 +75,13 @@
       >
         <svelte:component
           this={component_0.component}
+          bind:this={this_component_0}
           {...component_0_props}
           slot="left"
         />
         <svelte:component
           this={component_1.component}
+          bind:this={this_component_1}
           {...component_1_props}
           slot="right"
         />
@@ -61,6 +93,7 @@
       >
         <svelte:component
           this={component_0.component}
+          bind:this={this_component_0}
           {...component_0_props}
           slot="left"
         />
@@ -74,6 +107,7 @@
         <slot name="left" slot="left" />
         <svelte:component
           this={component_1.component}
+          bind:this={this_component_1}
           {...component_1_props}
           slot="right"
         />
@@ -92,11 +126,13 @@
       >
         <svelte:component
           this={component_0.component}
+          bind:this={this_component_0}
           {...component_0_props}
           slot="top"
         />
         <svelte:component
           this={component_1.component}
+          bind:this={this_component_1}
           {...component_1_props}
           slot="bottom"
         />
@@ -108,6 +144,7 @@
       >
         <svelte:component
           this={component_0.component}
+          bind:this={this_component_0}
           {...component_0_props}
           slot="top"
         />
@@ -121,6 +158,7 @@
         <slot name="top" slot="top" />
         <svelte:component
           this={component_1.component}
+          bind:this={this_component_1}
           {...component_1_props}
           slot="bottom"
         />

@@ -1,9 +1,15 @@
 <script>
-  import { getContext, setContext } from "svelte";
+  import { getContext, setContext, createEventDispatcher } from "svelte";
   import { writable } from "svelte/store";
+
+  const dispatch = createEventDispatcher();
 
   export let nodeLevel = 0;
   export let data = [];
+
+  export function getCustomEventNames() {
+    return ["treeNodeSelected"];
+  }
 
   const context = initContext();
   $: updateTreeViewState($context);
@@ -28,7 +34,11 @@
     return context;
   }
 
-  function updateTreeViewState(context) {}
+  function updateTreeViewState(context) {
+    if (nodeLevel === 0) {
+    } else {
+    }
+  }
 
   function toggle(nodeData) {
     nodeData.open = !nodeData.open;
@@ -72,6 +82,7 @@
         on:click={(e) => {
           toggle(node);
           select(e.target.parentElement.querySelector(".node-name"));
+          dispatch("treeNodeSelected", node);
         }}
       >
         {#if node.children && node.children.length > 0}
@@ -85,7 +96,10 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span
         class="node-name"
-        on:click={toggleSelect}
+        on:click={(e) => {
+          toggleSelect(e);
+          dispatch("treeNodeSelected", node);
+        }}
         on:dblclick|preventDefault|stopPropagation={(e) => {
           toggle(node);
           select(e.target);
