@@ -22,3 +22,4 @@ Some Svelte components are here:
 ## Demo
 
 * This repository's GitHub Pages: <https://ghjang.github.io/s-comp/>
+* s-comp Component Unit Test: <https://ghjang.github.io/s-comp/test/>
