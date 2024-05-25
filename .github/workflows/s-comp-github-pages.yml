@@ -69,7 +69,7 @@ jobs:
             -e "s|/build/dev/vendor/pyodide|/${REPO_NAME}/resources/pyodide|g" \
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" \
             -e "s|customElementConfigBasePath: '/s-comp/scripts/default'|customElementConfigBasePath: '/s-comp/config'|g" \
-            -e "s|customElementConfigBasePath='/build/dev/custom'|customElementConfigBasePath='/s-comp/config'|g" {} \;
+            -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" {} \;
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
