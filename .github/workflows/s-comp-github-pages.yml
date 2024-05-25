@@ -65,8 +65,8 @@ jobs:
           cp -r test pages/docroot/test
           mv pages/docroot/test/${REPO_NAME}.html pages/docroot/test/index.html
           find pages/docroot/test -type f -name "*.html" -exec sed -i \
-            -e "s|/vendor/monaco-editor/dist-bundle|/${REPO_NAME}/scripts/monaco-editor|g" \
-            -e "s|/build/dev/vendor/pyodide|/${REPO_NAME}/scripts/pyodide|g" \
+            -e "s|/vendor/monaco-editor/dist-bundle|/${REPO_NAME}/resources/monaco-editor|g" \
+            -e "s|/build/dev/vendor/pyodide|/${REPO_NAME}/resources/pyodide|g" \
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" {} \;
 
       - name: Setup Pages
