@@ -74,7 +74,11 @@
           select(e.target.parentElement.querySelector(".node-name"));
         }}
       >
-        {node.open ? "▼" : "►"}
+        {#if node.children && node.children.length > 0}
+          {node.open ? "▼" : "►"}
+        {:else}
+          <span class="dummy-toggle-button-span"></span>
+        {/if}
       </button>
 
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -119,6 +123,11 @@
         color: inherit;
         padding: 0;
         cursor: pointer;
+
+        .dummy-toggle-button-span {
+          display: inline-block;
+          width: 1em;
+        }
       }
 
       .node-name {
