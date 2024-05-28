@@ -4,6 +4,8 @@ Some Svelte components are here:
 
 1. ContextMenu
 1. FlexBox
+   * Bubble
+   * Card
 1. Floor
 1. marquee
 1. MonacoEditor
