@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
 
     <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
         #container {
             width: 100%;
             height: 100vh;
@@ -42,7 +48,7 @@
                         //       실질적으로 'CustomEvent' 객체로 전달된다. dispatch에 설정한 정보는
                         //       'detail' 프로퍼티에 담겨져 있다.
                         const e = event.detail;
-                        
+
                         const menuItem = e.link || e.popup || e.action;
                         console.log(`clicked: ${menuItem.text}`)
                     }
