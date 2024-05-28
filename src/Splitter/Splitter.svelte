@@ -1,8 +1,12 @@
 <svelte:options customElement="s-splitter" />
 
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import SplitterH from "./SplitterH.svelte";
   import SplitterV from "./SplitterV.svelte";
+
+  const dispatch = createEventDispatcher();
 
   export let orientation = "horizontal";
 
@@ -10,6 +14,8 @@
 
   export let component_0 = { component: null, props: {} };
   export let component_1 = { component: null, props: {} };
+
+  export let customEvents = [];
 
   let panelSize = {};
 
@@ -19,31 +25,38 @@
   let this_component_0;
   let this_component_1;
 
-  // TODO: Splitter에 설정되는 컴포넌트의 이벤트를 Splitter 컴포넌트의 부모 컴포넌트로 포워딩
-  //
-  // 'this_component_0'와 'this_component_1'은 Splitter 컴포넌트에 설정되는 컴포넌트의 인스턴스를
-  // 참조하는 변수로, 이 변수를 통해 설정되는 컴포넌트의 이벤트를 '$on'을 통해서 수신후 부모 컴포넌트로 포워딩할
-  // 수 있을 것으로 보임.
-  // 
-  // 부모에게 이벤트 포워딩시 2개의 팬 패널 컴포넌트 정보를 모두 보내면 부모 쪽에서 어떤 패널에서 이벤트가 발생했는지
-  // 확인후 다른 쪽 패널 조작 등을 할 수 있을 것으로 보임.
+  $: registerCustomEventHandler(this_component_0);
+  $: registerCustomEventHandler(this_component_1);
 
-  $: if (this_component_0) {
-    console.log("this_component_0", this_component_0);
-    if (typeof this_component_0.getCustomEventNames === "function") {
-      console.log("this_component_0.getCustomEventNames", this_component_0.getCustomEventNames());
+  function registerCustomEventHandler(component) {
+    if (!component || !component.customEvents) {
+      return;
     }
-  } else {
-    console.log("this_component_0 is null");
-  }
 
-  $: if (this_component_1) {
-    console.log("this_component_1", this_component_1);
-    if (typeof this_component_1.getCustomEventNames === "function") {
-      console.log("this_component_1.getCustomEventNames", this_component_1.getCustomEventNames());
+    if (!Array.isArray(component.customEvents)) {
+      return;
     }
-  } else {
-    console.log("this_component_1 is null");
+
+    // NOTE: 'Splitter'의 자식 컴포넌트로 'Splitter'가 포함되는 경우를 처리하기 위함.
+    const combinedCustomEvents = [...customEvents, ...component.customEvents];
+    customEvents = [...new Set(combinedCustomEvents)];
+
+    component.customEvents.forEach((eventName) => {
+      component.$on(eventName, (event) => {
+        const bubble = event.detail.bubble || {};
+        bubble.chain = bubble.chain || [];
+
+        bubble.chain.push(component);
+        bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
+        bubble.detail = {
+          componentName: "Splitter",
+          component_0: this_component_0,
+          component_1: this_component_1,
+        };
+
+        dispatch(eventName, { bubble });
+      });
+    });
   }
 
   function handlePanelSizeChange(event) {

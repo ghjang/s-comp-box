@@ -1,8 +1,10 @@
+<svelte:options accessors />
+
 <script>
   export let url;
 </script>
 
-<iframe src={url} title="" />
+<iframe src={url ?? "about:blank"} title="" />
 
 <style>
   iframe {

@@ -7,9 +7,7 @@
   export let nodeLevel = 0;
   export let data = [];
 
-  export function getCustomEventNames() {
-    return ["treeNodeSelected"];
-  }
+  export const customEvents = ["treeNodeSelected"];
 
   const context = initContext();
   $: updateTreeViewState($context);
@@ -109,7 +107,11 @@
       </span>
 
       {#if node.children && node.open}
-        <svelte:self nodeLevel={nodeLevel + 1} data={node.children} />
+        <svelte:self
+          nodeLevel={nodeLevel + 1}
+          data={node.children}
+          on:treeNodeSelected
+        />
       {/if}
     </li>
   {/each}

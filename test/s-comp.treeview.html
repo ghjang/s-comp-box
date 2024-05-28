@@ -25,129 +25,40 @@
         import TreeView from '/build/dev/default/TreeView.js';
         import WebView from '/build/dev/default/WebView.js';
 
-        const nodeData = [
-            {
-                id: 1,
-                name: '1. ContextMenu',
-                open: false,
-                children: [],
-            },
-            {
-                id: 2,
-                name: '2. FlexBox',
-                open: false,
-                children: []
-            },
-            {
-                id: 3,
-                name: '3. Floor',
-                open: false,
-                children: []
-            },
-            {
-                id: 4,
-                name: '4. marquee',
-                open: false,
-                children: []
-            },
-            {
-                id: 5,
-                name: '5. MonacoEditor',
-                open: false,
-                children: []
-            },
-            {
-                id: 6,
-                name: '6. PopUp',
-                open: false,
-                children: [
-                    {
-                        id: 12,
-                        name: '6.1. Alert',
-                        open: false,
-                        children: []
-                    },
-                    {
-                        id: 13,
-                        name: '6.2. Confirm',
-                        open: false,
-                        children: []
-                    },
-                    {
-                        id: 14,
-                        name: '6.3. Info',
-                        open: false,
-                        children: []
-                    },
-                    {
-                        id: 15,
-                        name: '6.4. Prompt',
-                        open: false,
-                        children: []
-                    },
-                    {
-                        id: 16,
-                        name: '6.5. Custom',
-                        open: false,
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 7,
-                name: '7. PyRun',
-                open: false,
-                children: []
-            },
-            {
-                id: 8,
-                name: '8. SCompBox',
-                open: false,
-                children: []
-            },
-            {
-                id: 9,
-                name: '9. Splitter',
-                open: false,
-                children: []
-            },
-            {
-                id: 10,
-                name: '10. TreeView',
-                open: false,
-                children: []
-            },
-            {
-                id: 11,
-                name: '11. WebView',
-                open: false,
-                children: []
-            }
-        ];
-
-        const splitter = new Splitter({
-            target: document.querySelector('#container'),
-            props: {
-                orientation: 'horizontal',
-
-                component_0: {
-                    component: TreeView,
+        fetch('./s-comp.treeview.node-data.json')
+            .then(response => response.json())
+            .then(nodeData => {
+                const splitter = new Splitter({
+                    target: document.querySelector('#container'),
                     props: {
-                        data: nodeData
-                    }
-                },
+                        orientation: 'horizontal',
 
-                component_1: {
-                    component: WebView,
-                    props: {
-                        //url: 'https://ghjang.github.io'
-                        url: 'about:blank'
-                    }
-                }
-            }
-        });
+                        component_0: {
+                            component: TreeView,
+                            props: {
+                                data: nodeData
+                            }
+                        },
 
-        window.addEventListener("beforeunload", () => splitter?.$destroy());
+                        component_1: {
+                            component: WebView,
+                            props: {
+                                //url: 'https://ghjang.github.io'
+                                url: 'about:blank'
+                            }
+                        }
+                    }
+                });
+
+                splitter.$on('treeNodeSelected', (event) => {
+                    const bubble = event.detail.bubble;
+                    const detail = bubble.forwardingDetail;
+                    const webView = bubble.detail.component_1
+                    webView.url = detail.data;
+                });
+
+                window.addEventListener("beforeunload", () => splitter?.$destroy());
+            });
     </script>
 </body>
 
