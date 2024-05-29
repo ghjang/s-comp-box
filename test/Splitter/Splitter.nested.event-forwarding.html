@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Splitter Component Nested Event Forwarding Test</title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <script type="module">
+        import Splitter from '/build/dev/default/Splitter.js';
+        import FlexBox from '/build/dev/default/FlexBox.js';
+
+        const splitter = new Splitter({
+            target: document.querySelector('#container'),
+            props: {
+                orientation: 'horizontal',
+
+                component_0: {
+                    component: Splitter,
+                    props: {
+                        orientation: 'vertical',
+                        content_panel_0_length: '70%',
+                        component_0: {
+                            component: FlexBox,
+                            props: {
+                                direction: "column",
+
+                                defaultItemProps: {
+                                    type: "card",
+                                    foldable: true,
+                                    width: "300px",
+                                    margin: "1px",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "5px",
+                                    boxShadow: "none"
+                                },
+
+                                items: [
+                                    { title: "Feature 1", body: "Feature 1 is a very useful feature." },
+                                    { title: "Feature 2", body: "Feature 2 is a super useful feature." },
+                                    { title: "Feature 3", body: "피처 3은 온갖 환경 조건에서도 아주 유연하게 동작할 수 있는 기능입니다." }
+                                ]
+                            }
+                        },
+                    }
+                }
+            }
+        });
+
+        splitter.$on('cardFolding', (e) => {
+            const bubble = e.detail.bubble;
+            const detail = bubble.forwardingDetail;
+            console.log('cardFolding', detail);
+        });
+
+        window.addEventListener('beforeunload', () => splitter.$destroy());
+    </script>
+</body>
+
+</html>

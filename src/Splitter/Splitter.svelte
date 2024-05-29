@@ -1,4 +1,4 @@
-<svelte:options customElement="s-splitter" />
+<svelte:options accessors customElement="s-splitter" />
 
 <script>
   import { createEventDispatcher } from "svelte";

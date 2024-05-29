@@ -1,3 +1,5 @@
+<svelte:options accessors />
+
 <script>
   import { createEventDispatcher } from "svelte";
 
@@ -9,6 +11,8 @@
   export let direction = "column";
   export let defaultItemProps = {};
   export let items = [];
+
+  export const customEvents = ["cardFolding"];
 
   let flexBox;
 </script>
