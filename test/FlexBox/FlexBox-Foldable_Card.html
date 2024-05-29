@@ -45,6 +45,10 @@
             }
         });
 
+        flexBox.$on("cardFolding", (e) => {
+            console.log(e.detail);
+        });
+
         window.addEventListener('beforeunload', () => flexBox.$destroy());
     </script>
 </body>

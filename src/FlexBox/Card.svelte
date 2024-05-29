@@ -1,4 +1,8 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
   export let title;
   export let body;
 
@@ -27,6 +31,7 @@
   function toggleCardFolding() {
     open = !open;
     updateCardStatus();
+    dispatch("cardFolding", { open });
   }
 
   function handleKeydown(event) {

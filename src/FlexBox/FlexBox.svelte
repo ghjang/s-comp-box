@@ -1,4 +1,8 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
   import Bubble from "./Bubble.svelte";
   import Card from "./Card.svelte";
 
@@ -10,14 +14,21 @@
 </script>
 
 <div class="flex-box" bind:this={flexBox} style:flex-direction={direction}>
-  {#each items as item}
+  {#each items as item, index}
     {@const itemProps = { ...defaultItemProps, ...item }}
     {@const type = itemProps.type}
     {@const deleted = delete itemProps.type}
     {#if type === "bubble"}
       <Bubble {...itemProps} />
     {:else if type === "card"}
-      <Card {...itemProps} />
+      <Card
+        {...itemProps}
+        on:cardFolding={(e) =>
+          dispatch("cardFolding", {
+            itemIndex: index,
+            ...e.detail,
+          })}
+      />
     {:else if deleted}
       {@html JSON.stringify({ type: type, ...itemProps })}
     {/if}
