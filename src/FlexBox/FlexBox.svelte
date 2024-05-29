@@ -3,6 +3,7 @@
   import Card from "./Card.svelte";
 
   export let direction = "column";
+  export let defaultItemProps = {};
   export let items = [];
 
   let flexBox;
@@ -10,14 +11,15 @@
 
 <div class="flex-box" bind:this={flexBox} style:flex-direction={direction}>
   {#each items as item}
-    {@const type = item.type}
-    {@const deleted = delete item.type}
+    {@const itemProps = { ...defaultItemProps, ...item }}
+    {@const type = itemProps.type}
+    {@const deleted = delete itemProps.type}
     {#if type === "bubble"}
-      <Bubble {...item} />
+      <Bubble {...itemProps} />
     {:else if type === "card"}
-      <Card {...item} />
+      <Card {...itemProps} />
     {:else if deleted}
-      {@html JSON.stringify({ type: type, ...item })}
+      {@html JSON.stringify({ type: type, ...itemProps })}
     {/if}
   {/each}
 </div>

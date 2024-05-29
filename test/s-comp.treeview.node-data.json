@@ -1,7 +1,6 @@
 [
     {
         "name": "ContextMenu",
-        "open": false,
         "data": "ContextMenu/ContextMenu.html"
     },
     {
@@ -10,29 +9,28 @@
         "children": [
             {
                 "name": "Bubble",
-                "open": false,
                 "data": "FlexBox/FlexBox-Bubble.html"
             },
             {
                 "name": "Card",
-                "open": false,
                 "data": "FlexBox/FlexBox-Card.html"
+            },
+            {
+                "name": "Foldable Card",
+                "data": "FlexBox/FlexBox-Foldable_Card.html"
             }
         ]
     },
     {
         "name": "Floor",
-        "open": false,
         "data": "Floor/Floor.html"
     },
     {
         "name": "marquee",
-        "open": false,
         "data": "marquee/Marquee.custom.html"
     },
     {
         "name": "MonacoEditor",
-        "open": false,
         "data": "MonacoEditor/MonacoEditor.custom.html"
     },
     {
@@ -41,54 +39,44 @@
         "children": [
             {
                 "name": "Alert",
-                "open": false,
                 "data": "PopUp/PopUp.alert.html"
             },
             {
                 "name": "Confirm",
-                "open": false,
                 "data": "PopUp/PopUp.confirm.html"
             },
             {
                 "name": "Info",
-                "open": false,
                 "data": "PopUp/PopUp.info.html"
             },
             {
                 "name": "Prompt",
-                "open": false,
                 "data": "PopUp/PopUp.prompt.html"
             },
             {
                 "name": "Custom",
-                "open": false,
                 "data": "PopUp/PopUp.custom.html"
             }
         ]
     },
     {
         "name": "PyRun",
-        "open": false,
         "data": "PyRun/PyRun.custom.html"
     },
     {
         "name": "SCompBox",
-        "open": false,
         "data": "SCompBox/SCompBox.html"
     },
     {
         "name": "Splitter",
-        "open": false,
         "data": "Splitter/Splitter.custom.html"
     },
     {
         "name": "TreeView",
-        "open": false,
         "data": "TreeView/TreeView.html"
     },
     {
         "name": "WebView",
-        "open": false,
         "data": "WebView/WebView.html"
     }
 ]

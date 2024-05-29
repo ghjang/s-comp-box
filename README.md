@@ -5,7 +5,7 @@ Some Svelte components are here:
 1. ContextMenu
 1. FlexBox
    * Bubble
-   * Card
+   * Card: Normal and Foldable
 1. Floor
 1. marquee
 1. MonacoEditor

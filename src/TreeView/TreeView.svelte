@@ -7,7 +7,11 @@
   export let nodeLevel = 0;
   export let data = [];
 
+  export let openIcon = "▼";
+  export let closeIcon = "►";
+
   export const customEvents = ["treeNodeSelected"];
+
 
   const context = initContext();
   $: updateTreeViewState($context);
@@ -84,7 +88,7 @@
         }}
       >
         {#if node.children && node.children.length > 0}
-          {node.open ? "▼" : "►"}
+          {node.open ? openIcon : closeIcon}
         {:else}
           <span class="dummy-toggle-button-span"></span>
         {/if}
