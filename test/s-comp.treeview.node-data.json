@@ -1,111 +1,93 @@
 [
     {
-        "id": 1,
-        "name": "1. ContextMenu",
+        "name": "ContextMenu",
         "open": false,
         "data": "ContextMenu/ContextMenu.html"
     },
     {
-        "id": 2,
-        "name": "2. FlexBox",
+        "name": "FlexBox",
         "open": true,
         "children": [
             {
-                "id": 2000,
-                "name": "- Bubble",
+                "name": "Bubble",
                 "open": false,
                 "data": "FlexBox/FlexBox-Bubble.html"
             },
             {
-                "id": 2001,
-                "name": "- Card",
+                "name": "Card",
                 "open": false,
                 "data": "FlexBox/FlexBox-Card.html"
             }
         ]
     },
     {
-        "id": 3,
-        "name": "3. Floor",
+        "name": "Floor",
         "open": false,
         "data": "Floor/Floor.html"
     },
     {
-        "id": 4,
-        "name": "4. marquee",
+        "name": "marquee",
         "open": false,
         "data": "marquee/Marquee.custom.html"
     },
     {
-        "id": 5,
-        "name": "5. MonacoEditor",
+        "name": "MonacoEditor",
         "open": false,
         "data": "MonacoEditor/MonacoEditor.custom.html"
     },
     {
-        "id": 6,
-        "name": "6. PopUp",
+        "name": "PopUp",
         "open": true,
         "children": [
             {
-                "id": 6000,
-                "name": "- Alert",
+                "name": "Alert",
                 "open": false,
                 "data": "PopUp/PopUp.alert.html"
             },
             {
-                "id": 6001,
-                "name": "- Confirm",
+                "name": "Confirm",
                 "open": false,
                 "data": "PopUp/PopUp.confirm.html"
             },
             {
-                "id": 6002,
-                "name": "- Info",
+                "name": "Info",
                 "open": false,
                 "data": "PopUp/PopUp.info.html"
             },
             {
-                "id": 6003,
-                "name": "- Prompt",
+                "name": "Prompt",
                 "open": false,
                 "data": "PopUp/PopUp.prompt.html"
             },
             {
-                "id": 6004,
-                "name": "- Custom",
+                "name": "Custom",
                 "open": false,
                 "data": "PopUp/PopUp.custom.html"
             }
         ]
     },
     {
-        "id": 7,
-        "name": "7. PyRun",
+        "name": "PyRun",
         "open": false,
         "data": "PyRun/PyRun.custom.html"
     },
     {
-        "id": 8,
-        "name": "8. SCompBox",
+        "name": "SCompBox",
         "open": false,
         "data": "SCompBox/SCompBox.html"
     },
     {
-        "id": 9,
-        "name": "9. Splitter",
+        "name": "Splitter",
         "open": false,
         "data": "Splitter/Splitter.custom.html"
     },
     {
-        "id": 10,
-        "name": "10. TreeView",
+        "name": "TreeView",
         "open": false,
         "data": "TreeView/TreeView.html"
     },
     {
-        "id": 11,
-        "name": "11. WebView",
+        "name": "WebView",
         "open": false,
         "data": "WebView/WebView.html"
     }
