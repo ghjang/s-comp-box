@@ -7,6 +7,9 @@
   export let compProps = {};
   export let customElementConfigBasePath;
 
+  export let compJsBundleBasePath;
+  export let customCompJsBundleBasePath;
+
   let menuItems = [];
 
   let sCompInfo;
@@ -36,8 +39,20 @@
           : null;
         if (constructorName && compProps[constructorName]) {
           props = { ...props, ...compProps[constructorName] };
+
+          // 'normal'로 번들링된 컴포넌트
+          if (compJsBundleBasePath) {
+            const scriptPath = `${compJsBundleBasePath}/${constructorName}.js`;
+            loadComponentScript(scriptPath);
+          }
         } else if (comp.name && compProps[comp.name]) {
           props = { ...props, ...compProps[comp.name] };
+
+          // 'custom'으로 번들링된 컴포넌트
+          if (customCompJsBundleBasePath) {
+            const scriptPath = `${customCompJsBundleBasePath}/${comp.name}.custom.js`;
+            loadComponentScript(scriptPath);
+          }
         }
 
         menuItems.push({
@@ -56,6 +71,13 @@
         // Do nothing
       }
     });
+  }
+
+  function loadComponentScript(scriptPath) {
+    const scriptElem = document.createElement("script");
+    scriptElem.type = "module";
+    scriptElem.src = scriptPath;
+    document.head.appendChild(scriptElem);
   }
 </script>
 

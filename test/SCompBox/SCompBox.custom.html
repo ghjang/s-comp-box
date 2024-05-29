@@ -22,8 +22,6 @@
         }
     </style>
 
-    <script type="module" src="/build/dev/custom/Marquee.custom.js"></script>
-
     <!--
         FIXME: 개별 번들링된 'PyRun.custom.js' 내부에 's-splitter' 커스텀 태그 정의 코드가 포함되어 있다.
                'SCompBox.custom.js'에서도 'Splitter'를 사용하고 있기 때문에 결과적으로
@@ -40,14 +38,22 @@
                               '.js'를 생성할 경우에 문제된 것으로 보임. (모든) '.svelte'
                               파일들을 '한번의 빌드 설정'에 묶어서 번들링하는 방식에서 문제가
                               사라진 것으로 보임.
+
+               UPDATED: 2024-05-29(수)
+                            ; 아래의 'PyRun.custom.js' 스크립트 로딩을 SCompBox 내에서
+                              설정 JSON 파일의 내용에 따라서 동적으로 로딩하도록 변경함.
+
+                              <script type="module" src="/build/dev/custom/PyRun.custom.js"></script>
     -->
-    <script type="module" src="/build/dev/custom/PyRun.custom.js"></script>
 
     <script type="module" src="/build/dev/custom/SCompBox.custom.js"></script>
 </head>
 
 <body>
-    <s-comp-box customElementConfigBasePath='/build/dev/custom'></s-comp-box>
+    <!-- FIXME: s-comp-box에 'compProps' 속성을 전달할 방법 정의가 필요하다. -->
+    <s-comp-box customElementConfigBasePath='/build/dev/custom'
+                compJsBundleBasePath='/build/dev/default'
+                customCompJsBundleBasePath='/build/dev/custom'></s-comp-box>
 </body>
 
 </html>

@@ -30,9 +30,6 @@
     </style>
 
     <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
-
-    <script type="module" src="/build/dev/custom/Marquee.custom.js"></script>
-    <script type="module" src="/build/dev/custom/PyRun.custom.js"></script>
 </head>
 
 <body>
@@ -45,6 +42,9 @@
             target: document.querySelector('#s-comp-box-container'),
             props: {
                 customElementConfigBasePath: '/build/dev/default',
+
+                compJsBundleBasePath: '/build/dev/default',
+                customCompJsBundleBasePath: '/build/dev/custom',
 
                 compProps: {
                     Marquee: {
