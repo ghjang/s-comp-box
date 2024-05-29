@@ -1,6 +1,7 @@
 <svelte:options customElement="s-comp-box" />
 
 <script>
+  import { loadScript } from "../common/util.js";
   import SCompInfo from "./SCompInfo.svelte";
   import Floor from "../Floor/Floor.svelte";
 
@@ -43,7 +44,7 @@
           // 'normal'로 번들링된 컴포넌트
           if (compJsBundleBasePath) {
             const scriptPath = `${compJsBundleBasePath}/${constructorName}.js`;
-            loadComponentScript(scriptPath);
+            loadScript(scriptPath);
           }
         } else if (comp.name && compProps[comp.name]) {
           props = { ...props, ...compProps[comp.name] };
@@ -51,7 +52,7 @@
           // 'custom'으로 번들링된 컴포넌트
           if (customCompJsBundleBasePath) {
             const scriptPath = `${customCompJsBundleBasePath}/${comp.name}.custom.js`;
-            loadComponentScript(scriptPath);
+            loadScript(scriptPath);
           }
         }
 
@@ -71,13 +72,6 @@
         // Do nothing
       }
     });
-  }
-
-  function loadComponentScript(scriptPath) {
-    const scriptElem = document.createElement("script");
-    scriptElem.type = "module";
-    scriptElem.src = scriptPath;
-    document.head.appendChild(scriptElem);
   }
 </script>
 
