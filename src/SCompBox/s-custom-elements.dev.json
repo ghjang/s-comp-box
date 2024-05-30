@@ -38,7 +38,7 @@
                 {
                     "link": {
                         "text": "s-comp Component Unit Test",
-                        "url": "http://localhost:5500/test/s-comp.html",
+                        "url": "/test/s-comp.html",
                         "target": "_blank"
                     }
                 },
