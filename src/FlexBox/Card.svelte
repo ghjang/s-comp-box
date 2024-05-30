@@ -35,9 +35,9 @@
   }
 
   function handleKeydown(event) {
-    if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+    if (event.key === "ArrowRight") {
       open = true;
-    } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+    } else if (event.key === "ArrowLeft") {
       open = false;
     }
   }
