@@ -81,6 +81,7 @@
     <li class="node-item">
       <button
         class="toggle-button"
+        tabindex="-1"
         on:click={(e) => {
           toggle(node);
           select(e.target.parentElement.querySelector(".node-name"));
