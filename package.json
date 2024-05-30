@@ -14,7 +14,9 @@
     "prebuild": "rimraf build/dist",
     "build": "rollup -c",
     "prebuild-pages-dist": "rimraf build/dist",
-    "build-pages-dist": "rollup -c"
+    "build-pages-dist": "rollup -c",
+    "precopy-build-to-extension": "rimraf extension/chrome/build extension/chrome/test extension/chrome/vendor",
+    "copy-build-to-extension": "cp -R build extension/chrome && cp -R test extension/chrome && cp -R vendor extension/chrome"
   },
   "keywords": [],
   "author": "",

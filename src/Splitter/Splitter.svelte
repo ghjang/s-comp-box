@@ -1,4 +1,8 @@
-<svelte:options accessors customElement="s-splitter" />
+<!--
+ FIXME: 'accessors'와 같은 속성이 'customElement' 속성 앞에 배치되면 '커스터 요소' 빌드가 되지 않음.
+ 현재 롤업 설정에서 'svelte:options customElement' 문자열을 '.svelte'에서 찾아서 '커스텀 요소' 빌드 여부를 결정하고 있음.
+ -->
+<svelte:options customElement="s-splitter" accessors />
 
 <script>
   import { createEventDispatcher } from "svelte";

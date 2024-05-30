@@ -34,25 +34,10 @@
         </tr>
         <tr>
             <td class="marquee-cell">
-                <script>
-                    const marquee3 = document.createElement('s-marquee');
-                    marquee3.setAttribute('text', 'This is a test marquee with direction ltr.');
-                    marquee3.setAttribute('direction', 'ttb');
-                    marquee3.setAttribute('duration', '3');
-                    marquee3.setAttribute('debug', 'true');
-                    document.write(marquee3.outerHTML);
-                </script>
+                <script src="./Marquee.custom.1.js"></script>
             </td>
             <td id="last-marquee-cell" class="marquee-cell">
-                <script>
-                    const marquee4 = document.createElement('s-marquee');
-                    marquee4.text = 'This is a test marquee with direction btt.';
-                    marquee4.direction = 'btt';
-                    marquee4.duration = 3;
-                    marquee4.debug = true;
-                    const lastMarqueeCell = document.getElementById('last-marquee-cell');
-                    lastMarqueeCell.appendChild(marquee4);
-                </script>
+                <script src="./Marquee.custom.2.js"></script>
             </td>
         </tr>
     </table>
