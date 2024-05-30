@@ -61,7 +61,7 @@
     },
     {
         "name": "PyRun",
-        "data": "PyRun/PyRun.custom.html"
+        "data": "PyRun/PyRun.webview.html"
     },
     {
         "name": "SCompBox",
