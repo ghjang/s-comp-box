@@ -2,38 +2,17 @@
 
 <script>
   import Pyodide from "./Pyodide.svelte";
-  import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
+  import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
+  import Console from "../Console/Console.svelte";
 
   export let pyodideIndexURL = ".";
   export let editorCssBasePath;
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
 
-  const customConsole = {
-    log: (output, autoScrollDown = true) => {
-      if (pyrunConsoleOutputElem) {
-        pyrunConsoleOutputElem.innerHTML += `<div>${output}</div>`;
-        if (autoScrollDown) {
-          pyrunConsoleOutputElem.scrollTop =
-            pyrunConsoleOutputElem.scrollHeight;
-        }
-      }
-    },
-
-    error: (output, autoScrollDown = true) => {
-      if (pyrunConsoleOutputElem) {
-        pyrunConsoleOutputElem.innerHTML += `<div style="color: red;">${output}</div>`;
-        if (autoScrollDown) {
-          pyrunConsoleOutputElem.scrollTop =
-            pyrunConsoleOutputElem.scrollHeight;
-        }
-      }
-    },
-  };
-
   let pyodide;
-  let pyrunConsoleOutputElem;
+  let customConsole;
 
   export const isPyodideLoaded = () => pyodide && pyodide.isLoaded();
 
@@ -94,12 +73,11 @@
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />
-    <div
+    <Console
       slot="bottom"
-      bind:this={pyrunConsoleOutputElem}
-      class="pyrun-console-output"
-      style:height={customConsoleHeight}
-    ></div>
+      bind:this={customConsole}
+      bind:height={customConsoleHeight}
+    />
   </Splitter>
 </div>
 
@@ -110,16 +88,5 @@
     width: 100%;
     height: 100%;
     border: none;
-  }
-
-  .pyrun-console-output {
-    width: 100%;
-    background-color: black;
-    color: lime;
-    padding: 10px;
-    font-family: monospace;
-    white-space: pre-wrap;
-    overflow: auto;
-    box-sizing: border-box;
   }
 </style>

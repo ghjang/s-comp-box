@@ -1,5 +1,9 @@
 [
     {
+        "name": "Console",
+        "data": "Console/Console.html"
+    },
+    {
         "name": "ContextMenu",
         "data": "ContextMenu/ContextMenu.html"
     },
