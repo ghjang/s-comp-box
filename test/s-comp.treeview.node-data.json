@@ -72,6 +72,10 @@
         "data": "Splitter/Splitter.custom.html"
     },
     {
+        "name": "Tab",
+        "data": "Tab/Tab.html"
+    },
+    {
         "name": "TreeView",
         "data": "TreeView/TreeView.html"
     },
