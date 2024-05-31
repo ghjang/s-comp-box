@@ -25,6 +25,11 @@
   let editorContainer;
   let editor;
 
+  export async function update() {
+    await tick();
+    layout();
+  }
+
   export function layout(revealPosition = false) {
     if (editor) {
       const pos = editor.getPosition();
