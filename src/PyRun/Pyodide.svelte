@@ -1,6 +1,6 @@
 <script>
   import { onMount, createEventDispatcher } from "svelte";
-  import * as pyodide from "../../vendor/pyodide/pyodide-core-0.25.1/pyodide.js";
+  import * as _ from "../../vendor/pyodide/pyodide-core-0.25.1/pyodide.js";
 
   export let pyodideIndexURL = ".";
   export let console = globalThis.console;
@@ -22,18 +22,7 @@
       throw new Error("No code to run");
     }
 
-    let retVal;
-    try {
-      retVal = loadedPyodideModule.runPython(`
-        try:
-          ${code}
-        except Exception as e:
-          sys.stderr.write(str(e))
-      `);
-    } catch (error) {
-      console.error(error);
-    }
-    return retVal;
+    return loadedPyodideModule.runPython(code);
   }
 
   onMount(async () => {
