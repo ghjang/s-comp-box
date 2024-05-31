@@ -34,8 +34,18 @@
 </div>
 
 <style lang="scss">
+  $tabs-height: 1.25em;
+
   .tab-view {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+
     .tabs {
+      display: flex;
+      align-items: flex-end;
+      height: $tabs-height;
       background-color: #f0f0f0;
 
       button {
@@ -60,7 +70,7 @@
     .tab-content {
       display: none;
       width: 100%;
-      height: 100vh;
+      height: calc(100% - #{$tabs-height});
 
       &.selected {
         display: block;
