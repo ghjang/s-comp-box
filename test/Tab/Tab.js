@@ -7,7 +7,7 @@ const tab = new Tab({
     props: {
         tabs: [
             {
-                label: "Tab 1",
+                label: "PyRun",
                 component: PyRun,
                 props: {
                     pyodideIndexURL: "/build/dev/vendor/pyodide",
@@ -16,7 +16,29 @@ const tab = new Tab({
                 }
             },
             {
-                label: "두번째 탭"
+                label: "PyRun(1) - Editor",
+                component: PyRun,
+                props: {
+                    pyodideIndexURL: "/build/dev/vendor/pyodide",
+                    editorCssBasePath: "/vendor/monaco-editor/dist-bundle",
+                    code: 'print("From Tab, Hello, Pyodide!")',
+                    autoClearConsole: true
+                }
+
+            },
+            {
+                label: "PyRun(2) - Editor",
+                component: PyRun,
+                props: {
+                    pyodideIndexURL: "/build/dev/vendor/pyodide",
+                    editorCssBasePath: "/vendor/monaco-editor/dist-bundle",
+                    code: 'print("From Tab, Hello, Pyodide!")',
+                    noConsole: true
+                }
+
+            },
+            {
+                label: "PyRun(2) - Console",
             },
             {
             }
