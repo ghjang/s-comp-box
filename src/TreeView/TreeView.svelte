@@ -12,7 +12,6 @@
 
   export const customEvents = ["treeNodeSelected"];
 
-
   const context = initContext();
   $: updateTreeViewState($context);
 
@@ -76,7 +75,7 @@
   }
 </script>
 
-<ul>
+<ul class:topLevelUl={nodeLevel === 0}>
   {#each data as node (node.id)}
     <li class="node-item">
       <button
@@ -132,6 +131,11 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
+
+    &.topLevelUl {
+      height: 100%;
+      overflow: auto;
+    }
 
     .node-item {
       margin-top: 0.2em;
