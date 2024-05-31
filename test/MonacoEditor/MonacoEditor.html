@@ -15,6 +15,11 @@
             margin: 0;
             padding: 0;
         }
+
+        #editor-container {
+            width: 100vw;
+            height: 100vh;
+        }
     </style>
 </head>
 
@@ -28,9 +33,7 @@
             target: document.getElementById('editor-container'),
             props: {
                 cssBasePath: '/vendor/monaco-editor/dist-bundle',
-                value: `print("Hello, World!")`,
-                width: '600px',
-                height: '400px'
+                value: `print("Hello, World!")`
             }
         });
 
