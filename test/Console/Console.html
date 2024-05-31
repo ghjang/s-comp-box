@@ -9,16 +9,31 @@
     <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
 
     <style>
-        #container {
+        #contentWrapper {
+            position: relative;
             width: 50%;
             height: 50vh;
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
             background-color: white;
+        }
+
+        #clearConsoleBtn {
+            position: absolute;
+            right: 0;
         }
     </style>
 </head>
 
 <body>
-    <div id="container"></div>
+    <div id="contentWrapper">
+        <div id="container"></div>
+        <br>
+        <button id="clearConsoleBtn">Clear</button>
+    </div>
 
     <script type="module" src="./Console.js"></script>
 </body>
