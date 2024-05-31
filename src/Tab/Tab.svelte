@@ -49,16 +49,17 @@
       background-color: #f0f0f0;
 
       button {
-        padding: 0.1rem 0.6rem;
+        padding: 0.2em 0.5em;
         border: none;
         border-radius: 0;
         background-color: #d0d0d0;
+        font-size: 0.7em;
         user-select: none;
         clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);
 
         &:focus {
           outline: 1px dotted blue;
-          outline-offset: -3px;
+          outline-offset: -0.3em;
         }
 
         &.selected {
