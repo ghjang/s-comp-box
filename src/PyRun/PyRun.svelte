@@ -10,6 +10,7 @@
   export let editorCssBasePath;
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
+  export let autoClearConsole = false;
 
   let pyodide;
   let customConsole;
@@ -77,6 +78,7 @@
       slot="bottom"
       bind:this={customConsole}
       bind:height={customConsoleHeight}
+      autoClear={autoClearConsole}
     />
   </Splitter>
 </div>
