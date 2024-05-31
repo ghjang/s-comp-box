@@ -1,6 +1,7 @@
 <svelte:options customElement="s-pyrun" />
 
 <script>
+  import { onMount } from "svelte";
   import Pyodide from "./Pyodide.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
@@ -11,9 +12,12 @@
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
   export let autoClearConsole = false;
+  export let noConsole = false;
 
   let pyodide;
+  let editor;
   let customConsole;
+  let customConsoleHeight = "100%";
 
   export const isPyodideLoaded = () => pyodide && pyodide.isLoaded();
 
@@ -38,9 +42,6 @@
     runCode(code);
   }
 
-  let editor;
-  let customConsoleHeight = "100%";
-
   function handlePanelSizeChange(event) {
     if (editor) {
       editor.layout(true);
@@ -50,6 +51,13 @@
     //       스플릿터의 해당 컨텐트 패널의 높이로 커스텀 콘솔의 높이를 고정시킴.
     customConsoleHeight = `${event.detail.panel_1.height}px`;
   }
+
+  onMount(() => {
+    if (noConsole) {
+      editor.layout(true);
+      console.log('layout editor');
+    }
+  });
 </script>
 
 <Pyodide
@@ -60,13 +68,8 @@
 />
 
 <div class="pyrun-box">
-  <Splitter
-    orientation="vertical"
-    content_panel_0_length={"60%"}
-    on:panelSizeChanged={handlePanelSizeChange}
-  >
+  {#if noConsole}
     <MonacoEditor
-      slot="top"
       width="100%"
       height="100%"
       value={code}
@@ -74,13 +77,29 @@
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />
-    <Console
-      slot="bottom"
-      bind:this={customConsole}
-      bind:height={customConsoleHeight}
-      autoClear={autoClearConsole}
-    />
-  </Splitter>
+  {:else}
+    <Splitter
+      orientation="vertical"
+      content_panel_0_length={"60%"}
+      on:panelSizeChanged={handlePanelSizeChange}
+    >
+      <MonacoEditor
+        slot="top"
+        width="100%"
+        height="100%"
+        value={code}
+        cssBasePath={editorCssBasePath}
+        bind:this={editor}
+        on:runCode={handleRunCodeFromEditor}
+      />
+      <Console
+        slot="bottom"
+        bind:this={customConsole}
+        bind:height={customConsoleHeight}
+        autoClear={autoClearConsole}
+      />
+    </Splitter>
+  {/if}
 </div>
 
 <style>

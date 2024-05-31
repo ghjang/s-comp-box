@@ -2,10 +2,10 @@
   import { onMount, createEventDispatcher } from "svelte";
   import * as _ from "../../vendor/pyodide/pyodide-core-0.25.1/pyodide.js";
 
+  const dispatch = createEventDispatcher();
+
   export let pyodideIndexURL = ".";
   export let console = globalThis.console;
-
-  const dispatch = createEventDispatcher();
 
   let loadedPyodideModule;
 
