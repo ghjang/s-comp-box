@@ -1,7 +1,7 @@
 <svelte:options customElement="s-pyrun" />
 
 <script>
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import Pyodide from "./Pyodide.svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
@@ -12,12 +12,6 @@
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
   export let autoClearConsole = false;
-
-  // FIXME: 'noConsole'이 'true'일 때 'editor'가 레이아웃이 제대로 되지 않음.
-  //
-  // 'Tab' 컴포넌트로 테스트시에 확실하게 문제를 확인할 수 있음.
-  // 모나코 에디터 컨테이너 div는 정상적으로 넓이와 높이가 100%로 설정되지만,
-  // 'editor'는 부모 div의 영역을 채우도록 제대로 레이아웃이 되지 않음.
   export let noConsole = false;
 
   let pyodide;
@@ -26,6 +20,13 @@
   let customConsoleHeight = "100%";
 
   export const isPyodideLoaded = () => pyodide && pyodide.isLoaded();
+
+  export const update = async () => {
+    if (editor) {
+      await tick();
+      editor.layout(true);
+    }
+  };
 
   export const runCode = (code = "") => {
     if (pyodide) {
@@ -61,7 +62,6 @@
   onMount(() => {
     if (noConsole) {
       editor.layout(true);
-      console.log('layout editor');
     }
   });
 </script>

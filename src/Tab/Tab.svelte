@@ -3,6 +3,20 @@
 
   export let tabs = [];
   export let selectedTabIndex = 0;
+
+  let tabComponents = [];
+
+
+  function updateSelectedTab(tabIndex) {
+    if (
+      tabComponents[tabIndex] &&
+      typeof tabComponents[tabIndex].update === "function"
+    ) {
+      tabComponents[tabIndex].update();
+    }
+  }
+
+  $: updateSelectedTab(selectedTabIndex);
 </script>
 
 <div class="tab-view">
@@ -24,7 +38,11 @@
       <div class="tab-content" class:selected={selectedTabIndex === index}>
         {#if tab.component}
           {@const props = tab.props || {}}
-          <svelte:component this={tab.component} {...props} />
+          <svelte:component
+            this={tab.component}
+            bind:this={tabComponents[index]}
+            {...props}
+          />
         {:else}
           {JSON.stringify(tab)}
         {/if}
