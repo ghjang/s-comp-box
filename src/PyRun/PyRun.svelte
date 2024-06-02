@@ -33,7 +33,12 @@
       try {
         pyodide.runCode(code);
       } catch (error) {
-        customConsole.error(error);
+        if (customConsole) {
+          customConsole.error(error);
+        } else {
+          console.warn('custom console is not available.');
+          console.error(`Error from PyRun:\n${error.message}`);
+        }
       }
     }
   };
