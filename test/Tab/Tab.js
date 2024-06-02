@@ -5,6 +5,8 @@ import PyRun from '/build/dev/default/PyRun.js';
 const tab = new Tab({
     target: document.getElementById('container'),
     props: {
+        tabTrapFocus: true,
+
         tabs: [
             {
                 label: "PyRun - default",

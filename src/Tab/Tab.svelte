@@ -1,10 +1,66 @@
 <script>
-  import { trapFocus } from "../common/action/trapFocus.js";
+  import FlexBox from "../FlexBox/FlexBox.svelte";
 
   // FIXME: 다수의 '탭'들이 추가될 경우 탭이 잘려서 표시되거나 아예 보이지 않음.
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
+  export let tabTrapFocus = false;
+
+  let tabButtonItems = [];
+  let tabDirection = "row";
+  let tabReverse = false;
+  let tabJustifyContent = "flex-start";
+  let tabAlignItems = "flex-end";
+
+  $: {
+    if (tabs && tabs.length > 0) {
+      tabButtonItems.length = 0;
+
+      tabs.forEach((item, index) => {
+        const itemCopy = { ...item };
+        itemCopy.type = "tabButton";
+        itemCopy.tabPosition = tabPosition;
+        if (itemCopy.label === undefined) {
+          itemCopy.label = `Tab ${index + 1}`;
+        }
+        delete itemCopy.component;
+        delete itemCopy.props;
+        tabButtonItems.push(itemCopy);
+      });
+
+      tabButtonItems = [...tabButtonItems];
+    }
+  }
+
+  $: {
+    switch (tabPosition) {
+      case "top":
+        tabDirection = "row";
+        tabReverse = false;
+        tabJustifyContent = "flex-start";
+        tabAlignItems = "flex-end";
+        break;
+      case "bottom":
+        tabDirection = "row";
+        tabReverse = false;
+        tabJustifyContent = "flex-start";
+        tabAlignItems = "flex-start";
+        break;
+      case "left":
+        tabDirection = "column";
+        tabReverse = true;
+        tabJustifyContent = "flex-end";
+        tabAlignItems = "flex-end";
+        break;
+      case "right":
+        tabDirection = "column";
+        tabReverse = false;
+        tabJustifyContent = "flex-start";
+        tabAlignItems = "flex-start";
+        break;
+    }
+  }
 
   let tabComponents = [];
 
@@ -31,17 +87,17 @@
   class:left={tabPosition === "left"}
   class:right={tabPosition === "right"}
 >
-  <!-- TODO: 'tabs' 버튼 부분을 'ToggleButtonGroup' 컴포넌트로 분리 -->
-  <div class="tabs" use:trapFocus>
-    {#each tabs as tab, index}
-      <button
-        class:selected={index === selectedTabIndex}
-        on:click={() => (selectedTabIndex = index)}
-        on:focus={() => (selectedTabIndex = index)}
-      >
-        {tab.label || `Tab ${index + 1}`}
-      </button>
-    {/each}
+  <div class="tabs">
+    <FlexBox
+      direction={tabDirection}
+      reverse={tabReverse}
+      justifyContent={tabJustifyContent}
+      alignItems={tabAlignItems}
+      enableTrapFocus={tabTrapFocus}
+      items={tabButtonItems}
+      selectedItemIndex={selectedTabIndex}
+      on:itemSelected={({ detail }) => (selectedTabIndex = detail.itemIndex)}
+    />
   </div>
 
   {#if tabs.length > 0}
@@ -74,128 +130,52 @@
     height: 100%;
 
     .tabs {
-      display: flex;
       background-color: #f0f0f0;
-
-      button {
-        border: none;
-        border-radius: 0;
-        background-color: #d0d0d0;
-        font-size: 0.7em;
-        user-select: none;
-
-        &:focus {
-          outline: 1px dotted blue;
-          outline-offset: -0.3em;
-        }
-
-        &.selected {
-          background-color: #b0b0b0;
-        }
-      }
     }
 
     .tab-content {
       display: none;
+      width: 100%;
+      height: 100%;
 
       &.selected {
         display: block;
       }
     }
 
-    &.top {
+    &.top,
+    &.bottom {
       flex-direction: column;
 
       .tabs {
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: flex-end;
         height: $tabs-length;
-
-        button {
-          margin-top: $button-margin;
-          padding: 0.2em 0.5em;
-          clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);
-        }
       }
 
       .tab-content {
-        width: 100%;
         height: calc(100% - $tabs-length);
       }
     }
 
     &.bottom {
       flex-direction: column-reverse;
-
-      .tabs {
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: flex-start;
-        height: $tabs-length;
-
-        button {
-          margin-bottom: $button-margin;
-          padding: 0.2em 0.5em;
-          clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%);
-        }
-      }
-
-      .tab-content {
-        width: 100%;
-        height: calc(100% - $tabs-length);
-      }
     }
 
-    &.left {
+    &.left,
+    &.right {
       flex-direction: row;
 
       .tabs {
-        flex-direction: column-reverse;
-        justify-content: flex-end;
-        align-items: flex-end;
         width: $tabs-length;
         height: auto;
-
-        button {
-          margin-left: $button-margin;
-          padding: 0.5em 0.2em;
-          writing-mode: vertical-rl;
-          transform: rotate(180deg);
-          white-space: nowrap;
-          clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
-        }
       }
 
       .tab-content {
         width: calc(100% - $tabs-length);
-        height: 100%;
       }
     }
 
     &.right {
       flex-direction: row-reverse;
-
-      .tabs {
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: $tabs-length;
-        height: auto;
-
-        button {
-          margin-right: $button-margin;
-          padding: 0.5em 0.2em;
-          writing-mode: vertical-rl;
-          white-space: nowrap;
-          clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
-        }
-      }
-
-      .tab-content {
-        width: calc(100% - $tabs-length);
-        height: 100%;
-      }
     }
   }
 </style>

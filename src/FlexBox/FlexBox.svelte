@@ -19,10 +19,9 @@
 
   export let defaultItemProps = {};
   export let items = [];
+  export let selectedItemIndex = -1;
 
   export const customEvents = ["cardFolding", "itemSelected"];
-
-  let selectedItemIndex = -1;
 
   function handleSelectedItem(event) {
     const { itemIndex } = event.detail;
