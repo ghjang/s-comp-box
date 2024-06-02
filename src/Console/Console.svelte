@@ -8,6 +8,7 @@
   // - 유용한 특수 데이터에 대한 출력 포맷 (예: 표, 그래프, 이미지)
 
   import { onMount } from "svelte";
+  import { preventOverscroll } from "../common/action/preventOverscroll.js";
 
   export let height = "100%";
 
@@ -76,7 +77,12 @@
   });
 </script>
 
-<div class="console-output" bind:this={consoleDiv} style:height></div>
+<div
+  class="console-output"
+  bind:this={consoleDiv}
+  style:height
+  use:preventOverscroll
+></div>
 
 <style>
   .console-output {
