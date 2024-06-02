@@ -7,7 +7,7 @@ const tab = new Tab({
     props: {
         tabs: [
             {
-                label: "PyRun",
+                label: "PyRun - default",
                 component: PyRun,
                 props: {
                     pyodideIndexURL: "/build/dev/vendor/pyodide",
@@ -16,7 +16,7 @@ const tab = new Tab({
                 }
             },
             {
-                label: "PyRun(1) - Editor",
+                label: "PyRun(1) - autoClearConsole",
                 component: PyRun,
                 props: {
                     pyodideIndexURL: "/build/dev/vendor/pyodide",
@@ -45,5 +45,12 @@ const tab = new Tab({
         ]
     }
 });
+
+
+const tabPositionSelect = document.getElementById("tabPosition");
+tabPositionSelect.addEventListener("change", () => {
+    tab.$set({ tabPosition: tabPositionSelect.value });
+});
+
 
 window.addEventListener("beforeunload", () => tab?.$destroy());

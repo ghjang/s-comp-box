@@ -3,9 +3,9 @@
 
   export let tabs = [];
   export let selectedTabIndex = 0;
+  export let tabPosition = "top";
 
   let tabComponents = [];
-
 
   // NOTE: '모나코 에디터'와 같은 특정 컴포넌트는 화면에 보이지 않는 탭에 설정된 상태에서
   //       초기화되었을 경우에 자신의 화면을 정상적으로 'update(layout)'할 수 없는 문제가 있음.
@@ -23,7 +23,13 @@
   $: updateSelectedTab(selectedTabIndex);
 </script>
 
-<div class="tab-view">
+<div
+  class="tab-view"
+  class:top={tabPosition === "top"}
+  class:bottom={tabPosition === "bottom"}
+  class:left={tabPosition === "left"}
+  class:right={tabPosition === "right"}
+>
   <!-- TODO: 'tabs' 버튼 부분을 'ToggleButtonGroup' 컴포넌트로 분리 -->
   <div class="tabs" use:trapFocus>
     {#each tabs as tab, index}
@@ -57,8 +63,10 @@
 
 <style lang="scss">
   $tabs-height: 1.25em;
+  $button-margin: 0.2em;
 
   .tab-view {
+    display: flex;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -66,18 +74,14 @@
 
     .tabs {
       display: flex;
-      align-items: flex-end;
-      height: $tabs-height;
       background-color: #f0f0f0;
 
       button {
-        padding: 0.2em 0.5em;
         border: none;
         border-radius: 0;
         background-color: #d0d0d0;
         font-size: 0.7em;
         user-select: none;
-        clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);
 
         &:focus {
           outline: 1px dotted blue;
@@ -90,10 +94,83 @@
       }
     }
 
+    &.top {
+      flex-direction: column;
+
+      .tabs {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: flex-end;
+        height: $tabs-height;
+
+        button {
+          margin-top: $button-margin;
+          padding: 0.2em 0.5em;
+          clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);
+        }
+      }
+    }
+
+    &.bottom {
+      flex-direction: column-reverse;
+
+      .tabs {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: flex-start;
+        height: $tabs-height;
+
+        button {
+          margin-bottom: $button-margin;
+          padding: 0.2em 0.5em;
+          clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%);
+        }
+      }
+    }
+
+    &.left {
+      flex-direction: row;
+
+      .tabs {
+        flex-direction: column-reverse;
+        justify-content: flex-end;
+        align-items: flex-end;
+        height: auto;
+
+        button {
+          margin-left: $button-margin;
+          padding: 0.5em 0.2em;
+          writing-mode: vertical-rl;
+          transform: rotate(180deg);
+          white-space: nowrap;
+          clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
+        }
+      }
+    }
+
+    &.right {
+      flex-direction: row-reverse;
+
+      .tabs {
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        height: auto;
+
+        button {
+          margin-right: $button-margin;
+          padding: 0.5em 0.2em;
+          writing-mode: vertical-rl;
+          white-space: nowrap;
+          clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
+        }
+      }
+    }
+
     .tab-content {
       display: none;
       width: 100%;
-      height: calc(100% - #{$tabs-height});
+      height: 100%;
 
       &.selected {
         display: block;
