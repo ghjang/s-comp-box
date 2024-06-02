@@ -6,6 +6,7 @@
   export let label = "";
   export let tabPosition = "top";
   export let context = {};
+  export let selected = false;
 </script>
 
 <div
@@ -16,6 +17,7 @@
   class:right={tabPosition === "right"}
 >
   <button
+    class:selected
     on:click={dispatch("tabClicked", context)}
     on:focus={dispatch("tabFocused", context)}
   >

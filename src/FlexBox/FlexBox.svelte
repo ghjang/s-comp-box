@@ -20,7 +20,15 @@
   export let defaultItemProps = {};
   export let items = [];
 
-  export const customEvents = ["cardFolding"];
+  export const customEvents = ["cardFolding", "itemSelected"];
+
+  let selectedItemIndex = -1;
+
+  function handleSelectedItem(event) {
+    const { itemIndex } = event.detail;
+    selectedItemIndex = itemIndex;
+    dispatch("itemSelected", event.detail);
+  }
 </script>
 
 <div
@@ -48,9 +56,10 @@
     {:else if type === "tabButton"}
       <TabButton
         {...itemProps}
-        context={{ itemIndex: index, item }}
-        on:tabClicked
-        on:tabFocused
+        context={{ itemIndex: index, ...item }}
+        selected={selectedItemIndex === index}
+        on:tabClicked={handleSelectedItem}
+        on:tabFocused={handleSelectedItem}
       />
     {:else if deleted}
       {@html JSON.stringify({ type: type, ...itemProps })}

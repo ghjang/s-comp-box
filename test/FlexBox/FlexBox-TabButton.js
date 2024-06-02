@@ -100,12 +100,8 @@ const flexBoxRight = new FlexBox({
 });
 
 
-flexBoxTop.$on('tabClicked', (e) => {
-    console.log('flexBoxTop tabClicked', e.detail);
-});
-
-flexBoxTop.$on('tabFocused', (e) => {
-    console.log('flexBoxTop tabFocused', e.detail);
+flexBoxTop.$on('itemSelected', (e) => {
+    console.log('flexBoxTop itemSelected', e.detail);
 });
 
 
