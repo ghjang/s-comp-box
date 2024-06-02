@@ -1,3 +1,5 @@
+// '마우스'나 '트랙패드'로 HTML 노드의 '경계' 부분에서 스크롤을 시도할 때 기본적으로 부모 노드
+// 영역까지 스크롤을 시도하는 '기본 동작'을 막아주는 '스벨트 액션'이다.
 export function preventOverscroll(node) {
     function handleWheel(event) {
         // 스크롤 방향이 아래이고 스크롤이 맨 아래에 도달한 경우
