@@ -22,6 +22,14 @@
             {
                 "name": "Foldable Card",
                 "data": "FlexBox/FlexBox-Foldable_Card.html"
+            },
+            {
+                "name": "TabButton",
+                "data": "FlexBox/FlexBox-TabButton.html"
+            },
+            {
+                "name": "TabButton(reverse)",
+                "data": "FlexBox/FlexBox-TabButton.reverse.html"
             }
         ]
     },

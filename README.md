@@ -7,6 +7,7 @@ Some Svelte components are here:
 1. FlexBox
    * Bubble
    * Card: Normal and Foldable
+   * TabButton: For use with Tab component
 1. Floor
 1. marquee
 1. MonacoEditor
