@@ -2,6 +2,7 @@
 
 <script>
   import { createEventDispatcher } from "svelte";
+  import { conditionalTrapFocus } from "../common/action/trapFocus.js";
 
   const dispatch = createEventDispatcher();
 
@@ -14,6 +15,8 @@
   export let justifyContent = "flex-start";
   export let alignItems = "flex-start";
 
+  export let enableTrapFocus = false;
+
   export let defaultItemProps = {};
   export let items = [];
 
@@ -25,6 +28,7 @@
   style:flex-direction={reverse ? `${direction}-reverse` : direction}
   style:justify-content={justifyContent}
   style:align-items={alignItems}
+  use:conditionalTrapFocus={{ predicate: enableTrapFocus }}
 >
   {#each items as item, index}
     {@const itemProps = { ...defaultItemProps, ...item }}

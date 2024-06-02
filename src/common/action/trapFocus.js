@@ -44,3 +44,18 @@ export function trapFocus(node) {
         }
     };
 }
+
+
+export function conditionalTrapFocus(node, { predicate }) {
+    let shouldTrapFocus;
+
+    if (typeof predicate === 'function') {
+        shouldTrapFocus = predicate();
+    } else {
+        shouldTrapFocus = predicate;
+    }
+
+    if (shouldTrapFocus) {
+        return trapFocus(node);
+    }
+}
