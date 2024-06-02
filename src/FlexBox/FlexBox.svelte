@@ -46,7 +46,12 @@
           })}
       />
     {:else if type === "tabButton"}
-      <TabButton {...itemProps} />
+      <TabButton
+        {...itemProps}
+        context={{ itemIndex: index, item }}
+        on:tabClicked
+        on:tabFocused
+      />
     {:else if deleted}
       {@html JSON.stringify({ type: type, ...itemProps })}
     {/if}

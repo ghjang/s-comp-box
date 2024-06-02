@@ -1,6 +1,11 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
   export let label = "";
   export let tabPosition = "top";
+  export let context = {};
 </script>
 
 <div
@@ -10,7 +15,12 @@
   class:left={tabPosition === "left"}
   class:right={tabPosition === "right"}
 >
-  <button>{label}</button>
+  <button
+    on:click={dispatch("tabClicked", context)}
+    on:focus={dispatch("tabFocused", context)}
+  >
+    {label}
+  </button>
 </div>
 
 <style lang="scss">
@@ -28,7 +38,7 @@
     &.top {
       height: $tabs-height;
       flex-direction: row;
-      
+
       align-items: flex-end;
     }
 

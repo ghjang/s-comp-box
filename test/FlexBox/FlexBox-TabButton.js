@@ -42,7 +42,7 @@ const flexBoxBottom = new FlexBox({
         // 'row' 방향의 'flex-box-top' 컨테이너 영역에서 'flex item'을 어디서부터 배치할지 결정한다.
         // 이 경우 'flex-start'로 설정하면 마지막 'flex item'의 배치가 오른쪽에 경계에서 시작해 왼쪽으로 이동한다.
         justifyContent: "flex-end",
-        
+
         // 각 'flex item'의 수직 정렬 방향을 결정. 이 경우 'flex-start'로 설정하면 'flex item'이 위쪽 정렬된다.
         alignItems: "flex-start",
 
@@ -97,6 +97,15 @@ const flexBoxRight = new FlexBox({
 
         items
     }
+});
+
+
+flexBoxTop.$on('tabClicked', (e) => {
+    console.log('flexBoxTop tabClicked', e.detail);
+});
+
+flexBoxTop.$on('tabFocused', (e) => {
+    console.log('flexBoxTop tabFocused', e.detail);
 });
 
 
