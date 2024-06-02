@@ -1,6 +1,7 @@
 <script>
   import { trapFocus } from "../common/action/trapFocus.js";
 
+  // FIXME: 다수의 '탭'들이 추가될 경우 탭이 잘려서 표시되거나 아예 보이지 않음.
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
