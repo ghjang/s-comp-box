@@ -62,7 +62,7 @@
 </div>
 
 <style lang="scss">
-  $tabs-height: 1.25em;
+  $tabs-length: 1.25em;
   $button-margin: 0.2em;
 
   .tab-view {
@@ -94,6 +94,14 @@
       }
     }
 
+    .tab-content {
+      display: none;
+
+      &.selected {
+        display: block;
+      }
+    }
+
     &.top {
       flex-direction: column;
 
@@ -101,13 +109,18 @@
         flex-direction: row;
         justify-content: flex-start;
         align-items: flex-end;
-        height: $tabs-height;
+        height: $tabs-length;
 
         button {
           margin-top: $button-margin;
           padding: 0.2em 0.5em;
           clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%);
         }
+      }
+
+      .tab-content {
+        width: 100%;
+        height: calc(100% - $tabs-length);
       }
     }
 
@@ -118,13 +131,18 @@
         flex-direction: row;
         justify-content: flex-start;
         align-items: flex-start;
-        height: $tabs-height;
+        height: $tabs-length;
 
         button {
           margin-bottom: $button-margin;
           padding: 0.2em 0.5em;
           clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%);
         }
+      }
+
+      .tab-content {
+        width: 100%;
+        height: calc(100% - $tabs-length);
       }
     }
 
@@ -135,6 +153,7 @@
         flex-direction: column-reverse;
         justify-content: flex-end;
         align-items: flex-end;
+        width: $tabs-length;
         height: auto;
 
         button {
@@ -146,6 +165,11 @@
           clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
         }
       }
+
+      .tab-content {
+        width: calc(100% - $tabs-length);
+        height: 100%;
+      }
     }
 
     &.right {
@@ -155,6 +179,7 @@
         flex-direction: column;
         justify-content: flex-start;
         align-items: flex-start;
+        width: $tabs-length;
         height: auto;
 
         button {
@@ -165,15 +190,10 @@
           clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
         }
       }
-    }
 
-    .tab-content {
-      display: none;
-      width: 100%;
-      height: 100%;
-
-      &.selected {
-        display: block;
+      .tab-content {
+        width: calc(100% - $tabs-length);
+        height: 100%;
       }
     }
   }
