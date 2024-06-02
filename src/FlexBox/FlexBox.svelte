@@ -6,6 +6,9 @@
 
   const dispatch = createEventDispatcher();
 
+  // FIXME: 'FlexBox' 컴포넌트내에서 'Bubble', 'Card', 'TabButton' 컴포넌트 명시적 참조 제거
+  // 가능하면 제거할 것.
+  // '스토어'나 '이벤트 등록'용 이벤트를 정의할 수 있을 것 같음.
   import Bubble from "./Bubble.svelte";
   import Card from "./Card.svelte";
   import TabButton from "./TabButton.svelte";
@@ -23,6 +26,8 @@
 
   export const customEvents = ["cardFolding", "itemSelected"];
 
+  // FIXME: 'on:tabClicked' 이벤트 발생시 'on:tabFocused' 이벤트도 함꼐 발생해 'itemSelected'가 2번 발생함.
+  // 가능하면 제거할 것.
   function handleSelectedItem(event) {
     const { itemIndex } = event.detail;
     selectedItemIndex = itemIndex;
