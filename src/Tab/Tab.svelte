@@ -1,66 +1,11 @@
 <script>
-  import FlexBox from "../FlexBox/FlexBox.svelte";
+  import TabButtonGroup from "./TabButtonGroup.svelte";
 
   // FIXME: 다수의 '탭'들이 추가될 경우 탭이 잘려서 표시되거나 아예 보이지 않음.
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
   export let tabTrapFocus = false;
-
-  let tabButtonItems = [];
-  let tabDirection = "row";
-  let tabReverse = false;
-  let tabJustifyContent = "flex-start";
-  let tabAlignItems = "flex-end";
-
-  $: {
-    if (tabs && tabs.length > 0) {
-      tabButtonItems.length = 0;
-
-      tabs.forEach((item, index) => {
-        const itemCopy = { ...item };
-        itemCopy.type = "tabButton";
-        itemCopy.tabPosition = tabPosition;
-        if (itemCopy.label === undefined) {
-          itemCopy.label = `Tab ${index + 1}`;
-        }
-        delete itemCopy.component;
-        delete itemCopy.props;
-        tabButtonItems.push(itemCopy);
-      });
-
-      tabButtonItems = [...tabButtonItems];
-    }
-  }
-
-  $: {
-    switch (tabPosition) {
-      case "top":
-        tabDirection = "row";
-        tabReverse = false;
-        tabJustifyContent = "flex-start";
-        tabAlignItems = "flex-end";
-        break;
-      case "bottom":
-        tabDirection = "row";
-        tabReverse = false;
-        tabJustifyContent = "flex-start";
-        tabAlignItems = "flex-start";
-        break;
-      case "left":
-        tabDirection = "column";
-        tabReverse = true;
-        tabJustifyContent = "flex-end";
-        tabAlignItems = "flex-end";
-        break;
-      case "right":
-        tabDirection = "column";
-        tabReverse = false;
-        tabJustifyContent = "flex-start";
-        tabAlignItems = "flex-start";
-        break;
-    }
-  }
 
   let tabComponents = [];
 
@@ -88,15 +33,12 @@
   class:right={tabPosition === "right"}
 >
   <div class="tabs">
-    <FlexBox
-      direction={tabDirection}
-      reverse={tabReverse}
-      justifyContent={tabJustifyContent}
-      alignItems={tabAlignItems}
-      enableTrapFocus={tabTrapFocus}
-      items={tabButtonItems}
-      selectedItemIndex={selectedTabIndex}
-      on:itemSelected={({ detail }) => (selectedTabIndex = detail.itemIndex)}
+    <TabButtonGroup
+      {tabs}
+      {selectedTabIndex}
+      {tabPosition}
+      {tabTrapFocus}
+      on:tabSelected={({ detail }) => (selectedTabIndex = detail.tabIndex)}
     />
   </div>
 
