@@ -162,12 +162,31 @@ async function runPreActionScript(filePath) {
 
 
 const configs = async () => {
-    const svelteComponentFilePaths = componentDirNames.map(dirName => {
+    const svelteComponentFilePaths = [];
+
+    componentDirNames.forEach(dirName => {
         const componentName = capitalizeFirstLetter(dirName);
-        const filePath = `src/${dirName}/${componentName}.svelte`;
-        const svelteFileContent = fs.readFileSync(filePath, 'utf-8');
-        const hasCustomElementOption = svelteFileContent.includes('<svelte:options customElement');
-        return [filePath, hasCustomElementOption];
+
+        function getComponentFilePath(dirName, componentName) {
+            const filePath = `src/${dirName}/${componentName}.svelte`;
+            const svelteFileContent = fs.readFileSync(filePath, 'utf-8');
+            const hasCustomElementOption = svelteFileContent.includes('<svelte:options customElement');
+            return [filePath, hasCustomElementOption];
+        }
+
+        const buildTargetComponentsTxtFilePath = `src/${dirName}/build_target_components.txt`;
+        if (fs.existsSync(buildTargetComponentsTxtFilePath)) {
+            console.log(`found the build target components file: ${buildTargetComponentsTxtFilePath}`);
+            const buildTargetComponents = fs.readFileSync(buildTargetComponentsTxtFilePath, 'utf-8').split(/\r?\n/).filter(Boolean);
+            buildTargetComponents.forEach(componentName => {
+                console.log(`build target components: ${componentName}`);
+                const filePath = getComponentFilePath(dirName, componentName);
+                svelteComponentFilePaths.push(filePath);
+            });
+        } else {
+            const filePath = getComponentFilePath(dirName, componentName);
+            svelteComponentFilePaths.push(filePath);
+        }
     });
 
     const defaultBuildTargetFiles

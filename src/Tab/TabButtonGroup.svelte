@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import FlexBox from "../FlexBox/FlexBox.svelte";
-  import TabButton from "../TabButton/TabButton.svelte";
+  import TabButton from "./TabButton.svelte";
 
   const dispatch = createEventDispatcher();
 

@@ -156,6 +156,7 @@ extension/chrome/*
 !extension/chrome/manifest.json
 !extension/chrome/background.js
 
+pages/docroot/config/s-custom-elements.json
 pages/docroot/scripts/default/**/*.js
 pages/docroot/scripts/default/**/*.css
 pages/docroot/scripts/default/**/*.json
