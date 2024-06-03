@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import FlexBox from "../FlexBox/FlexBox.svelte";
+  import TabButton from "../TabButton/TabButton.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -21,13 +22,16 @@
 
       tabs.forEach((item, index) => {
         const itemCopy = { ...item };
-        itemCopy.type = "tabButton";
+        itemCopy.component = TabButton;
+        itemCopy.customEvents = ["tabClicked", "tabFocused"];
         itemCopy.tabPosition = tabPosition;
         if (itemCopy.label === undefined) {
           itemCopy.label = `Tab ${index + 1}`;
         }
-        delete itemCopy.component;
         delete itemCopy.props;
+        if (index === selectedTabIndex) {
+          itemCopy.selected = true;
+        }
         tabItems.push(itemCopy);
       });
 
@@ -63,6 +67,12 @@
         break;
     }
   }
+
+  function handleTabButtonEvent(event) {
+    const { detail } = event;
+    detail.tabIndex = detail.context.index;
+    dispatch("tabSelected", detail);
+  }
 </script>
 
 <FlexBox
@@ -72,10 +82,6 @@
   alignItems={tabAlignItems}
   enableTrapFocus={tabTrapFocus}
   items={tabItems}
-  selectedItemIndex={selectedTabIndex}
-  on:itemSelected={({ detail }) => {
-    const { itemIndex, ...detailInfo } = detail;
-    detailInfo.tabIndex = itemIndex;
-    dispatch("tabSelected", detailInfo);
-  }}
+  on:tabClicked={handleTabButtonEvent}
+  on:tabFocused={handleTabButtonEvent}
 />

@@ -1,5 +1,5 @@
-
 import FlexBox from '/build/dev/default/FlexBox.js';
+import Card from '/build/dev/default/Card.js';
 
 const flexBox = new FlexBox({
     target: document.getElementById('flex-box'),
@@ -11,8 +11,10 @@ const flexBox = new FlexBox({
         // 이렇게 일일이 속성을 스타일링 해주는 것보다는 Tailwind CSS를 적용할 수 있는 구조를 만드는 것이
         // 유용할 것 같음.
         defaultItemProps: {
-            type: "card",
+            component: Card,
             foldable: true,
+            customEvents: ["cardFolding"],
+
             width: "300px",
             margin: "1px",
             border: "1px solid #ddd",

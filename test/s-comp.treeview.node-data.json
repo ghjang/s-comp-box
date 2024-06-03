@@ -47,7 +47,7 @@
     },
     {
         "name": "PopUp",
-        "open": true,
+        "open": false,
         "children": [
             {
                 "name": "Alert",

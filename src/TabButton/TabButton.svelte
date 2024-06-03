@@ -1,6 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
+  // FIXME: 'on:tabClicked' 이벤트 발생시 'on:tabFocused' 이벤트도 함꼐 발생해 'itemSelected'가 2번 발생함.
+  // 가능하면 제거할 것.
   const dispatch = createEventDispatcher();
 
   export let label = "";

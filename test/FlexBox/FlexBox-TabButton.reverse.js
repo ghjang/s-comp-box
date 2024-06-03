@@ -1,4 +1,5 @@
 import FlexBox from '/build/dev/default/FlexBox.js';
+import TabButton from '/build/dev/default/TabButton.js';
 
 
 const items = [
@@ -31,7 +32,7 @@ const flexBoxTop = new FlexBox({
         alignItems: "flex-end",
 
         defaultItemProps: {
-            type: "tabButton",
+            component: TabButton,
             tabPosition: "top"
         },
 
@@ -56,7 +57,7 @@ const flexBoxBottom = new FlexBox({
         alignItems: "flex-start",
 
         defaultItemProps: {
-            type: "tabButton",
+            component: TabButton,
             tabPosition: "bottom"
         },
 
@@ -81,7 +82,7 @@ const flexBoxLeft = new FlexBox({
         alignItems: "flex-end",
 
         defaultItemProps: {
-            type: "tabButton",
+            component: TabButton,
             tabPosition: "left"
         },
 
@@ -106,7 +107,7 @@ const flexBoxRight = new FlexBox({
         alignItems: "flex-start",
 
         defaultItemProps: {
-            type: "tabButton",
+            component: TabButton,
             tabPosition: "right"
         },
 

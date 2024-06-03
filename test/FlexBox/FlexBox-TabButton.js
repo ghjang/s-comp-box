@@ -1,4 +1,5 @@
 import FlexBox from '/build/dev/default/FlexBox.js';
+import TabButton from '/build/dev/default/TabButton.js';
 
 
 const items = [
@@ -25,8 +26,9 @@ const flexBoxTop = new FlexBox({
         enableTrapFocus: true,
 
         defaultItemProps: {
-            type: "tabButton",
-            tabPosition: "top"
+            component: TabButton,
+            tabPosition: "top",
+            customEvents: ["tabClicked", "tabFocused"]
         },
 
         items
@@ -47,8 +49,9 @@ const flexBoxBottom = new FlexBox({
         alignItems: "flex-start",
 
         defaultItemProps: {
-            type: "tabButton",
-            tabPosition: "bottom"
+            component: TabButton,
+            tabPosition: "bottom",
+            customEvents: ["tabClicked", "tabFocused"]
         },
 
         items
@@ -69,8 +72,9 @@ const flexBoxLeft = new FlexBox({
         alignItems: "flex-end",
 
         defaultItemProps: {
-            type: "tabButton",
-            tabPosition: "left"
+            component: TabButton,
+            tabPosition: "left",
+            customEvents: ["tabClicked", "tabFocused"]
         },
 
         items
@@ -91,8 +95,9 @@ const flexBoxRight = new FlexBox({
         alignItems: "flex-start",
 
         defaultItemProps: {
-            type: "tabButton",
-            tabPosition: "right"
+            component: TabButton,
+            tabPosition: "right",
+            customEvents: ["tabClicked", "tabFocused"]
         },
 
         items
@@ -100,8 +105,12 @@ const flexBoxRight = new FlexBox({
 });
 
 
-flexBoxTop.$on('itemSelected', (e) => {
-    console.log('flexBoxTop itemSelected', e.detail);
+flexBoxTop.$on('tabClicked', (e) => {
+    console.log('flexBoxTop tabClicked', e.detail);
+});
+
+flexBoxTop.$on('tabFocused', (e) => {
+    console.log('flexBoxTop tabFocused', e.detail);
 });
 
 
