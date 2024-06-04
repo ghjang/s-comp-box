@@ -1,10 +1,9 @@
 <script>
-  import { getContext, setContext, createEventDispatcher } from "svelte";
-  import { writable } from "svelte/store";
+  import { createEventDispatcher } from "svelte";
+  import Tree from "./Tree.svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let nodeLevel = 0;
   export let data = [];
 
   export let openIcon = "▼";
@@ -12,161 +11,107 @@
 
   export const customEvents = ["treeNodeSelected"];
 
-  const context = initContext();
-  $: updateTreeViewState($context);
+  let treeContainer;
+  let tree;
+  let lastSelectRectNodeId;
 
-  function initContext() {
-    let context;
-    if (nodeLevel === 0) {
-      context = writable({
-        maxLevel: 0,
-        selectedNode: null,
-      });
-      setContext("context", context);
-    } else {
-      context = getContext("context");
-      context.update((value) => {
-        if (nodeLevel > value.maxLevel) {
-          value.maxLevel = nodeLevel;
-        }
-        return value;
-      });
-    }
-    return context;
+  // '노드명'이나 노드며 우측의 '빈 공간'을 클릭했을 때 처리
+  function handleTreeNodeSelected(event) {
+    const nodeId = event.detail.id;
+    tree.updateNodeSelected(nodeId);
+
+    // NOTE: 'tabindex="-1"'로 지정된 요소는 '탭' 키를 사용하여 포커스를 이동할 수 없지만,
+    //       'focus()' 메서드를 사용하여 포커스를 설정할 수는 있다.
+    treeContainer.focus();
+
+    dispatch("treeNodeSelected", event.detail);
+
+    lastSelectRectNodeId = nodeId;
   }
 
-  function updateTreeViewState(context) {
-    if (nodeLevel === 0) {
-    } else {
-    }
+  // '노드명' 좌측의 '버튼'을 클릭했을 때 처리
+  function handleTreeNodeButtonClicked(event) {
+    lastSelectRectNodeId = event.detail.id;
+    treeContainer.focus();
   }
 
-  function toggle(nodeData) {
-    nodeData.open = !nodeData.open;
-    data = [...data];
+  function selectRootUlElem() {
+    return treeContainer?.querySelector("ul[data-node-level='0']");
   }
 
-  function select(node) {
-    let prevSelectedNode = $context.selectedNode;
+  // NOTE: '재귀 Tree' 컴포넌트 자체에서 키보드 이벤트를 처리하는 것이
+  //       다소 복잡하므로 키보드 이벤트 처리 부분을 상위 컴포넌트에서 처리하도록 함.
+  function handleKeyUp(event) {
+    const rootUlElem = selectRootUlElem();
 
-    if (prevSelectedNode) {
-      prevSelectedNode.style.backgroundColor = "";
+    switch (event.key) {
+      case "ArrowUp":
+        lastSelectRectNodeId = tree?.moveSelectRectToPrevNode(
+          rootUlElem,
+          lastSelectRectNodeId
+        );
+        break;
+      case "ArrowDown":
+        lastSelectRectNodeId = tree?.moveSelectRectToNextNode(
+          rootUlElem,
+          lastSelectRectNodeId
+        );
+        break;
+      case "ArrowLeft":
+        tree?.closeNode(rootUlElem, lastSelectRectNodeId);
+        break;
+      case "ArrowRight":
+        tree?.openNode(rootUlElem, lastSelectRectNodeId);
+        break;
+      case "Home":
+        lastSelectRectNodeId = tree?.moveSelectRectToFirstNode(rootUlElem);
+        break;
+      case "End":
+        lastSelectRectNodeId = tree?.moveSelectRectToLastNode(rootUlElem);
+        break;
+      case "Enter":
+        tree?.selectNode(rootUlElem, lastSelectRectNodeId);
+        break;
+      case "Escape":
+        clearSelectRect();
+        break;
+      default:
+        break;
     }
 
-    node.style.backgroundColor = "lightblue";
-
-    $context.selectedNode = node;
-  }
-
-  function toggleSelect(event) {
-    let prevSelectedNode = $context.selectedNode;
-
-    if (prevSelectedNode === event.target) {
-      return;
+    function clearSelectRect() {
+      treeContainer.blur();
     }
-
-    if (prevSelectedNode) {
-      prevSelectedNode.style.backgroundColor = "";
-    }
-
-    event.target.style.backgroundColor = "lightblue";
-
-    $context.selectedNode = event.target;
   }
 </script>
 
-<ul class:topLevelUl={nodeLevel === 0}>
-  {#each data as node (node.id)}
-    <li class="node-item">
-      <button
-        class="toggle-button"
-        tabindex="-1"
-        on:click={(e) => {
-          toggle(node);
-          select(e.target.parentElement.querySelector(".node-name"));
-          dispatch("treeNodeSelected", node);
-        }}
-      >
-        {#if node.children && node.children.length > 0}
-          {node.open ? openIcon : closeIcon}
-        {:else}
-          <span class="dummy-toggle-button-span"></span>
-        {/if}
-      </button>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+  bind:this={treeContainer}
+  class="tree-container"
+  tabindex="-1"
+  on:keyup={handleKeyUp}
+  on:focusin={tree?.updateFocusState(true)}
+  on:focusout={tree?.updateFocusState(false)}
+  on:click={treeContainer?.focus()}
+>
+  <Tree
+    bind:this={tree}
+    {data}
+    {openIcon}
+    {closeIcon}
+    on:treeNodeSelected={handleTreeNodeSelected}
+    on:treeNodeButtonClicked={handleTreeNodeButtonClicked}
+  />
+</div>
 
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span
-        class="node-name"
-        on:click={(e) => {
-          toggleSelect(e);
-          dispatch("treeNodeSelected", node);
-        }}
-        on:dblclick|preventDefault|stopPropagation={(e) => {
-          toggle(node);
-          select(e.target);
-        }}
-      >
-        {node.name}
-      </span>
-
-      {#if node.children && node.open}
-        <svelte:self
-          nodeLevel={nodeLevel + 1}
-          data={node.children}
-          on:treeNodeSelected
-        />
-      {/if}
-    </li>
-  {/each}
-
-  <!-- NOTE: 'ul ul' CSS 셀렉터가 코드 상에 명시적으로 보이지 않아서 번들링시에 해당 CSS가 제거되는 문제 workaround -->
-  <li class="dummy" style:display="none">
-    <ul></ul>
-  </li>
-</ul>
-
-<style lang="scss">
-  ul {
-    list-style-type: none;
-    padding: 0;
+<style>
+  .tree-container {
     margin: 0;
-
-    &.topLevelUl {
-      height: 100%;
-      overflow: auto;
-    }
-
-    .node-item {
-      margin-top: 0.2em;
-      user-select: none;
-
-      .toggle-button {
-        border: none;
-        background: none;
-        box-shadow: none;
-        color: inherit;
-        padding: 0;
-        cursor: pointer;
-
-        .dummy-toggle-button-span {
-          display: inline-block;
-          width: 1em;
-        }
-      }
-
-      .node-name {
-        margin: 0;
-        padding-left: 0.2em;
-        padding-right: 0.2em;
-        border-radius: 0.2em;
-      }
-    }
-  }
-
-  ul {
-    ul {
-      margin-left: 1em;
-    }
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    outline: none;
   }
 </style>
