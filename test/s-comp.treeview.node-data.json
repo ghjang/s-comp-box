@@ -88,6 +88,10 @@
         "data": "Tab/Tab.html"
     },
     {
+        "name": "ToggleGroup",
+        "data": "ToggleGroup/ToggleGroup.html"
+    },
+    {
         "name": "TreeView",
         "data": "TreeView/TreeView.html"
     },

@@ -21,6 +21,7 @@ Some Svelte components are here:
 1. SCompBox
 1. Splitter
 1. Tab
+1. ToggleGroup
 1. TreeView
 1. WebView
 
