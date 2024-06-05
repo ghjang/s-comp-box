@@ -1,7 +1,7 @@
 <svelte:options accessors />
 
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { onMount, createEventDispatcher } from "svelte";
   import { conditionalTrapFocus } from "../common/action/trapFocus.js";
 
   const dispatch = createEventDispatcher();
@@ -16,12 +16,13 @@
   export let defaultItemProps = {};
   export let items = [];
 
+  export let autoRegisterCustomEventsFromItemProps = true;
   export const customEvents = [];
 
   let itemInstances = [];
   let unregisterEventHandlers = [];
 
-  $: {
+  function registerCustomEvents() {
     unregisterEventHandlers.forEach((unregister) => unregister());
     unregisterEventHandlers = [];
 
@@ -39,7 +40,10 @@
         eventNames.add(eventName);
 
         const unregister = instance.$on(eventName, (event) => {
-          const eventArg = { ...event.detail, context: { item: items[index], index } };
+          const eventArg = {
+            ...event.detail,
+            context: { item: items[index], index },
+          };
           dispatch(eventName, eventArg);
         });
         unregisterEventHandlers.push(unregister);
@@ -48,6 +52,14 @@
 
     customEvents.push(...eventNames);
   }
+
+  $: autoRegisterCustomEventsFromItemProps && items && registerCustomEvents();
+
+  onMount(() => {
+    if (autoRegisterCustomEventsFromItemProps) {
+      registerCustomEvents();
+    }
+  });
 </script>
 
 <div
@@ -58,7 +70,10 @@
   use:conditionalTrapFocus={{ predicate: enableTrapFocus }}
 >
   {#each items as item, index}
-    {@const { component, customEvents, ...itemProps } = { ...defaultItemProps, ...item }}
+    {@const { component, customEvents, ...itemProps } = {
+      ...defaultItemProps,
+      ...item,
+    }}
     {#if component}
       <svelte:component
         this={component}
