@@ -35,14 +35,10 @@
     treeContainer.focus();
   }
 
-  function selectRootUlElem() {
-    return treeContainer?.querySelector("ul[data-node-level='0']");
-  }
-
   // NOTE: '재귀 Tree' 컴포넌트 자체에서 키보드 이벤트를 처리하는 것이
   //       다소 복잡하므로 키보드 이벤트 처리 부분을 상위 컴포넌트에서 처리하도록 함.
   function handleKeyUp(event) {
-    const rootUlElem = selectRootUlElem();
+    const rootUlElem = treeContainer?.querySelector("ul[data-node-level='0']");
 
     switch (event.key) {
       case "ArrowUp":
