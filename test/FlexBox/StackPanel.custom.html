@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackPanel Component Test</title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        table {
+            width: 100%;
+        }
+
+        td {
+            border: 1px solid black;
+            width: 33.33%;
+            height: 6em;
+        }
+
+        td[colspan] {
+            height: 1em;
+            font-weight: bold;
+            border: none;
+        }
+    </style>
+
+    <script type="module" src="/build/dev/custom/StackPanel.custom.js"></script>
+</head>
+
+<body>
+        <table>
+            <tr>
+                <td colspan="3">Vertical Stack</td>
+            </tr>
+            </tr>
+            <tr>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="left" vAlign="top">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="center" vAlign="top">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="right" vAlign="top">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="left" vAlign="middle">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="center" vAlign="middle">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="right" vAlign="middle">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="left" vAlign="bottom">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="center" vAlign="bottom">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="vertical" hAlign="right" vAlign="bottom">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">Horizontal Stack</td>
+            </tr>
+            <tr>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="left" vAlign="top">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="center" vAlign="top">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="right" vAlign="top">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="left" vAlign="middle">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="center" vAlign="middle">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="right" vAlign="middle">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="left" vAlign="bottom">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="center" vAlign="bottom">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+                <td>
+                    <s-stack-panel direction="horizontal" hAlign="right" vAlign="bottom">
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
+                    </s-stack-panel>
+                </td>
+            </tr>
+        </table>
+</body>
+
+</html>

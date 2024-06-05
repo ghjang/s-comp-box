@@ -19,13 +19,16 @@
   export let autoRegisterCustomEventsFromItemProps = true;
   export const customEvents = [];
 
+  export function clearRegisteredCustomEvents() {
+    unregisterEventHandlers.forEach((unregister) => unregister());
+    unregisterEventHandlers = [];
+  }
+
   let itemInstances = [];
   let unregisterEventHandlers = [];
 
   function registerCustomEvents() {
-    unregisterEventHandlers.forEach((unregister) => unregister());
-    unregisterEventHandlers = [];
-
+    clearRegisteredCustomEvents();
     customEvents.length = 0;
 
     const eventNames = new Set();
@@ -84,6 +87,8 @@
       {@html JSON.stringify({ component: undefined, ...itemProps })}
     {/if}
   {/each}
+
+  <slot />
 </div>
 
 <style>

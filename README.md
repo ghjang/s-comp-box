@@ -20,6 +20,7 @@ Some Svelte components are here:
 1. PyRun
 1. SCompBox
 1. Splitter
+1. StackPanel: A wrapper for FlexBox to make it easier to use.
 1. Tab
 1. ToggleGroup
 1. TreeView

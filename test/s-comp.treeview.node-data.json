@@ -9,7 +9,7 @@
     },
     {
         "name": "FlexBox",
-        "open": true,
+        "open": false,
         "children": [
             {
                 "name": "Bubble",
@@ -82,6 +82,10 @@
     {
         "name": "Splitter",
         "data": "Splitter/Splitter.custom.html"
+    },
+    {
+        "name": "StackPanel",
+        "data": "FlexBox/StackPanel.custom.html"
     },
     {
         "name": "Tab",
