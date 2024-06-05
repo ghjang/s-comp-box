@@ -11,6 +11,7 @@
   import { preventOverscroll } from "../common/action/preventOverscroll.js";
 
   export let height = "100%";
+  export let fontSize = "0.5em";
 
   export let initialOutput = null;
   export let autoClear = false;
@@ -81,18 +82,19 @@
   class="console-output"
   bind:this={consoleDiv}
   style:height
+  style:font-size={fontSize}
   use:preventOverscroll
 ></div>
 
 <style>
   .console-output {
     width: 100%;
-    background-color: black;
-    color: lime;
     padding: 10px;
-    font-family: monospace;
-    white-space: pre-wrap;
     overflow: auto;
     box-sizing: border-box;
+    background-color: black;
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: lime;
   }
 </style>

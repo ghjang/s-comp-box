@@ -13,6 +13,7 @@
   export let runCodeWhenPyodideLoaded = false;
   export let autoClearConsole = false;
   export let noConsole = false;
+  export let consoleFontSize = "0.5em";
 
   let pyodide;
   let editor;
@@ -107,6 +108,7 @@
         slot="bottom"
         bind:this={customConsole}
         bind:height={customConsoleHeight}
+        fontSize={consoleFontSize}
         autoClear={autoClearConsole}
       />
     </Splitter>
