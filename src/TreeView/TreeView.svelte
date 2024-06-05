@@ -13,6 +13,7 @@
 
   let treeContainer;
   let tree;
+  let showSelectRect = false;
   let lastSelectRectNodeId;
 
   // '노드명'이나 노드며 우측의 '빈 공간'을 클릭했을 때 처리
@@ -87,8 +88,8 @@
   class="tree-container"
   tabindex="-1"
   on:keyup={handleKeyUp}
-  on:focusin={tree?.updateFocusState(true)}
-  on:focusout={tree?.updateFocusState(false)}
+  on:focusin={() => (showSelectRect = true)}
+  on:focusout={() => (showSelectRect = false)}
   on:click={treeContainer?.focus()}
 >
   <Tree
@@ -96,6 +97,7 @@
     {data}
     {openIcon}
     {closeIcon}
+    {showSelectRect}
     on:treeNodeSelected={handleTreeNodeSelected}
     on:treeNodeButtonClicked={handleTreeNodeButtonClicked}
   />

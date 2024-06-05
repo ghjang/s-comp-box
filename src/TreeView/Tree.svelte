@@ -11,11 +11,7 @@
   export let openIcon = "▼";
   export let closeIcon = "►";
 
-  export let hasFocus = false;
-
-  export function updateFocusState(parentFocusIn) {
-    hasFocus = parentFocusIn;
-  }
+  export let showSelectRect = false;
 
   export function updateNodeSelected(nodeId) {
     $context.selectedNodeId = nodeId;
@@ -181,7 +177,7 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="node-content"
-        class:select-rect={node.id == $context.curPosNodeId && hasFocus}
+        class:select-rect={node.id == $context.curPosNodeId && showSelectRect}
         data-node-id={node.id}
         data-node-open={node.open}
         on:click={dispatch("treeNodeSelected", node)}
@@ -221,7 +217,7 @@
         <svelte:self
           nodeLevel={nodeLevel + 1}
           data={node.children}
-          {hasFocus}
+          {showSelectRect}
           on:treeNodeSelected
           on:treeNodeButtonClicked
         />
