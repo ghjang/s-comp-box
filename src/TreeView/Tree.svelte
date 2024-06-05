@@ -1,9 +1,18 @@
 <script>
   import { getContext, setContext, createEventDispatcher } from "svelte";
-  import { getFirstNodeId, getLastNodeId, getPrevNodeId, getNextNodeId } from "./tree.dom.js"
+  import {
+    getFirstNodeId,
+    getLastNodeId,
+    getPrevNodeId,
+    getNextNodeId,
+  } from "./tree.dom.js";
   import { writable } from "svelte/store";
 
-  const dispatch = createEventDispatcher();
+  const _dispatch = createEventDispatcher();
+  const dispatch = (type, nodeData) => {
+    $context.lastSelectRectNodeId = nodeData.id;
+    _dispatch(type, nodeData);
+  };
 
   export let nodeLevel = 0;
   export let data = [];
@@ -15,10 +24,11 @@
 
   export function updateNodeSelected(nodeId) {
     $context.selectedNodeId = nodeId;
-    $context.curPosNodeId = nodeId;
+    $context.lastSelectRectNodeId = nodeId;
   }
 
-  export function openNode(rootUlElem, nodeId) {
+  export function openNodeAtSelectRect(rootUlElem) {
+    const nodeId = $context.lastSelectRectNodeId;
     const nodeBtnElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"] button.toggle-button`
     );
@@ -31,7 +41,8 @@
     }
   }
 
-  export function closeNode(rootUlElem, nodeId) {
+  export function closeNodeAtSelectRect(rootUlElem) {
+    const nodeId = $context.lastSelectRectNodeId;
     const nodeBtnElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"] button.toggle-button`
     );
@@ -44,7 +55,8 @@
     }
   }
 
-  export function selectNode(rootUlElem, nodeId) {
+  export function selectNodeAtSelectRect(rootUlElem) {
+    const nodeId = $context.lastSelectRectNodeId;
     const nodeElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"]`
     );
@@ -53,58 +65,44 @@
     }
   }
 
-  export function moveSelectRectToPrevNode(rootUlElem, lastSelectRectNodeId) {
-    if (!lastSelectRectNodeId) {
+  export function moveSelectRectToPrevNode(rootUlElem) {
+    const lastNodeId = $context.lastSelectRectNodeId;
+
+    if (!lastNodeId) {
       const lastNodeId = getLastNodeId(rootUlElem);
-      if (lastNodeId) {
-        updateNodeSelectRect(lastNodeId);
-      }
-      return lastNodeId;
+      updateNodeSelectRect(lastNodeId);
+      return;
     }
 
-    const prevNodeId = getPrevNodeId(rootUlElem, lastSelectRectNodeId);
-    if (prevNodeId) {
-      updateNodeSelectRect(prevNodeId);
-    }
-
-    return prevNodeId ?? lastSelectRectNodeId;
+    const prevNodeId = getPrevNodeId(rootUlElem, lastNodeId);
+    updateNodeSelectRect(prevNodeId);
   }
 
-  export function moveSelectRectToNextNode(rootUlElem, lastSelectRectNodeId) {
-    if (!lastSelectRectNodeId) {
+  export function moveSelectRectToNextNode(rootUlElem) {
+    const lastNodeId = $context.lastSelectRectNodeId;
+
+    if (!lastNodeId) {
       const firstNodeId = getFirstNodeId(rootUlElem);
-      if (firstNodeId) {
-        updateNodeSelectRect(firstNodeId);
-      }
-      return firstNodeId;
+      updateNodeSelectRect(firstNodeId);
+      return;
     }
 
-    const nextNodeId = getNextNodeId(rootUlElem, lastSelectRectNodeId);
-    if (nextNodeId) {
-      updateNodeSelectRect(nextNodeId);
-    }
-
-    return nextNodeId ?? lastSelectRectNodeId;
+    const nextNodeId = getNextNodeId(rootUlElem, lastNodeId);
+    updateNodeSelectRect(nextNodeId);
   }
 
   export function moveSelectRectToFirstNode(rootUlElem) {
     const firstNodeId = getFirstNodeId(rootUlElem);
-    if (firstNodeId) {
-      updateNodeSelectRect(firstNodeId);
-    }
-    return firstNodeId ?? lastSelectRectNodeId;
+    updateNodeSelectRect(firstNodeId);
   }
 
   export function moveSelectRectToLastNode(rootUlElem) {
     const lastNodeId = getLastNodeId(rootUlElem);
-    if (lastNodeId) {
-      updateNodeSelectRect(lastNodeId);
-    }
-    return lastNodeId ?? lastSelectRectNodeId;
+    updateNodeSelectRect(lastNodeId);
   }
 
   function updateNodeSelectRect(nodeId) {
-    $context.curPosNodeId = nodeId;
+    $context.lastSelectRectNodeId = nodeId ?? $context.lastSelectRectNodeId;
   }
 
   function toggleNodeOpenState(nodeData) {
@@ -121,7 +119,7 @@
       context = writable({
         maxLevel: 0,
         selectedNodeId: null,
-        curPosNodeId: null,
+        lastSelectRectNodeId: null,
       });
       setContext("context", context);
     } else {
@@ -177,7 +175,8 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="node-content"
-        class:select-rect={node.id == $context.curPosNodeId && showSelectRect}
+        class:select-rect={node.id == $context.lastSelectRectNodeId &&
+          showSelectRect}
         data-node-id={node.id}
         data-node-open={node.open}
         on:click={dispatch("treeNodeSelected", node)}

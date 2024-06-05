@@ -2,7 +2,9 @@
   import { createEventDispatcher } from "svelte";
   import Tree from "./Tree.svelte";
 
-  const dispatch = createEventDispatcher();
+  // NOTE: '재귀 Tree' 컴포넌트 자체에서 키보드 이벤트를 처리하는 것이
+  //       다소 복잡하므로 키보드 이벤트 처리 부분을 상위 컴포넌트에서 처리하도록 함.
+  import { _handleKeyUp } from "./treeview.keyup.js";
 
   export let data = [];
 
@@ -14,7 +16,9 @@
   let treeContainer;
   let tree;
   let showSelectRect = false;
-  let lastSelectRectNodeId;
+
+  const dispatch = createEventDispatcher();
+  const handleKeyUp = (event) => _handleKeyUp(event, treeContainer, tree);
 
   // '노드명'이나 노드며 우측의 '빈 공간'을 클릭했을 때 처리
   function handleTreeNodeSelected(event) {
@@ -26,59 +30,11 @@
     treeContainer.focus();
 
     dispatch("treeNodeSelected", event.detail);
-
-    lastSelectRectNodeId = nodeId;
   }
 
   // '노드명' 좌측의 '버튼'을 클릭했을 때 처리
   function handleTreeNodeButtonClicked(event) {
-    lastSelectRectNodeId = event.detail.id;
     treeContainer.focus();
-  }
-
-  // NOTE: '재귀 Tree' 컴포넌트 자체에서 키보드 이벤트를 처리하는 것이
-  //       다소 복잡하므로 키보드 이벤트 처리 부분을 상위 컴포넌트에서 처리하도록 함.
-  function handleKeyUp(event) {
-    const rootUlElem = treeContainer?.querySelector("ul[data-node-level='0']");
-
-    switch (event.key) {
-      case "ArrowUp":
-        lastSelectRectNodeId = tree?.moveSelectRectToPrevNode(
-          rootUlElem,
-          lastSelectRectNodeId
-        );
-        break;
-      case "ArrowDown":
-        lastSelectRectNodeId = tree?.moveSelectRectToNextNode(
-          rootUlElem,
-          lastSelectRectNodeId
-        );
-        break;
-      case "ArrowLeft":
-        tree?.closeNode(rootUlElem, lastSelectRectNodeId);
-        break;
-      case "ArrowRight":
-        tree?.openNode(rootUlElem, lastSelectRectNodeId);
-        break;
-      case "Home":
-        lastSelectRectNodeId = tree?.moveSelectRectToFirstNode(rootUlElem);
-        break;
-      case "End":
-        lastSelectRectNodeId = tree?.moveSelectRectToLastNode(rootUlElem);
-        break;
-      case "Enter":
-        tree?.selectNode(rootUlElem, lastSelectRectNodeId);
-        break;
-      case "Escape":
-        clearSelectRect();
-        break;
-      default:
-        break;
-    }
-
-    function clearSelectRect() {
-      treeContainer.blur();
-    }
   }
 </script>
 
