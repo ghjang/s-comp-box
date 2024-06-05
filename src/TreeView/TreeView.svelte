@@ -2,6 +2,8 @@
   import { createEventDispatcher } from "svelte";
   import Tree from "./Tree.svelte";
 
+  // TODO: '트리 노드 텍스트 필털깅 박스' 기능 추가
+
   // NOTE: '재귀 Tree' 컴포넌트 자체에서 키보드 이벤트를 처리하는 것이
   //       다소 복잡하므로 키보드 이벤트 처리 부분을 상위 컴포넌트에서 처리하도록 함.
   import { _handleKeyDown, _handleKeyUp } from "./treeview.key.js";
