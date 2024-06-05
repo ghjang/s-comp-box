@@ -4,7 +4,7 @@
 
   // NOTE: '재귀 Tree' 컴포넌트 자체에서 키보드 이벤트를 처리하는 것이
   //       다소 복잡하므로 키보드 이벤트 처리 부분을 상위 컴포넌트에서 처리하도록 함.
-  import { _handleKeyUp } from "./treeview.keyup.js";
+  import { _handleKeyDown, _handleKeyUp } from "./treeview.key.js";
 
   export let data = [];
 
@@ -18,6 +18,7 @@
   let showSelectRect = false;
 
   const dispatch = createEventDispatcher();
+  const handleKeyDown = (event) => _handleKeyDown(event, treeContainer, tree);
   const handleKeyUp = (event) => _handleKeyUp(event, treeContainer, tree);
 
   // '노드명'이나 노드며 우측의 '빈 공간'을 클릭했을 때 처리
@@ -43,6 +44,7 @@
   bind:this={treeContainer}
   class="tree-container"
   tabindex="-1"
+  on:keydown={handleKeyDown}
   on:keyup={handleKeyUp}
   on:focusin={() => (showSelectRect = true)}
   on:focusout={() => (showSelectRect = false)}
