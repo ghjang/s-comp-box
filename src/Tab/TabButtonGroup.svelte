@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import FlexBox from "../FlexBox/FlexBox.svelte";
+  import StackPanel from "../FlexBox/StackPanel.svelte";
   import TabButton from "./TabButton.svelte";
 
   const dispatch = createEventDispatcher();
@@ -11,10 +11,10 @@
   export let tabTrapFocus = false;
 
   let tabItems = [];
-  let tabDirection = "row";
+  let tabDirection = "horizontal";
   let tabReverse = false;
-  let tabJustifyContent = "flex-start";
-  let tabAlignItems = "flex-end";
+  let tabHAlign = "left";
+  let tabVAlign = "bottom";
 
   $: {
     if (tabs && tabs.length > 0) {
@@ -42,28 +42,28 @@
   $: {
     switch (tabPosition) {
       case "top":
-        tabDirection = "row";
+        tabDirection = "horizontal";
         tabReverse = false;
-        tabJustifyContent = "flex-start";
-        tabAlignItems = "flex-end";
+        tabHAlign = "left";
+        tabVAlign = "bottom";
         break;
       case "bottom":
-        tabDirection = "row";
+        tabDirection = "horizontal";
         tabReverse = false;
-        tabJustifyContent = "flex-start";
-        tabAlignItems = "flex-start";
+        tabHAlign = "left";
+        tabVAlign = "top";
         break;
       case "left":
-        tabDirection = "column";
+        tabDirection = "vertical";
         tabReverse = true;
-        tabJustifyContent = "flex-end";
-        tabAlignItems = "flex-end";
+        tabHAlign = "right";
+        tabVAlign = "top";
         break;
       case "right":
-        tabDirection = "column";
+        tabDirection = "vertical";
         tabReverse = false;
-        tabJustifyContent = "flex-start";
-        tabAlignItems = "flex-start";
+        tabHAlign = "left";
+        tabVAlign = "top";
         break;
     }
   }
@@ -75,11 +75,11 @@
   }
 </script>
 
-<FlexBox
+<StackPanel
   direction={tabDirection}
   reverse={tabReverse}
-  justifyContent={tabJustifyContent}
-  alignItems={tabAlignItems}
+  hAlign={tabHAlign}
+  vAlign={tabVAlign}
   enableTrapFocus={tabTrapFocus}
   items={tabItems}
   on:tabClicked={handleTabButtonEvent}
