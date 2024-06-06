@@ -25,10 +25,12 @@
             },
             {
                 "name": "TabButton",
+                "tooltip": "For use with Tab component",
                 "data": "FlexBox/FlexBox-TabButton.html"
             },
             {
                 "name": "TabButton(reverse)",
+                "tooltip": "For use with Tab component",
                 "data": "FlexBox/FlexBox-TabButton.reverse.html"
             }
         ]
@@ -51,22 +53,27 @@
         "children": [
             {
                 "name": "Alert",
+                "tooltip": "A popup for displaying alert messages to the user.",
                 "data": "PopUp/PopUp.alert.html"
             },
             {
                 "name": "Confirm",
+                "tooltip": "A popup for getting user confirmation on certain actions.",
                 "data": "PopUp/PopUp.confirm.html"
             },
             {
                 "name": "Info",
+                "tooltip": "A popup for displaying information to the user.",
                 "data": "PopUp/PopUp.info.html"
             },
             {
                 "name": "Prompt",
+                "tooltip": "A popup for getting user input.",
                 "data": "PopUp/PopUp.prompt.html"
             },
             {
                 "name": "Custom",
+                "tooltip": "A popup for displaying arbitrary content.",
                 "data": "PopUp/PopUp.custom.html"
             }
         ]
@@ -85,6 +92,7 @@
     },
     {
         "name": "StackPanel",
+        "tooltip": "A wrapper for FlexBox to make it easier to use.",
         "data": "FlexBox/StackPanel.custom.html"
     },
     {
