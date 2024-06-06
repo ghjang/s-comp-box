@@ -55,4 +55,12 @@ tabPositionSelect.addEventListener("change", () => {
 });
 
 
+window.addEventListener('load', function () {
+    var tabPosition = document.getElementById('tabPosition');
+    var container = document.getElementById('container');
+
+    var tabPositionHeight = tabPosition.offsetHeight;
+    container.style.height = 'calc(100vh - ' + tabPositionHeight + 'px)';
+});
+
 window.addEventListener("beforeunload", () => tab?.$destroy());
