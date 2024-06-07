@@ -1,5 +1,4 @@
 <script>
-  import ContextMenu from "../ContextMenuMediator/ContextMenu.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
 
   export let menus = [];
