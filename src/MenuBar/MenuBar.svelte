@@ -9,12 +9,12 @@
   function handMenuNameClick(event, menuIndex) {
     const menuBarRect = menuBar.getBoundingClientRect();
     const menuBtnRect = event.target.getBoundingClientRect();
-    const viewportBottomLeft = {
+    const menuPos = {
       parentBox: menuBar.parentElement,
       x: menuBtnRect.left,
       y: menuBarRect.bottom,
     };
-    contextMenus[menuIndex].showContextMenu(event, true, viewportBottomLeft);
+    contextMenus[menuIndex].showContextMenu(event, true, menuPos);
   }
 </script>
 
