@@ -1,0 +1,86 @@
+[
+    {
+        "name": "Menu 1",
+        "items": [
+            {
+                "action": {
+                    "text": "Menu Item 1"
+                }
+            },
+            {
+                "action": {
+                    "text": "Menu Item 2(second item)"
+                }
+            },
+            {
+                "action": {
+                    "text": "Menu Item 3"
+                }
+            },
+            {
+                "divider": {
+                    "style": ""
+                }
+            },
+            {
+                "subMenu": {
+                    "text": "Menu Item 4",
+                    "items": [
+                        {
+                            "action": {
+                                "text": "Sub Menu Item 1"
+                            }
+                        },
+                        {
+                            "action": {
+                                "text": "Sub Menu Item 2(second item)"
+                            }
+                        },
+                        {
+                            "action": {
+                                "text": "Sub Menu Item 3"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "action": {
+                    "text": "Menu Item 5"
+                }
+            }
+        ]
+    },
+    {
+        "name": "Menu 2",
+        "items": [
+            {
+                "action": {
+                    "text": "Menu Item 6"
+                }
+            },
+            {
+                "subMenu": {
+                    "text": "Menu Item 7",
+                    "items": [
+                        {
+                            "action": {
+                                "text": "Sub Menu Item 1"
+                            }
+                        },
+                        {
+                            "action": {
+                                "text": "Sub Menu Item 2(second item)"
+                            }
+                        },
+                        {
+                            "action": {
+                                "text": "Sub Menu Item 3"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]

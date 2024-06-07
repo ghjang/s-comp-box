@@ -10,6 +10,7 @@ Some Svelte components are here:
    * TabButton: For use with Tab component
 1. Floor
 1. marquee
+1. MenuBar: A menu bar for the top of the window.
 1. MonacoEditor
 1. PopUp
    * Alert: A popup for displaying alert messages to the user.

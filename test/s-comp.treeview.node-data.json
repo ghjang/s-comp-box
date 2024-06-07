@@ -44,6 +44,11 @@
         "data": "marquee/Marquee.custom.html"
     },
     {
+        "name": "MenuBar",
+        "tooltip": "A menu bar for the top of the window.",
+        "data": "MenuBar/MenuBar.html"
+    },
+    {
         "name": "MonacoEditor",
         "data": "MonacoEditor/MonacoEditor.custom.html"
     },

@@ -1,21 +1,29 @@
 <script context="module">
-  let lastShownContextMenuParentBox;
-  let hideLastShownContextMenu;
+  let _lastShownContextMenuParentBox;
+  let _hideLastShownContextMenu;
 
   async function setLastShownContextMenuInfo(
     currentContextMenuParentBox,
     hideCurrentContextMenuFunction
   ) {
-    if (currentContextMenuParentBox === lastShownContextMenuParentBox) {
+    if (currentContextMenuParentBox === _lastShownContextMenuParentBox) {
       return;
     }
 
-    if (typeof hideLastShownContextMenu === "function") {
-      await hideLastShownContextMenu();
+    if (typeof _hideLastShownContextMenu === "function") {
+      await _hideLastShownContextMenu();
     }
 
-    lastShownContextMenuParentBox = currentContextMenuParentBox;
-    hideLastShownContextMenu = hideCurrentContextMenuFunction;
+    _lastShownContextMenuParentBox = currentContextMenuParentBox;
+    _hideLastShownContextMenu = hideCurrentContextMenuFunction;
+  }
+
+  async function hideLastShownContextMenu() {
+    if (typeof _hideLastShownContextMenu === "function") {
+      await _hideLastShownContextMenu();
+    }
+    _lastShownContextMenuParentBox = null;
+    _hideLastShownContextMenu = null;
   }
 </script>
 
@@ -31,8 +39,13 @@
 
   export const isContextMenuVisible = () => menuVisible;
 
-  // '부모 컴포넌트'의 'contextmenu' 이벤트 객체를 받아서 '최상위 컨텍스트 메뉴'를 표시한다.
-  export async function showContextMenu(event) {
+  // NOTE: '부모 컴포넌트'의 'contextmenu' 이벤트 객체를 받아서 '최상위 컨텍스트 메뉴'를 표시하는 방법으로 보통 사용한다.
+  //       또는 임의의 지정한 위치에 '컨텍스트 메뉴'를 표시할 수도 있다.
+  export async function showContextMenu(
+    event,
+    hidePrevContextMenu = false,
+    position = { parentBox: null, x: null, y: null }
+  ) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -45,11 +58,11 @@
     //  'getBoundingClientRect()'로 구한 사각형의 좌표는 'viewport' 기준이다.
     //  'clientX'와 'clientY' 역시 'viewport' 기준이다.
 
-    const parentBox = event.target;
+    const parentBox = position.parentBox ?? event.target;
     const boxRect = parentBox.getBoundingClientRect();
 
-    let x = event.clientX;
-    let y = event.clientY;
+    let x = position.x ?? event.clientX;
+    let y = position.y ?? event.clientY;
 
     if (boxRect.right - x < menuSize.width) {
       x -= menuSize.width;
@@ -63,6 +76,13 @@
     y = Math.max(y, boxRect.top);
 
     menuPos = { x, y };
+
+    if (hidePrevContextMenu) {
+      await hideLastShownContextMenu();
+
+      // NOtE: 마지막으로 보인 컨텍스트 윈도가 '자신'이었다면 '자신'을 화면에 표시하기 위해서 속성 설정이 필요하다.
+      menuVisible = true;
+    }
 
     await setLastShownContextMenuInfo(parentBox, hideContextMenu);
   }
