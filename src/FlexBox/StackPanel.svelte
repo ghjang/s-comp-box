@@ -58,7 +58,7 @@
     }
   }
 
-  function mapAlignProps(hAlign, vAlign) {
+  function mapAlignProps(direction, hAlign, vAlign) {
     const alignMap = {
       top: "flex-start",
       middle: "center",
@@ -91,7 +91,7 @@
     }
   }
 
-  $: mapAlignProps(hAlign, vAlign);
+  $: mapAlignProps(direction, hAlign, vAlign);
 
   let flexBox;
 

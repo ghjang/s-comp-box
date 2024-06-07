@@ -59,6 +59,10 @@ jobs:
           cp build/dist/custom/*.js pages/docroot/scripts/custom/
           cp build/dist/custom/chunks/*.js pages/docroot/scripts/custom/chunks/
 
+      - name: Copy component config files
+        run: |
+          cp build/dist/default/s-comp.list.txt pages/docroot/scripts/default/
+
       - name: Copy component unit test files
         run: |
           REPO_NAME=$(basename $GITHUB_REPOSITORY)

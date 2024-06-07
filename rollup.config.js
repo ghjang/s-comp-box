@@ -161,6 +161,17 @@ async function runPreActionScript(filePath) {
 }
 
 
+function writeSvelteComponentsNameToOutput(targetComponentFilePaths) {
+    const outputDir = production ? 'build/dist/default' : 'build/dev/default';
+    const sCompListFilePath = `${outputDir}/s-comp.list.txt`;
+    const sCompList = targetComponentFilePaths
+        .map(filePath => path.basename(filePath, '.svelte'))
+        .sort()
+        .join('\n');
+    fs.writeFileSync(sCompListFilePath, sCompList);
+}
+
+
 const configs = async () => {
     const svelteComponentFilePaths = [];
 
@@ -197,6 +208,8 @@ const configs = async () => {
     for (const filePath of defaultBuildTargetFiles) {
         await runPreActionScript(filePath);
     }
+
+    writeSvelteComponentsNameToOutput(defaultBuildTargetFiles);
 
     let defaultBuildConfig = createConfig(defaultBuildTargetFiles, false);
     defaultBuildConfig.context = 'globalThis';
