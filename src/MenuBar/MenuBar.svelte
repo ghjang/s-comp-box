@@ -34,6 +34,7 @@
 
 <style lang="scss">
   $menu-text-color: #fff;
+  $secondary-color: #444;
 
   .menu-bar {
     display: flex;
@@ -41,13 +42,13 @@
     align-items: center;
     height: 1em;
     padding: 0;
+    background-color: $secondary-color;
     border-bottom: 0.5px solid #ccc;
     cursor: default;
     font-family: Arial, sans-serif;
 
     .menu-name-btn {
       margin: 0;
-      padding: none;
       border: none;
       background: none;
       cursor: pointer;
