@@ -28,8 +28,12 @@ async function loadAndRegisterComponents() {
         try {
             const module = await import(`/build/dev/default/${componentName}.js`);
 
-            // 기본 export(컴포넌트 클래스)를 등록
-            gSCompMapper.registerComponent(module.default);
+            // NOTE: 기본 export(컴포넌트 클래스)를 등록한다.
+            //
+            //       'module.default', 여기서 '클래스 명'이 'production' 빌드환경에서
+            //       원래의 클래스 이름이 아닌 '단축된 이름'으로 변경되기 때문에 클래스 이름 문자열을
+            //       첫번째 인자로 명시적으로 전달한다.
+            gSCompMapper.registerComponent(componentName, module.default);
         } catch (error) {
             console.error(`Failed to load component ${componentName}:`, error);
         }
