@@ -204,10 +204,10 @@
 </div>
 
 <style lang="scss">
-  @import "./colors.scss";
+  @import "./context-menu.scss";
 
   // FIXME: 'global'로 선언하지 않으면 'context-menu' 내부의 'button' 요소에 'background-color'가 적용되지 않음.
-  // 
+  //
   // 자바스크립트를 이용해 동적으로 추가한 'parent-menu-item-hovered' 클래스가
   // 'global'로 선언되지 않으면 'context-menu' 내부의 'button' 요소에 적용되지 않음.
   // 가능하면 'global'로 선언하지 않고 'context-menu' 내부의 'button' 요소에 직접 적용하는
@@ -216,14 +216,15 @@
   // '서브 메뉴'가 나타나 있는 상황에서 '부모 메뉴'의 해당 '메뉴 항목'을 통해서 '서브 메뉴'가
   // 나타났다는 것을 사용자에게 알려주기 위해 해당 메뉴 항목의 배경색을 변경하는 것이 목적임.
   :global(.context-menu .menu-item > button.parent-menu-item-hovered) {
-    background-color: lighten($secondary-color, 10%) !important;
+    background-color: $context-menu-hover-background-color !important;
   }
 
   .context-menu {
     position: fixed;
     display: block;
-    background-color: $secondary-color;
-    border: 1px solid #ccc;
+    background-color: $context-menu-background-color;
+    border: 1px solid $context-menu-border-color;
+    box-shadow: $context-menu-box-shadow;
     padding: 3px;
     border-radius: 2px;
     font-family: Arial, sans-serif;
@@ -234,7 +235,7 @@
       hr {
         margin: 2px 0;
         border: none;
-        border-top: 1px solid #ccc;
+        border-top: 1px solid $context-menu-border-color;
       }
 
       button {
@@ -250,7 +251,7 @@
         cursor: pointer;
 
         &:hover {
-          background-color: lighten($secondary-color, 10%);
+          background-color: $context-menu-hover-background-color;
         }
 
         &.link-btn:after {

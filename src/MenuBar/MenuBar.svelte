@@ -32,8 +32,7 @@
 </div>
 
 <style lang="scss">
-  $menu-text-color: #fff;
-  $secondary-color: #444;
+  @import "../ContextMenuMediator/context-menu.scss";
 
   .menu-bar {
     display: flex;
@@ -41,8 +40,8 @@
     align-items: center;
     height: 1em;
     padding: 0;
-    background-color: $secondary-color;
-    border-bottom: 0.5px solid #ccc;
+    background-color: $context-menu-background-color;
+    border-bottom: 0.5px solid $context-menu-border-color;
     cursor: default;
     font-family: Arial, sans-serif;
 
@@ -51,7 +50,7 @@
       border: none;
       background: none;
       cursor: pointer;
-      color: $menu-text-color;
+      color: $context-menu-text-color;
       text-align: left;
       font-size: 0.5em;
     }
