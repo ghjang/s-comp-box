@@ -1,5 +1,3 @@
-import '../s-comp.mapping.js';
-
 import ToggleGroup from '/build/dev/default/ToggleGroup.js';
 
 const radioButtonGroup = new ToggleGroup({

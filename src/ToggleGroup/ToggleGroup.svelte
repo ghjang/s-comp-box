@@ -20,27 +20,60 @@
     dispatch("itemActivated", { value: activatedValue, item, itemIndex });
   }
 
+  let isAllComponentsRegistered = false;
   let mapper;
 
-  $: if (mapper && items && items.length > 0) {
-    items.forEach((item) => {
-      if (typeof item.component === "string") {
-        const className = item.component;
-        const registeredComponent = mapper.getRegisteredComponent(className);
-        if (!registeredComponent) {
-          // FIXME: '컴포넌트 로딩'이 지연되서 로딩이 실패하는 경우 처리 추가
-          //
-          // 여러가지 방법이 있을 수 있겠다. 한가지 방법은 '로딩 실패' 'alert'를 띄우고
-          // 잠시후에 다시 시도하도록 유도하는 방법이 있겠다.
-          //
-          // 또는 자동으로 로딩이 성공할때까지 재시도하는 방법도 있겠다.
-          throw new Error(`Component '${className}' not found`);
+  // NOTE: '0.1초' 간격으로 최대 '5초' 동안 컴포넌트를 찾는다.
+  function retryFindComponent(className, maxAttempts = 50) {
+    let attempts = 0;
+    return new Promise((resolve, reject) => {
+      let elapsed = 0;
+      const intervalId = setInterval(() => {
+        let registeredComponent =
+          mapper.getRegisteredComponent(className) ||
+          window.gSCompMapper?.getRegisteredComponent(className);
+        if (registeredComponent) {
+          clearInterval(intervalId);
+          resolve(registeredComponent);
+        } else if (++attempts >= maxAttempts) {
+          clearInterval(intervalId);
+          reject(
+            new Error(
+              `Component '${className}' not found after ${maxAttempts * 0.1} seconds`
+            )
+          );
+        } else {
+          elapsed += 0.1;
+          console.log(
+            `Component '${className}' not found after ${elapsed.toFixed(1)} seconds`
+          );
         }
-        item.component = registeredComponent;
-      }
+      }, 100);
     });
+  }
 
-    items = [...items];
+  // FIXME: 동일 컴포넌트가 여러개 있을 수도 있다. 동시에 각각 로딩여부를 확인할 필요는 없을 듯,...
+  //        중복 컴포넌트를 제거하고 하나씩 점검하도록 수정할 것.
+  $: if (!isAllComponentsRegistered && mapper && items && items.length > 0) {
+    Promise.all(
+      items.map(async (item) => {
+        if (typeof item.component === "string") {
+          const registeredComponent = await retryFindComponent(item.component);
+          item.component = registeredComponent;
+          return item;
+        } else {
+          return Promise.resolve(item);
+        }
+      })
+    )
+      .then((updatedItems) => {
+        items = updatedItems;
+        isAllComponentsRegistered = true;
+      })
+      .catch((error) => {
+        console.error(error);
+        // FIXME: 컴포넌트 로딩 실패시 대처방안 필요. alert??
+      });
   }
 </script>
 

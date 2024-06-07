@@ -7,6 +7,7 @@ document.body.appendChild(gSCompMapperTargetElem);
 
 const gSCompMapper = new ComponentMapper({ target: gSCompMapperTargetElem });
 
+window.gSCompMapper = gSCompMapper;
 window.addEventListener("beforeunload", () => gSCompMapper?.$destroy());
 
 
@@ -40,6 +41,7 @@ async function loadAndRegisterComponents() {
             //       단순히 alias를 지정하는 것이기 때문에 엉뚱한 이름으로 지정할 수 있는 경우가 있어
             //       주의할 필요가 있다.
             gSCompMapper.registerComponent(componentName, module.default);
+            //console.log(`Component '${componentName}' has been loaded and registered.`);
         } catch (error) {
             console.error(`Failed to load component ${componentName}:`, error);
         }
