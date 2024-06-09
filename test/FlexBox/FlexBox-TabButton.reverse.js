@@ -10,11 +10,8 @@ const items = [
     { label: "Feature 5" }
 ];
 
-// TODO: flex 옵션 설정을 이해하기 쉽게 단순화할 수 있는지 고려해볼 것.
-//
-// flex item의 '정렬' 방식이 굉장히 혼동되는 면이 있다.
-// 굳이 'HTML flex'와 같은 방식으로 설정할 필요가 있는지 고민해볼 것.
-// 뭔가 'StackPanel'등으로 아예 재정의를 하는 것도 한가지 방법이 될 수 있을 것 같다.
+// NOTE: flex item의 '정렬' 방식이 굉장히 혼동되는 면이 있다.
+//       별도로 추가한 'FlexBox'의 wrapper인 'StackPanel'을 사용해 특정 상황에서 단순하게 대상을 배치할 수 있다.
 
 const flexBoxTop = new FlexBox({
     target: document.getElementById('flex-box-top'),
