@@ -30,4 +30,8 @@ const radioButtonGroup = new ToggleGroup({
     }
 });
 
+radioButtonGroup.$on("itemActivated", (event) => {
+    console.log("itemActivated", event.detail);
+});
+
 window.addEventListener("beforeunload", () => radioButtonGroup?.$destroy());
