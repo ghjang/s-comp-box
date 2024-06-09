@@ -16,7 +16,10 @@
   let tabHAlign = "left";
   let tabVAlign = "bottom";
 
-  $: {
+  $: updateTabs(tabs, tabPosition, selectedTabIndex);
+  $: updateTabPosition(tabPosition);
+
+  function updateTabs(tabs, tabPosition, selectedTabIndex) {
     if (tabs && tabs.length > 0) {
       tabItems.length = 0;
 
@@ -39,7 +42,7 @@
     }
   }
 
-  $: {
+  function updateTabPosition(tabPosition) {
     switch (tabPosition) {
       case "top":
         tabDirection = "horizontal";
