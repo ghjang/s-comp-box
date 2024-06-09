@@ -22,44 +22,25 @@
 
   let loader;
 
-  function loadComponents(loader, targetItems) {
-    if (!loader || !targetItems || targetItems.length <= 0) {
+  async function loadComponents(loader, targetItems) {
+    if (!loader) {
       return;
     }
 
-    let loadTargetComponentNames = [
-      ...new Set(
-        targetItems
-          .filter((item) => typeof item.component === "string")
-          .map((item) => item.component)
-      ),
-    ];
+    await loader.loadAll(targetItems);
 
-    loadTargetComponentNames = loadTargetComponentNames.filter(
-      (componentName) => {
-        if (!loader.getRegisteredComponent(componentName)) {
-          return componentName;
-        }
+    let needToRerender = false;
+
+    targetItems.forEach((item) => {
+      if (typeof item.component === "string") {
+        item.component = loader.getRegisteredComponent(item.component);
+        needToRerender = true;
       }
-    );
-
-    if (loadTargetComponentNames.length <= 0) {
-      return;
-    }
-
-    Promise.all(
-      loadTargetComponentNames.map(async (componentName) => {
-        await loader.load(componentName);
-      })
-    ).then(() => {
-      targetItems.forEach((item) => {
-        if (typeof item.component === "string") {
-          item.component = loader.getRegisteredComponent(item.component);
-        }
-      });
-
-      items = targetItems;
     });
+
+    if (needToRerender) {
+      items = targetItems;
+    }
   }
 
   $: loadComponents(loader, items);

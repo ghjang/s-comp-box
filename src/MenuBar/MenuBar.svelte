@@ -18,7 +18,7 @@
   }
 </script>
 
-<div bind:this={menuBar} class="menu-bar">
+<nav bind:this={menuBar} class="menu-bar">
   {#each menus as menu, index}
     <button class="menu-name-btn" on:click={(e) => handMenuNameClick(e, index)}>
       {menu.name}
@@ -29,7 +29,7 @@
       on:menuItemClicked
     />
   {/each}
-</div>
+</nav>
 
 <style lang="scss">
   @import "../ContextMenuMediator/context-menu.scss";
