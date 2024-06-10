@@ -10,7 +10,10 @@
   const id = crypto.randomUUID();
 
   function handleRadioButtonClick() {
-    dispatch("itemActivated", { label, value });
+    dispatch("toggleItemChanged", {
+      label,
+      value: activatedValue === value ? null : value,
+    });
   }
 </script>
 
