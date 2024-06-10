@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { tick, createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -9,8 +9,9 @@
 
   export let tabPosition = "top";
 
-  function handleToggleItemChanged(eventName) {
+  async function handleToggleItemChanged(eventName) {
     eventName = value ? "toggleItemChanged" : eventName;
+    await tick();
     dispatch(eventName, { label, value });
   }
 </script>
