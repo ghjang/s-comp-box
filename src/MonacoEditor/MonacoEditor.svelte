@@ -40,6 +40,12 @@
     }
   }
 
+  export function focus() {
+    if (editor) {
+      editor.focus();
+    }
+  }
+
   export function setText(text, formatDocument = false) {
     if (editor) {
       editor.setValue(text);

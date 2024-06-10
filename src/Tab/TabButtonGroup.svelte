@@ -7,7 +7,6 @@
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
-  export let tabTrapFocus = false;
 
   let tabItems = [];
   let tabDirection = "horizontal";
@@ -89,7 +88,6 @@
   reverse={tabReverse}
   hAlign={tabHAlign}
   vAlign={tabVAlign}
-  trapFocus={tabTrapFocus}
   items={tabItems}
   {activatedValue}
   on:toggleItemChanged={handleToggleItemChanged}

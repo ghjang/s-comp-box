@@ -6,7 +6,6 @@ const tab = new Tab({
     target: document.getElementById('container'),
     props: {
         selectedTabIndex: 0,
-        tabTrapFocus: true,
 
         tabs: [
             {

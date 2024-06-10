@@ -22,10 +22,13 @@
 
   export const isPyodideLoaded = () => pyodide && pyodide.isLoaded();
 
-  export const update = async () => {
+  export const update = async (focus = false) => {
     if (editor) {
       await tick();
       editor.layout(true);
+      if (focus) {
+        editor.focus();
+      }
     }
   };
 
@@ -37,7 +40,7 @@
         if (customConsole) {
           customConsole.error(error);
         } else {
-          console.warn('custom console is not available.');
+          console.warn("custom console is not available.");
           console.error(`Error from PyRun:\n${error.message}`);
         }
       }

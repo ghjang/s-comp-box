@@ -5,7 +5,6 @@
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
-  export let tabTrapFocus = false;
 
   let tabComponents = [];
 
@@ -18,26 +17,40 @@
       tabComponents[tabIndex] &&
       typeof tabComponents[tabIndex].update === "function"
     ) {
-      tabComponents[tabIndex].update();
+      const focus = true;
+      tabComponents[tabIndex].update(focus);
     }
   }
 
   $: updateSelectedTab(selectedTabIndex, tabPosition);
+
+  let tabView;
+
+  function handleKeyUp(event) {
+    const index = parseInt(event.key) - 1;
+    if (event.ctrlKey && index >= 0 && index < tabs.length) {
+      tabView.focus();
+      selectedTabIndex = index;
+    }
+  }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+  bind:this={tabView}
   class="tab-view"
   class:top={tabPosition === "top"}
   class:bottom={tabPosition === "bottom"}
   class:left={tabPosition === "left"}
   class:right={tabPosition === "right"}
+  tabindex="-1"
+  on:keyup={handleKeyUp}
 >
   <div class="tabs">
     <TabButtonGroup
       {tabs}
       {selectedTabIndex}
       {tabPosition}
-      {tabTrapFocus}
       on:tabSelected={({ detail }) => (selectedTabIndex = detail.tabIndex)}
     />
   </div>
@@ -70,6 +83,7 @@
     padding: 0;
     width: 100%;
     height: 100%;
+    outline: none;
 
     .tabs {
       background-color: #f0f0f0;
