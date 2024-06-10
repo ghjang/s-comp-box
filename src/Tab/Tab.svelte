@@ -13,7 +13,7 @@
   //       초기화되었을 경우에 자신의 화면을 정상적으로 'update(layout)'할 수 없는 문제가 있음.
   //       이를 해결하기 위해 명시적으로 탭이 선택되었을 때 명시적으로 컴포넌트에 'update' 함수가
   //       존재할 경우에 호출하도록해 workaround함.
-  function updateSelectedTab(tabIndex) {
+  function updateSelectedTab(tabIndex, tabPosition) {
     if (
       tabComponents[tabIndex] &&
       typeof tabComponents[tabIndex].update === "function"
@@ -22,7 +22,7 @@
     }
   }
 
-  $: updateSelectedTab(selectedTabIndex);
+  $: updateSelectedTab(selectedTabIndex, tabPosition);
 </script>
 
 <div

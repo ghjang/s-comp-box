@@ -5,6 +5,7 @@ import PyRun from '/build/dev/default/PyRun.js';
 const tab = new Tab({
     target: document.getElementById('container'),
     props: {
+        selectedTabIndex: 0,
         tabTrapFocus: true,
 
         tabs: [

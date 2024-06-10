@@ -1,5 +1,5 @@
 <script>
-  import { tick, createEventDispatcher } from "svelte";
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -11,7 +11,6 @@
 
   async function handleToggleItemChanged(eventName) {
     eventName = value ? "toggleItemChanged" : eventName;
-    await tick();
     dispatch(eventName, { label, value });
   }
 </script>
@@ -22,7 +21,8 @@
   class:bottom={tabPosition === "bottom"}
   class:left={tabPosition === "left"}
   class:right={tabPosition === "right"}
-  on:focusin={() => handleToggleItemChanged("tabFocused")}
+  tabindex="-1"
+  on:click={() => handleToggleItemChanged("tabClicked")}
 >
   {label}
 </button>
@@ -39,8 +39,7 @@
     white-space: nowrap;
 
     &:focus {
-      outline: 1px dotted blue;
-      outline-offset: -0.3em;
+      outline: none;
     }
 
     &.selected {

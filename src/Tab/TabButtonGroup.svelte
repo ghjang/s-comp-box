@@ -15,10 +15,11 @@
   let tabHAlign = "left";
   let tabVAlign = "bottom";
 
-  $: updateTabs(tabs, tabPosition, selectedTabIndex);
-  $: updateTabPosition(tabPosition);
+  let activatedValue = null;
 
-  function updateTabs(tabs, tabPosition, selectedTabIndex) {
+  $: updateTabs(tabs, selectedTabIndex, tabPosition);
+
+  function updateTabs(tabs, selectedTabIndex, tabPosition) {
     if (tabs && tabs.length > 0) {
       tabItems.length = 0;
 
@@ -36,14 +37,15 @@
           itemCopy.value = `index-${index}`;
         }
 
-        itemCopy.activatedValue =
-          index === selectedTabIndex ? itemCopy.value : null;
-
         tabItems.push(itemCopy);
       });
 
       tabItems = [...tabItems];
     }
+
+    activatedValue = tabItems[selectedTabIndex].value;
+
+    updateTabPosition(tabPosition);
   }
 
   function updateTabPosition(tabPosition) {
@@ -89,5 +91,6 @@
   vAlign={tabVAlign}
   trapFocus={tabTrapFocus}
   items={tabItems}
+  {activatedValue}
   on:toggleItemChanged={handleToggleItemChanged}
 />
