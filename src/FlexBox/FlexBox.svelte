@@ -11,7 +11,7 @@
   export let justifyContent = "flex-start";
   export let alignItems = "flex-start";
 
-  export let enableTrapFocus = false;
+  export let trapFocus = false;
 
   export let defaultItemProps = {};
   export let items = [];
@@ -56,11 +56,15 @@
     customEvents.push(...eventNames);
   }
 
-  $: autoRegisterCustomEventsFromItemProps && items && registerCustomEvents();
+  $: if (autoRegisterCustomEventsFromItemProps && items) {
+    registerCustomEvents();
+    dispatch("customEventsRegistered", { customEvents });
+  }
 
   onMount(() => {
     if (autoRegisterCustomEventsFromItemProps) {
       registerCustomEvents();
+      dispatch("customEventsRegistered", { customEvents });
     }
   });
 </script>
@@ -70,14 +74,14 @@
   style:flex-direction={reverse ? `${direction}-reverse` : direction}
   style:justify-content={justifyContent}
   style:align-items={alignItems}
-  use:conditionalTrapFocus={{ predicate: enableTrapFocus }}
+  use:conditionalTrapFocus={{ predicate: trapFocus }}
 >
   {#each items as item, index}
     {@const { component, customEvents, ...itemProps } = {
       ...defaultItemProps,
       ...item,
     }}
-    {#if component}
+    {#if typeof component === "function"}
       <svelte:component
         this={component}
         bind:this={itemInstances[index]}

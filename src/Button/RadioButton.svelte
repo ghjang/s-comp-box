@@ -28,8 +28,12 @@
   {label}
 </label>
 
-<style>
+<style lang="scss">
   label {
     user-select: none;
+
+    input[type="radio"] {
+      outline: none;
+    }
   }
 </style>

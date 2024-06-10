@@ -23,7 +23,7 @@ const flexBoxTop = new FlexBox({
         // 각 'flex item'의 수직 정렬 방향을 결정. 이 경우 'flex-end'로 설정하면 'flex item'이 아래쪽 정렬된다.
         alignItems: "flex-end",
 
-        enableTrapFocus: true,
+        trapFocus: true,
 
         defaultItemProps: {
             component: TabButton,

@@ -1,7 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import StackPanel from "../FlexBox/StackPanel.svelte";
-  import TabButton from "./TabButton.svelte";
+  import ToggleGroup from "../ToggleGroup/ToggleGroup.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -25,16 +24,21 @@
 
       tabs.forEach((item, index) => {
         const itemCopy = { ...item };
-        itemCopy.component = TabButton;
-        itemCopy.customEvents = ["tabClicked", "tabFocused"];
+        itemCopy.component = "TabButton";
         itemCopy.tabPosition = tabPosition;
+        delete itemCopy.props;
+
         if (itemCopy.label === undefined) {
           itemCopy.label = `Tab ${index + 1}`;
         }
-        delete itemCopy.props;
-        if (index === selectedTabIndex) {
-          itemCopy.selected = true;
+
+        if (itemCopy.value === undefined) {
+          itemCopy.value = `index-${index}`;
         }
+
+        itemCopy.activatedValue =
+          index === selectedTabIndex ? itemCopy.value : null;
+
         tabItems.push(itemCopy);
       });
 
@@ -71,20 +75,19 @@
     }
   }
 
-  function handleTabButtonEvent(event) {
+  function handleToggleItemChanged(event) {
     const { detail } = event;
-    detail.tabIndex = detail.context.index;
+    detail.tabIndex = detail.itemIndex;
     dispatch("tabSelected", detail);
   }
 </script>
 
-<StackPanel
+<ToggleGroup
   direction={tabDirection}
   reverse={tabReverse}
   hAlign={tabHAlign}
   vAlign={tabVAlign}
-  enableTrapFocus={tabTrapFocus}
+  trapFocus={tabTrapFocus}
   items={tabItems}
-  on:tabClicked={handleTabButtonEvent}
-  on:tabFocused={handleTabButtonEvent}
+  on:toggleItemChanged={handleToggleItemChanged}
 />

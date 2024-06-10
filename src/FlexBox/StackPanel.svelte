@@ -18,7 +18,7 @@
   let justifyContent;
   let alignItems;
 
-  export let enableTrapFocus = false;
+  export let trapFocus = false;
 
   export let defaultItemProps = {};
   export let items = [];
@@ -32,10 +32,11 @@
   }
 
   let unregisterEventHandlers = [];
+  let flexBox;
 
-  function registerCustomEventsFrom(flexBox) {
+  function registerCustomEventsFrom(flexBoxCustomEvents) {
     customEvents.length = 0;
-    customEvents.push(...flexBox.customEvents);
+    customEvents.push(...flexBoxCustomEvents);
 
     customEvents.forEach((eventName) => {
       const unregister = flexBox.$on(eventName, (event) => {
@@ -43,6 +44,11 @@
       });
       unregisterEventHandlers.push(unregister);
     });
+  }
+
+  function handleCustomEventsRegistered(event) {
+    clearRegisteredCustomEvents();
+    registerCustomEventsFrom(event.detail.customEvents);
   }
 
   function reverseFlexAlign(align) {
@@ -92,13 +98,6 @@
   }
 
   $: mapAlignProps(direction, hAlign, vAlign);
-
-  let flexBox;
-
-  $: if (flexBox) {
-    clearRegisteredCustomEvents();
-    registerCustomEventsFrom(flexBox);
-  }
 </script>
 
 <FlexBox
@@ -107,10 +106,11 @@
   {reverse}
   {justifyContent}
   {alignItems}
-  {enableTrapFocus}
+  {trapFocus}
   {defaultItemProps}
   {items}
   {autoRegisterCustomEventsFromItemProps}
+  on:customEventsRegistered={handleCustomEventsRegistered}
 >
   <slot />
 </FlexBox>
