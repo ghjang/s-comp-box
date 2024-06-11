@@ -31,9 +31,33 @@
       showMenu(event, menuIndex);
     }
   }
+
+  function handleKeyUp(event) {
+    if (activeMenuIndex === -1) {
+      return;
+    }
+
+    const getMenuBtnElem = (index) =>
+      menuBar?.querySelector(`button[data-button-index="${index}"]`);
+
+    if (event.key === "Escape") {
+      contextMenus[activeMenuIndex].hideContextMenu();
+      deactivateMenuBar();
+    } else if (event.key === "ArrowLeft") {
+      const prevMenuIndex =
+        activeMenuIndex - 1 < 0 ? menus.length - 1 : activeMenuIndex - 1;
+      const targetMenuBtn = getMenuBtnElem(prevMenuIndex);
+      showMenu({ target: targetMenuBtn }, prevMenuIndex);
+    } else if (event.key === "ArrowRight") {
+      const nextMenuIndex =
+        activeMenuIndex + 1 < menus.length ? activeMenuIndex + 1 : 0;
+      const targetMenuBtn = getMenuBtnElem(nextMenuIndex);
+      showMenu({ target: targetMenuBtn }, nextMenuIndex);
+    }
+  }
 </script>
 
-<svelte:window on:click={deactivateMenuBar} />
+<svelte:window on:click={deactivateMenuBar} on:keyup={handleKeyUp} />
 
 <!--
   NOTE: '메뉴 버튼 그룹'은 일종의 'ToggleGroup'으로 볼 수도 있다.
@@ -47,6 +71,7 @@
       <button
         class="menu-name-btn"
         class:activeMenu={activeMenuIndex === index}
+        data-button-index={index}
         on:click={(e) => showMenu(e, index)}
         on:mouseenter={(e) => handleMouseEnter(e, index)}
       >
@@ -76,6 +101,7 @@
       margin: 0;
       border: none;
       background: none;
+      outline: none;
       cursor: pointer;
       color: $context-menu-text-color;
       text-align: left;

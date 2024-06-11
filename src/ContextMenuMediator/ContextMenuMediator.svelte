@@ -46,8 +46,9 @@
     hidePrevContextMenu = false,
     position = { parentBox: null, x: null, y: null }
   ) {
-    event.preventDefault();
-    event.stopPropagation();
+    // NOTE: 'showContextMenu'측에서 'target'값만을 직접 설정한 '유사 event' 객체를 전달할 수도 있다.
+    event.preventDefault && event.preventDefault();
+    event.stopPropagation && event.stopPropagation();
 
     await hideContextMenu();
 
@@ -87,7 +88,7 @@
     await setLastShownContextMenuInfo(parentBox, hideContextMenu);
   }
 
-  async function hideContextMenu() {
+  export async function hideContextMenu() {
     menuVisible = false;
     await tick();
   }

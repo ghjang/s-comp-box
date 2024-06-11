@@ -82,5 +82,20 @@
                 }
             }
         ]
+    },
+    {
+        "name": "Menu 3",
+        "items": [
+            {
+                "action": {
+                    "text": "Menu Item 8"
+                }
+            },
+            {
+                "action": {
+                    "text": "Menu Item 9"
+                }
+            }
+        ]
     }
 ]
