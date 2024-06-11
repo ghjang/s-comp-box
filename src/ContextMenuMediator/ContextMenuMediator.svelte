@@ -1,4 +1,6 @@
 <script context="module">
+  // TODO: 활성화된 컨텍스트 메뉴내에서 키보드 조작으로 메뉴 아이템간 이동 및 선택 기능 추가
+
   let _lastShownContextMenuParentBox;
   let _hideLastShownContextMenu;
 
