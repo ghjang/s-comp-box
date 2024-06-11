@@ -1,5 +1,6 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, setContext } from "svelte";
+  import { writable } from "svelte/store";
   import ComponentLoader from "../ComponentLoader/ComponentLoader.svelte";
   import StackPanel from "../FlexBox/StackPanel.svelte";
 
@@ -14,9 +15,26 @@
   export let defaultItemProps = {};
   export let items = [];
 
+  const contextName = "toggle-group-context";
+  const context = initContext(contextName);
+  $: updateToggleGroupState($context);
+
+  function initContext(ctxtName) {
+    const context = writable({
+      activatedValue: null,
+    });
+    setContext(ctxtName, context);
+    return context;
+  }
+
+  function updateToggleGroupState(context) {
+  }
+
   function handleToggleItemChanged(event) {
-    // NOTE: 'activatedValue' 값의 대입으로 인해
-    //       'renderComponents' 함수 호축 '반응형 블럭'이 '재실행'된다.
+    // NOTE: '토글 그룹'과 관련된 '자식 컴포넌트'에게 '토글 아이템 변경' 이벤트를 전달한다.
+    $context.activatedValue = event.detail.value;
+
+    // 현재 '토글 그룹'에 활성화된 토글 아이템의 값을 설정한다.
     activatedValue = event.detail.value;
 
     dispatch("toggleItemChanged", {
@@ -28,6 +46,7 @@
   let loader;
   let isAllComponentsLoaded = false;
 
+  // NOTE: '스벨트 컴포넌트 클래스'가 포함된 스크립트를 찾아서 동적으로 로딩한다.
   async function loadComponents(loader, targetItems) {
     if (!loader) {
       return;
@@ -48,7 +67,7 @@
     isAllComponentsLoaded = true;
   }
 
-  function renderComponents(targetItems, activatedValue) {
+  function renderComponents(targetItems) {
     for (let i = 0; i < targetItems.length; ++i) {
       const item = targetItems[i];
 
@@ -66,7 +85,6 @@
       }
 
       item.customEvents = ["toggleItemChanged"];
-      item.activatedValue = activatedValue;
     }
 
     // NOTE: 이 대입문은 아래의 'rederComponents' 함수 호출을 하는 '반응형 블럭'을 '재실행'하지 않는다.
@@ -80,7 +98,8 @@
   }
 
   $: !isAllComponentsLoaded && loadComponents(loader, items);
-  $: isAllComponentsLoaded && renderComponents(items, activatedValue);
+  $: isAllComponentsLoaded && renderComponents(items);
+  $: $context.activatedValue = activatedValue;
 </script>
 
 <ComponentLoader bind:this={loader} />

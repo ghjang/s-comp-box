@@ -1,13 +1,24 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
 
   const dispatch = createEventDispatcher();
 
   export let label = "";
   export let value;
-  export let activatedValue = null;
 
   export let tabPosition = "top";
+
+  const contextName = "toggle-group-context";
+  const context = getContext(contextName);
+  $: updateTabButtonState($context);
+
+  function updateTabButtonState(context) {
+    if (!context) {
+      throw new Error(
+        `The component must be used below a <ToggleGroup> parent component.`
+      );
+    }
+  }
 
   async function handleToggleItemChanged(eventName) {
     eventName = value ? "toggleItemChanged" : eventName;
@@ -16,7 +27,7 @@
 </script>
 
 <button
-  class:selected={value === activatedValue}
+  class:selected={value === $context.activatedValue}
   class:top={tabPosition === "top"}
   class:bottom={tabPosition === "bottom"}
   class:left={tabPosition === "left"}

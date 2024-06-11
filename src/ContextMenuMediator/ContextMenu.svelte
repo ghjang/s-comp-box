@@ -11,7 +11,8 @@
   export let menuPos = { x: 0, y: 0 };
   export let menuSize = { width: 0, height: 0 };
 
-  const context = initContext();
+  const contextName = "context-menu-context";
+  const context = initContext(contextName);
   $: updateMenuState($context);
 
   let contextMenu;
@@ -45,16 +46,16 @@
      */
   }
 
-  function initContext() {
+  function initContext(ctxtName) {
     let context;
     if (menuLevel === 0) {
       context = writable({
         maxLevel: 0,
         "level-0": { lastHoveredMenuItem: null },
       });
-      setContext("context", context);
+      setContext(ctxtName, context);
     } else {
-      context = getContext("context");
+      context = getContext(ctxtName);
       context.update((value) => {
         if (menuLevel > value.maxLevel) {
           value.maxLevel = menuLevel;

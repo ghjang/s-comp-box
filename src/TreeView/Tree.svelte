@@ -110,10 +110,11 @@
     data = [...data];
   }
 
-  const context = initContext();
+  const contextName = "tree-context";
+  const context = initContext(contextName);
   $: updateTreeViewState($context);
 
-  function initContext() {
+  function initContext(ctxName) {
     let context;
     if (nodeLevel === 0) {
       context = writable({
@@ -121,9 +122,9 @@
         selectedNodeId: null,
         lastSelectRectNodeId: null,
       });
-      setContext("context", context);
+      setContext(ctxName, context);
     } else {
-      context = getContext("context");
+      context = getContext(ctxName);
       context.update((value) => {
         if (nodeLevel > value.maxLevel) {
           value.maxLevel = nodeLevel;
