@@ -27,8 +27,7 @@
     return context;
   }
 
-  function updateToggleGroupState(context) {
-  }
+  function updateToggleGroupState(context) {}
 
   function handleToggleItemChanged(event) {
     // NOTE: '토글 그룹'과 관련된 '자식 컴포넌트'에게 '토글 아이템 변경' 이벤트를 전달한다.
@@ -113,7 +112,9 @@
     {trapFocus}
     {items}
     on:toggleItemChanged={handleToggleItemChanged}
-  ></StackPanel>
+  >
+    <slot />
+  </StackPanel>
 {:else}
   <!-- FIXME: 컴포넌트가 로딩되고 있다는 것을 어떤 식으로든지 인지 할 수 있게 할 필요가 있다. -->
   <div>Loading...</div>

@@ -6,7 +6,7 @@
   let menuBar;
   let contextMenus = [];
 
-  function handMenuNameClick(event, menuIndex) {
+  function handleMenuNameClick(event, menuIndex) {
     const menuBarRect = menuBar.getBoundingClientRect();
     const menuBtnRect = event.target.getBoundingClientRect();
     const menuPos = {
@@ -20,7 +20,7 @@
 
 <nav bind:this={menuBar} class="menu-bar">
   {#each menus as menu, index}
-    <button class="menu-name-btn" on:click={(e) => handMenuNameClick(e, index)}>
+    <button class="menu-name-btn" on:click={(e) => handleMenuNameClick(e, index)}>
       {menu.name}
     </button>
     <ContextMenuMediator

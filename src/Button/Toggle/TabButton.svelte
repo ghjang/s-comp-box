@@ -28,10 +28,7 @@
 
 <button
   class:selected={value === $context.activatedValue}
-  class:top={tabPosition === "top"}
-  class:bottom={tabPosition === "bottom"}
-  class:left={tabPosition === "left"}
-  class:right={tabPosition === "right"}
+  class={tabPosition}
   tabindex="-1"
   on:click={() => handleToggleItemChanged("tabClicked")}
 >
