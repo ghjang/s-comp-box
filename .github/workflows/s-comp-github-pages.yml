@@ -56,6 +56,9 @@ jobs:
           mkdir -p pages/docroot/resources/monaco-editor
           cp -r build/dist/vendor/monaco-editor/* pages/docroot/resources/monaco-editor/
 
+          mkdir -p pages/docroot/resources/pdfjs
+          cp -r build/dist/vendor/pdfjs/* pages/docroot/resources/pdfjs/
+
       - name: Copy bundled CSS and JS files
         run: |
           mkdir -p pages/docroot/scripts/default pages/docroot/scripts/default/chunks
