@@ -53,6 +53,10 @@
         "data": "MonacoEditor/MonacoEditor.custom.html"
     },
     {
+        "name": "PdfViewer",
+        "data": "PdfViewer/PdfViewer.html"
+    },
+    {
         "name": "PopUp",
         "open": false,
         "children": [
