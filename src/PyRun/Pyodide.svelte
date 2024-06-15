@@ -1,6 +1,6 @@
 <script>
   import { onMount, createEventDispatcher } from "svelte";
-  import * as _ from "../../vendor/pyodide/pyodide-core-0.25.1/pyodide.js";
+  import { loadPyodide } from "../../vendor/pyodide/pyodide-core-0.25.1/pyodide.mjs";
 
   const dispatch = createEventDispatcher();
 
