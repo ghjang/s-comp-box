@@ -165,3 +165,5 @@ pages/docroot/scripts/custom/**/*.css
 pages/docroot/scripts/custom/**/*.json
 
 vendor/monaco-editor/dist-bundle/
+
+!vendor/pdfjs/pdfjs-4.3.136-dist/build
