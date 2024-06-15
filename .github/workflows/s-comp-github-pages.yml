@@ -51,12 +51,10 @@ jobs:
       - name: Copy resources
         run: |
           mkdir -p pages/docroot/resources/pyodide
-          cp -r build/dist/vendor/pyodide pages/docroot/resources/pyodide
+          cp -r build/dist/vendor/pyodide/* pages/docroot/resources/pyodide/
 
           mkdir -p pages/docroot/resources/monaco-editor
-          cp -r build/dist/vendor/monaco-editor pages/docroot/resources/monaco-editor
-
-          ls -R pages/docroot/resources
+          cp -r build/dist/vendor/monaco-editor/* pages/docroot/resources/monaco-editor/
 
       - name: Copy bundled CSS and JS files
         run: |
