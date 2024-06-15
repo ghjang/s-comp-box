@@ -137,6 +137,8 @@ import 'monaco-editor/esm/vs/basic-languages/python/python.contribution.js';
 // import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js';
 // END_LANGUAGES
 
+let workerUrl = './editor.worker.bundle.js';
+
 self.MonacoEnvironment = {
 	getWorkerUrl: function (moduleId, label) {
 		// if (label === 'json') {
@@ -151,7 +153,8 @@ self.MonacoEnvironment = {
 		// if (label === 'typescript' || label === 'javascript') {
 		// 	return './ts.worker.bundle.js';
 		// }
-		return './editor.worker.bundle.js';
+
+		return workerUrl;
 	}
 };
 
@@ -174,6 +177,10 @@ monaco.editor.create(document.getElementById('container'), {
 	language: 'python'
 });
 */
+
+export function setWorkerUrl(url) {
+	workerUrl = url;
+}
 
 export function createMonacoEditor(element, options) {
 	return monaco.editor.create(element, options);

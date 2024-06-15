@@ -8,7 +8,7 @@
   import Console from "../Console/Console.svelte";
 
   export let pyodideIndexURL = ".";
-  export let editorCssBasePath;
+  export let editorResourcePath;
   export let code = "";
   export let runCodeWhenPyodideLoaded = false;
   export let autoClearConsole = false;
@@ -88,7 +88,7 @@
       width="100%"
       height="100%"
       value={code}
-      cssBasePath={editorCssBasePath}
+      resourcePath={editorResourcePath}
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />
@@ -103,7 +103,7 @@
         width="100%"
         height="100%"
         value={code}
-        cssBasePath={editorCssBasePath}
+        resourcePath={editorResourcePath}
         bind:this={editor}
         on:runCode={handleRunCodeFromEditor}
       />
