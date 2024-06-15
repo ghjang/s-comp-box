@@ -21,12 +21,6 @@ if [ -d "${BUILD_DIR}" ]; then
   printf "Copying build directory to destination..."
   cp -r ${BUILD_DIR} ${DEST_DIR}
   echo "done."
-
-  if [ "${NODE_ENV}" = "dist" ]; then
-    printf "Copying monaco-editor-small-python.css to destination..."
-    cp ${BUILD_DIR}/monaco-editor-small-python.css ../../pages/docroot/resources/monaco-editor
-    echo "done."
-  fi
 else
   echo "Error: Build directory ${BUILD_DIR} does not exist."
   exit 1
