@@ -30,6 +30,10 @@
         "data": "Floor/Floor.html"
     },
     {
+        "name": "LaTeXDisplay",
+        "data": "LaTeXDisplay/LaTeXDisplay.html"
+    },
+    {
         "name": "marquee",
         "data": "marquee/Marquee.custom.html"
     },

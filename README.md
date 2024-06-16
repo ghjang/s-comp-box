@@ -9,6 +9,7 @@ Some Svelte components are here:
    * Card: Normal and Foldable
 1. Floor
 1. marquee
+1. LaTeXDisplay: A display for LaTeX
 1. MenuBar: A menu bar for the top of the window
 1. MonacoEditor
 1. PdfViewer: A PDF viewer using 'PDF.js'
