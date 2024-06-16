@@ -7,7 +7,6 @@ Some Svelte components are here:
 1. FlexBox
    * Bubble
    * Card: Normal and Foldable
-   * TabButton: For use with Tab component
 1. Floor
 1. marquee
 1. MenuBar: A menu bar for the top of the window
@@ -24,7 +23,7 @@ Some Svelte components are here:
 1. Splitter
 1. StackPanel: A wrapper for FlexBox to make it easier to use
 1. Tab
-1. ToggleGroup
+1. ToggleGroup: ex.> RadioButton group, TabButton group
 1. TreeView
 1. WebView
 
