@@ -151,6 +151,7 @@ package
 # End of https://www.toptal.com/developers/gitignore/api/node,svelte
 
 build/
+!vendor/pdfjs/pdfjs-4.3.136-dist/build
 
 extension/chrome/*
 !extension/chrome/manifest.json
@@ -165,5 +166,3 @@ pages/docroot/scripts/custom/**/*.css
 pages/docroot/scripts/custom/**/*.json
 
 vendor/monaco-editor/dist-bundle/
-
-!vendor/pdfjs/pdfjs-4.3.136-dist/build

@@ -1,7 +1,17 @@
 <svelte:options accessors />
 
 <script>
-  export let url;
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  export let url = "";
+
+  let iframe;
+
+  export function getContentWindow() {
+    return iframe.contentWindow;
+  }
 
   // TODO: iframe에 로딩되는 웹 페이지와의 '통신'을 위한 방법 정의
   //
@@ -9,7 +19,12 @@
   // - 'cross origin'에 있는 경우(== same origin에 있지 않은 경우), 'postMessage'를 통해 메시지를 주고받아야 한다고 함.
 </script>
 
-<iframe src={url ?? "about:blank"} title="" />
+<iframe
+  bind:this={iframe}
+  src={url ?? "about:blank"}
+  title=""
+  on:load={() => dispatch("webPageLoaded")}
+/>
 
 <style>
   iframe {

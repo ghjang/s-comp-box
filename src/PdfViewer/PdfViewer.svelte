@@ -1,13 +1,31 @@
 <script>
   import WebView from "../WebView/WebView.svelte";
 
-  export let viewerUrl = "";
-  export let pdfUrl = "";
+  export let pdfViewerHtmlUrl = "";
+  export let pdfViewerWorkerUrl = "";
+  export let pdfFileUrl = "";
 
-  let viewerUrlWithPdf = pdfUrl ? `${viewerUrl}?file=${pdfUrl}` : viewerUrl;
+  let pdfViewerPage;
+  let pdfViewerPageLoaded = false;
+
+  $: if (pdfFileUrl && pdfViewerPage && pdfViewerPageLoaded) {
+    const viewerWnd = pdfViewerPage.getContentWindow();
+    viewerWnd.postMessage(
+      { type: "loadPdfFile", pdfFileUrl, workerSrc: pdfViewerWorkerUrl },
+      window.location.origin
+    );
+  }
+
+  function handleWebPageLoaded() {
+    pdfViewerPageLoaded = true;
+  }
 </script>
 
-<WebView url={viewerUrlWithPdf} />
+<WebView
+  bind:this={pdfViewerPage}
+  url={pdfViewerHtmlUrl}
+  on:webPageLoaded={handleWebPageLoaded}
+/>
 
 <style>
 </style>
