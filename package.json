@@ -8,6 +8,7 @@
   },
   "scripts": {
     "bundle-monaco-editor": "cd vendor/monaco-editor && sh bundle.sh dist",
+    "bundle-mathjax": "cd vendor/mathjax && sh bundle.sh dist",
     "predev": "rimraf build/dev",
     "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -35,8 +36,13 @@
     "svelte-preprocess": "^5.1.4"
   },
   "dependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
     "autoprefixer": "^10.4.19",
+    "mathjax": "^3.2.2",
+    "mathjax-full": "^3.2.2",
     "monaco-editor": "^0.47.0",
+    "pdfjs-dist": "^4.3.136",
+    "pyodide": "^0.26.1",
     "rollup-plugin-execute": "^1.1.1",
     "sass": "^1.76.0"
   }
