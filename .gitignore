@@ -166,3 +166,4 @@ pages/docroot/scripts/custom/**/*.css
 pages/docroot/scripts/custom/**/*.json
 
 vendor/monaco-editor/dist-bundle/
+vendor/mathjax/dist-bundle/
