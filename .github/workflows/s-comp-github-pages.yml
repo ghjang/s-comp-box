@@ -62,6 +62,9 @@ jobs:
           mkdir -p pages/docroot/resources/pdfjs
           cp -r build/dist/vendor/pdfjs/* pages/docroot/resources/pdfjs/
 
+          mkdir -p pages/docroot/resources/mathjax
+          cp -r build/dist/vendor/mathjax/* pages/docroot/resources/mathjax/
+
       - name: Copy bundled CSS and JS files
         run: |
           mkdir -p pages/docroot/scripts/default pages/docroot/scripts/default/chunks
@@ -86,6 +89,7 @@ jobs:
             -e "s|/vendor/monaco-editor/dist-bundle|/${REPO_NAME}/resources/monaco-editor|g" \
             -e "s|/build/dev/vendor/pyodide|/${REPO_NAME}/resources/pyodide|g" \
             -e "s|/build/dev/vendor/pdfjs|/${REPO_NAME}/resources/pdfjs|g" \
+            -e "s|/build/dev/vendor/mathjax|/${REPO_NAME}/resources/mathjax|g" \
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" \
             -e "s|customElementConfigBasePath: '/s-comp/scripts/default'|customElementConfigBasePath: '/s-comp/config'|g" \
             -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" {} \;
