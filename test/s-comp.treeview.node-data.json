@@ -90,6 +90,10 @@
         "data": "SCompBox/SCompBox.html"
     },
     {
+        "name": "ScrollingText",
+        "data": "ScrollingText/ScrollingText.html"
+    },
+    {
         "name": "Splitter",
         "data": "Splitter/Splitter.custom.html"
     },

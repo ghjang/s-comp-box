@@ -21,6 +21,7 @@ Some Svelte components are here:
    * Custom: A popup for displaying arbitrary content
 1. PyRun
 1. SCompBox
+1. ScrollingText: 'Star Wars Intro' like scrolling text
 1. Splitter
 1. StackPanel: A wrapper for FlexBox to make it easier to use
 1. Tab
