@@ -20,6 +20,14 @@
             height: 100vh;
             background-color: white;
         }
+
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
     </style>
 </head>
 
@@ -27,6 +35,20 @@
     <div id="container"></div>
 
     <script type="module" src="./ScrollingText.js"></script>
+
+    <audio class="audio-control" autoplay controls>
+        <source src="dark_side_of_the_knight.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const audio = document.querySelector('.audio-control');
+            audio.play().catch(error => {
+                console.error("자동 재생 실패:", error);
+            });
+        });
+    </script>
 </body>
 
 </html>
