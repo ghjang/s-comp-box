@@ -57,7 +57,7 @@
         tabVAlign = "top";
         tabReverse = true;
         break;
-        
+
       default:
         throw new Error(`Invalid tab position: ${tabPosition}`);
     }
@@ -151,6 +151,7 @@
     &.bottom {
       .tabs {
         height: $tabs-length;
+        width: 100%;
       }
 
       .tab-content {
@@ -162,7 +163,7 @@
     &.right {
       .tabs {
         width: $tabs-length;
-        height: auto;
+        height: 100%;
       }
 
       .tab-content {
