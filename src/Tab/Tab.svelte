@@ -67,6 +67,7 @@
 
   let tabView;
 
+  // 'Ctrl + 숫자' 키 입력을 통한 '탭' 선택, 'Ctrl + 1'은 '첫 번째 탭'을 의미함.
   function handleKeyUp(event) {
     const index = parseInt(event.key) - 1;
     if (event.ctrlKey && index >= 0 && index < tabs.length) {
