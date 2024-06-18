@@ -80,11 +80,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   bind:this={tabView}
-  class="tab-view"
-  class:top={tabPosition === "top"}
-  class:bottom={tabPosition === "bottom"}
-  class:left={tabPosition === "left"}
-  class:right={tabPosition === "right"}
+  class="tab-view {tabPosition}"
   tabindex="-1"
   on:keyup={handleKeyUp}
 >
