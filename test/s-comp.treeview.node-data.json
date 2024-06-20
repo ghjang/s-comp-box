@@ -1,5 +1,9 @@
 [
     {
+        "name": "Book",
+        "data": "Book/Book.html"
+    },
+    {
         "name": "Console",
         "data": "Console/Console.html"
     },
