@@ -117,6 +117,7 @@
           data-page-no={pair[1].no}
         >
           {#each pair as page (page.no)}
+            {@const pageNumber = page.no + 1}
             <div
               class="pageContent"
               class:frontPage={page.no % 2 === 1}
@@ -127,7 +128,10 @@
               {:else}
                 {page.content}
               {/if}
-              <div class="page-number">{page.no + 1}</div>
+
+              {#if pageNumber !== 1 && pageNumber !== pages.length}
+                <div class="page-number">{pageNumber}</div>
+              {/if}
             </div>
           {/each}
         </div>
@@ -145,6 +149,7 @@
           data-page-no={pair[1].no}
         >
           {#each pair as page (page.no)}
+            {@const pageNumber = page.no + 1}
             <div
               class="pageContent"
               class:frontPage={page.no % 2 === 0}
@@ -155,7 +160,10 @@
               {:else}
                 {page.content}
               {/if}
-              <div class="page-number">{page.no + 1}</div>
+
+              {#if pageNumber !== 1 && pageNumber !== pages.length}
+                <div class="page-number">{pageNumber}</div>
+              {/if}
             </div>
           {/each}
         </div>
@@ -210,6 +218,7 @@
     border-radius: 0.1em;
     background-color: lightcoral;
     font-size: 1.5em;
+    overflow: hidden;
   }
 
   .leftPageContentStack .pageContent {
