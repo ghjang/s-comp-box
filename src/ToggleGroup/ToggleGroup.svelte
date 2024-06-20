@@ -2,7 +2,7 @@
   import { createEventDispatcher, setContext } from "svelte";
   import { writable } from "svelte/store";
   import ComponentLoader from "../ComponentLoader/ComponentLoader.svelte";
-  import StackPanel from "../FlexBox/StackPanel.svelte";
+  import StackPanel from "../Layout/StackPanel.svelte";
 
   const dispatch = createEventDispatcher();
 

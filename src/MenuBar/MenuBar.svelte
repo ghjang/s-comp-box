@@ -1,5 +1,5 @@
 <script>
-  import StackPanel from "../FlexBox/StackPanel.svelte";
+  import StackPanel from "../Layout/StackPanel.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
 
   export let menus = [];

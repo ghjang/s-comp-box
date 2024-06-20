@@ -8,30 +8,30 @@
         "data": "ContextMenu/ContextMenu.html"
     },
     {
-        "name": "FlexBox",
-        "open": false,
-        "children": [
-            {
-                "name": "Bubble",
-                "data": "FlexBox/FlexBox-Bubble.html"
-            },
-            {
-                "name": "Card",
-                "data": "FlexBox/FlexBox-Card.html"
-            },
-            {
-                "name": "Foldable Card",
-                "data": "FlexBox/FlexBox-Foldable_Card.html"
-            }
-        ]
-    },
-    {
         "name": "Floor",
         "data": "Floor/Floor.html"
     },
     {
         "name": "LaTeXDisplay",
         "data": "LaTeXDisplay/LaTeXDisplay.html"
+    },
+    {
+        "name": "Layout",
+        "open": false,
+        "children": [
+            {
+                "name": "[FlexBox]Bubble",
+                "data": "Layout/FlexBox-Bubble.html"
+            },
+            {
+                "name": "[FlexBox]Card",
+                "data": "Layout/FlexBox-Card.html"
+            },
+            {
+                "name": "[FlexBox]Foldable Card",
+                "data": "Layout/FlexBox-Foldable_Card.html"
+            }
+        ]
     },
     {
         "name": "marquee",

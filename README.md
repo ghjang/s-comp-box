@@ -4,12 +4,13 @@ Some Svelte components are here:
 
 1. Console
 1. ContextMenu
-1. FlexBox
-   * Bubble
-   * Card: Normal and Foldable
 1. Floor
 1. marquee
 1. LaTeXDisplay: A display for LaTeX
+1. Layout
+   * FlexBox
+      * Bubble
+      * Card: Normal and Foldable
 1. MenuBar: A menu bar for the top of the window
 1. MonacoEditor
 1. PdfViewer: A PDF viewer using 'PDF.js'
