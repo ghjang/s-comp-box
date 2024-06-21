@@ -1,14 +1,19 @@
 <script>
   import { writable, derived } from "svelte/store";
 
+  // '페이지 컨텐츠' 원본 목록
   export let pages = [];
+
+  // '페이지 플리핑' 애메이션 관련 속성들
   export let animationDuration = "0.75s";
   export let animationTimingFunction = "ease-in";
 
+  // 'pages'로부터 가공된 내부 구현용 페이지 컨텐츠 목록
   const leftPages = writable([]);
   const rightPages = writable([]);
 
   $: if (pages) {
+    // '1장'이 항상 '앞/뒤' 2개 면을 가지도록 'pages'를 가공
     if (pages.length % 2 !== 0) {
       pages = [...pages, ""];
     }
@@ -24,7 +29,6 @@
     for (let i = 0; i < $leftPages.length; i += 2) {
       pairs.push($leftPages.slice(i, i + 2));
     }
-    console.log("leftPagePairs", pairs);
     return pairs;
   });
 
@@ -33,7 +37,6 @@
     for (let i = 0; i < $rightPages.length; i += 2) {
       pairs.push($rightPages.slice(i, i + 2));
     }
-    console.log("rightPagePairs", pairs);
     return pairs;
   });
 
