@@ -7,8 +7,16 @@
   export let pages = [];
 
   // '페이지 플리핑' 애메이션 관련 속성들
-  export let animationDuration = "0.75s";
-  export let animationTimingFunction = "ease-in";
+  //
+  // NOTE: '사파리, 파이어 폭스' 브라우저에서 '180도 회전 애니메이션' '1번'에 통으로 진행할 경우에
+  //       '90도 회전'까지는 정상이지만, '90도 이상' 회전할 때 '클립핑'이 발생하여 내용이 표시되지 않는 문제가 있다.
+  //       '크롬'에서는 이러한 문제가 발생하지 않는다.
+  //
+  //       이 문제를 해결하기 위해서 '페이지 플리핑' 애니메이션을 '2번'으로 나누어서 진행하고 있다.
+  //       이때 페이지 플리핑 애니메이션의 '속도'가 자연스럽게 하기 위해서 각 단계별로 타이밍 함수를 다르게 설정했다.
+  export let animationDuration = "0.6s";
+  export let animationTimingFunctionFirst = "linear";
+  export let animationTimingFunctionLast = "cubic-bezier(0.55, 0.085, 0.68, 0.53)";
 
   const ctx = createContext();
   onDestroy(() => ctx.destroy());
@@ -27,6 +35,9 @@
   const totalPageCount = ctx.totalPageCount;
   const targetTopPageNo = ctx.animationTargetTopPageNo;
 
+  const firstHalf = ctx.animationFirstHalf;
+  const lastHalf = ctx.animationLastHalf;
+
   // NOTE: '페이지 플리핑' 애니메이션을 '트리거' 하기 위해서
   //       아래와 같이 'flipPageToRight, flipPageToLeft' CSS 클래스를
   //       '반응형'으로 설정하는 방법을 취하고 있다.
@@ -43,12 +54,15 @@
       <div
         class="pageContainer"
         class:flipPageToRight={pair[1].no === $targetTopPageNo}
+        class:firstHalf={$firstHalf}
+        class:lastHalf={$lastHalf}
         use:setPageFlipAnimation={{
           ctx,
           pagePair: pair,
           direction: "ltr",
           animationDuration,
-          animationTimingFunction,
+          animationTimingFunctionFirst,
+          animationTimingFunctionLast
         }}
       >
         {#each pair as page (page.no)}
@@ -66,12 +80,15 @@
       <div
         class="pageContainer"
         class:flipPageToLeft={pair[1].no === $targetTopPageNo}
+        class:firstHalf={$firstHalf}
+        class:lastHalf={$lastHalf}
         use:setPageFlipAnimation={{
           ctx,
           pagePair: pair,
           direction: "rtl",
           animationDuration,
-          animationTimingFunction,
+          animationTimingFunctionFirst,
+          animationTimingFunctionLast
         }}
       >
         {#each pair as page (page.no)}
@@ -99,6 +116,7 @@
     height: calc(100% - 2em);
     transform: translate3d(0, 0, 0); /* NOTE: 'GPU 가속' 유도를 위한 설정 */
     transform-style: preserve-3d; /* NOTE: '3D 변환' 효과 보존 */
+    perspective: 1000px; /* NOTE: '3D 변환' 효과 강도 */
   }
 
   .leftPageRegion,
@@ -130,18 +148,32 @@
     margin: 0;
     padding: 0;
     border: none;
-    backface-visibility: hidden;
+    will-change: transform;
 
     &.flipPageToLeft {
       z-index: 9999;
       transform-origin: left;
-      animation-name: flipPagePair;
+
+      &.firstHalf {
+        animation-name: flipPagePairFirstHalf;
+      }
+
+      &.lastHalf {
+        animation-name: flipPagePairLastHalf;
+      }
     }
 
     &.flipPageToRight {
       z-index: 9999;
       transform-origin: right;
-      animation-name: flipPagePair;
+
+      &.firstHalf {
+        animation-name: flipPagePairFirstHalf;
+      }
+
+      &.lastHalf {
+        animation-name: flipPagePairLastHalf;
+      }
     }
   }
 
@@ -151,12 +183,21 @@
     align-items: center;
   }
 
-  @keyframes flipPagePair {
+  @keyframes flipPagePairFirstHalf {
     from {
       transform: rotateY(0deg);
     }
     to {
-      transform: rotateY(-180deg);
+      transform: rotateY(-90deg);
+    }
+  }
+
+  @keyframes flipPagePairLastHalf {
+    from {
+      transform: rotateY(-90deg);
+    }
+    to {
+      transform: rotateY(0deg);
     }
   }
 </style>

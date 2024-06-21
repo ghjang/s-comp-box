@@ -42,6 +42,7 @@
     background-color: lightcoral;
     font-size: 1.5em;
     overflow: hidden;
+    backface-visibility: hidden;
 
     &.left {
       right: 0;

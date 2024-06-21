@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import { writable, derived, get } from "svelte/store";
 
 
@@ -42,6 +43,9 @@ export function createContext() {
 
     const animationTargetTopPageNo = writable(-1);
 
+    const animationFirstHalf = writable(false);
+    const animationLastHalf = derived(animationFirstHalf, ($firstHalf) => !$firstHalf);
+
     return {
         pages: _pages,
         _alignedPages,
@@ -53,21 +57,39 @@ export function createContext() {
         rightPagePairs,
 
         animationTargetTopPageNo,
+        animationFirstHalf,
+        animationLastHalf,
 
         destroy: () => {
             unsubscribe();
         },
 
-        setFlipPageToLeftAnimation: () => {
-            const rightPages = get(_rightPages);
-            const curRightTopPageNo = rightPages.length > 0 ? rightPages[rightPages.length - 1].no : -1;
-            animationTargetTopPageNo.set(curRightTopPageNo);
+        setFlipPageToLeftAnimation: (firstHalf = true) => {
+            if (firstHalf) {
+                const rightPages = get(_rightPages);
+                const curRightTopPageNo = rightPages.length > 0 ? rightPages[rightPages.length - 1].no : -1;
+                animationTargetTopPageNo.set(curRightTopPageNo);
+                animationFirstHalf.set(true);
+            } else {
+                const leftPages = get(_leftPages);
+                const curLeftTopPageNo = leftPages.length > 0 ? leftPages[leftPages.length - 1].no : -1;
+                animationTargetTopPageNo.set(curLeftTopPageNo);
+                animationFirstHalf.set(false);
+            }
         },
 
-        setFlipPageToRightAnimation: () => {
-            const leftPages = get(_leftPages);
-            const curLeftTopPageNo = leftPages.length > 0 ? leftPages[leftPages.length - 1].no : -1;
-            animationTargetTopPageNo.set(curLeftTopPageNo);
+        setFlipPageToRightAnimation: (firstHalf = true) => {
+            if (firstHalf) {
+                const leftPages = get(_leftPages);
+                const curLeftTopPageNo = leftPages.length > 0 ? leftPages[leftPages.length - 1].no : -1;
+                animationTargetTopPageNo.set(curLeftTopPageNo);
+                animationFirstHalf.set(true);
+            } else {
+                const rightPages = get(_rightPages);
+                const curRightTopPageNo = rightPages.length > 0 ? rightPages[rightPages.length - 1].no : -1;
+                animationTargetTopPageNo.set(curRightTopPageNo);
+                animationFirstHalf.set(false);
+            }
         }
     };
 }
@@ -76,7 +98,7 @@ export function setPageFlipAnimation(pageContainerElem, params) {
     const { ctx, pagePair, direction } = params;
 
     pageContainerElem.style.animationDuration = params.animationDuration;
-    pageContainerElem.style.animationTimingFunction = params.animationTimingFunction;
+    pageContainerElem.style.animationTimingFunction = params.animationTimingFunctionFirst;
 
     const unsubscribe = ctx.animationTargetTopPageNo.subscribe(($targetTopPageNo) => {
         if ($targetTopPageNo !== pagePair[1].no) {
@@ -86,6 +108,12 @@ export function setPageFlipAnimation(pageContainerElem, params) {
         pageContainerElem.addEventListener(
             "animationend",
             () => {
+                if (get(ctx.animationLastHalf)) {
+                    ctx.animationTargetTopPageNo.set(-1);
+                    pageContainerElem.style.animationTimingFunction = params.animationTimingFunctionFirst;
+                    return;
+                }
+
                 const leftPages = get(ctx._leftPages);
                 const rightPages = get(ctx._rightPages);
 
@@ -94,16 +122,23 @@ export function setPageFlipAnimation(pageContainerElem, params) {
                     const backPage = rightPages.pop();
                     ctx._leftPages.set([...leftPages, frontPage, backPage]);
                     ctx._rightPages.set([...rightPages]);
+                    if (get(ctx.animationFirstHalf)) {
+                        pageContainerElem.style.animationTimingFunction = params.animationTimingFunctionLast;
+                        ctx.setFlipPageToLeftAnimation(false);
+                    }
                 } else if (direction === "ltr") {
                     const backPage = leftPages.pop();
                     const frontPage = leftPages.pop();
                     ctx._leftPages.set([...leftPages]);
                     ctx._rightPages.set([...rightPages, backPage, frontPage]);
+                    ctx.animationTargetTopPageNo.set(-1);
+                    if (get(ctx.animationFirstHalf)) {
+                        pageContainerElem.style.animationTimingFunction = params.animationTimingFunctionLast;
+                        ctx.setFlipPageToRightAnimation(false);
+                    }
                 } else {
                     throw new Error(`Invalid direction: ${direction}`);
                 }
-
-                ctx.animationTargetTopPageNo.set(-1);
             },
             { once: true }
         );
