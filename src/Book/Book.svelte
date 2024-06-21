@@ -1,5 +1,7 @@
 <script>
-  import { writable, derived } from "svelte/store";
+  import { setContext, onDestroy } from "svelte";
+  import { createContext, setPageFlipAnimation } from "./book.js";
+  import PageContent from "./PageContent.svelte";
 
   // '페이지 컨텐츠' 원본 목록
   export let pages = [];
@@ -8,175 +10,84 @@
   export let animationDuration = "0.75s";
   export let animationTimingFunction = "ease-in";
 
-  // 'pages'로부터 가공된 내부 구현용 페이지 컨텐츠 목록
-  const leftPages = writable([]);
-  const rightPages = writable([]);
+  const ctx = createContext();
+  onDestroy(() => ctx.destroy());
+  setContext("context", ctx);
+  $: ctx.pages.set(pages);
 
-  $: if (pages) {
-    // '1장'이 항상 '앞/뒤' 2개 면을 가지도록 'pages'를 가공
-    if (pages.length % 2 !== 0) {
-      pages = [...pages, ""];
-    }
+  // NOTE: 현재와 같이 'div 2개로 1장의 앞/뒤 면을 표현'하는 방식에서
+  //       '페이지 플리핑' 애니메이션을 적용하려면 해당 div 2개를 포함하는
+  //       '컨테이너 div'를 추가하고 이 컨테이너 div에 애니메이션을 적용해야 한다.
+  //       '스벨트'에서 '페이지 2개'당 컨테이너 div를 'each'로 생성하는 것이
+  //       'pages'만을 이용해서는 어렵기 때문에 '페이지 2개'씩 묶은 '페이지 쌍'을
+  //       추가로 생성하고 이 '페이지 쌍'을 이용해서 '컨테이너 div'를 생성한다.
+  const leftPagePairs = ctx.leftPagePairs;
+  const rightPagePairs = ctx.rightPagePairs;
 
-    leftPages.set([]);
-    rightPages.set(
-      pages.map((page, index) => ({ no: index, content: page })).reverse()
-    );
-  }
+  const totalPageCount = ctx.totalPageCount;
+  const targetTopPageNo = ctx.animationTargetTopPageNo;
 
-  const leftPagePairs = derived(leftPages, ($leftPages) => {
-    let pairs = [];
-    for (let i = 0; i < $leftPages.length; i += 2) {
-      pairs.push($leftPages.slice(i, i + 2));
-    }
-    return pairs;
-  });
-
-  const rightPagePairs = derived(rightPages, ($rightPages) => {
-    let pairs = [];
-    for (let i = 0; i < $rightPages.length; i += 2) {
-      pairs.push($rightPages.slice(i, i + 2));
-    }
-    return pairs;
-  });
-
-  let book;
-  let leftTopPageNo = -1;
-  let rightTopPageNo = -1;
-
-  async function flipPageToLeft() {
-    const rightTopPagePair =
-      $rightPagePairs.length > 0
-        ? $rightPagePairs[$rightPagePairs.length - 1]
-        : [];
-
-    if (rightTopPagePair.length !== 2) {
-      return;
-    }
-
-    rightTopPageNo = rightTopPagePair[1].no;
-
-    const pagePairToFlip = book.querySelector(
-      `.rightPageContentStack .pageContainer[data-page-no="${rightTopPageNo}"]`
-    );
-
-    if (pagePairToFlip) {
-      pagePairToFlip.addEventListener(
-        "animationend",
-        () => {
-          const frontPage = $rightPages.pop();
-          const backPage = $rightPages.pop();
-          leftPages.set([...$leftPages, frontPage, backPage]);
-          rightPages.set([...$rightPages]);
-          rightTopPageNo = -1;
-          console.log("animationend", $leftPages, $rightPages);
-        },
-        { once: true }
-      );
-    }
-  }
-
-  function flipPageToRight() {
-    const leftTopPagePair =
-      $leftPagePairs.length > 0
-        ? $leftPagePairs[$leftPagePairs.length - 1]
-        : [];
-
-    if (leftTopPagePair.length !== 2) {
-      return;
-    }
-
-    leftTopPageNo = leftTopPagePair[1].no;
-
-    const pagePairToFlip = book.querySelector(
-      `.leftPageContentStack .pageContainer[data-page-no="${leftTopPageNo}"]`
-    );
-
-    if (pagePairToFlip) {
-      pagePairToFlip.addEventListener(
-        "animationend",
-        () => {
-          const backPage = $leftPages.pop();
-          const frontPage = $leftPages.pop();
-          rightPages.set([...$rightPages, backPage, frontPage]);
-          leftPages.set([...$leftPages]);
-          leftTopPageNo = -1;
-        },
-        { once: true }
-      );
-    }
-  }
+  // NOTE: '페이지 플리핑' 애니메이션을 '트리거' 하기 위해서
+  //       아래와 같이 'flipPageToRight, flipPageToLeft' CSS 클래스를
+  //       '반응형'으로 설정하는 방법을 취하고 있다.
+  //
+  //       원래는 'use:setPageFlipAnimation' 액션 코드에서 해당 CSS 클래스를
+  //       '자바스크립트'에서 설정하려 했으나 '.svelte'가 빌드되는 과정에서
+  //       해당 'CSS 클래스 명'에 '해시값'이 붙어서 출력되어 '자바스크립트' 코드 상에서
+  //       해당 'CSS 클래스'를 찾을 수 없고 결국 '애니메이션'이 시작되지 않는 문제가 있었다.
 </script>
 
-<div class="book" bind:this={book}>
+<div class="book">
   <div class="leftPageRegion">
-    <div class="leftPageContentStack">
-      {#each $leftPagePairs as pair}
-        <div
-          class="pageContainer"
-          class:flipPageToRight={pair[1].no === leftTopPageNo}
-          style:animation-duration={animationDuration}
-          style:animation-timing-function={animationTimingFunction}
-          data-page-no={pair[1].no}
-        >
-          {#each pair as page (page.no)}
-            {@const pageNumber = page.no + 1}
-            <div
-              class="pageContent"
-              class:frontPage={page.no % 2 === 1}
-              class:backPage={page.no % 2 === 0}
-            >
-              {#if page.content.indexOf("<img") != -1}
-                {@html page.content}
-              {:else}
-                {page.content}
-              {/if}
-
-              {#if pageNumber !== 1 && pageNumber !== pages.length}
-                <div class="page-number">{pageNumber}</div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      {/each}
-    </div>
+    {#each $leftPagePairs as pair}
+      <div
+        class="pageContainer"
+        class:flipPageToRight={pair[1].no === $targetTopPageNo}
+        use:setPageFlipAnimation={{
+          ctx,
+          pagePair: pair,
+          direction: "ltr",
+          animationDuration,
+          animationTimingFunction,
+        }}
+      >
+        {#each pair as page (page.no)}
+          <PageContent
+            totalPageCount={$totalPageCount}
+            {page}
+            pageRegion="left"
+          />
+        {/each}
+      </div>
+    {/each}
   </div>
   <div class="rightPageRegion">
-    <div class="rightPageContentStack">
-      {#each $rightPagePairs as pair}
-        <div
-          class="pageContainer"
-          class:flipPageToLeft={pair[1].no === rightTopPageNo}
-          style:animation-duration={animationDuration}
-          style:animation-timing-function={animationTimingFunction}
-          data-page-no={pair[1].no}
-        >
-          {#each pair as page (page.no)}
-            {@const pageNumber = page.no + 1}
-            <div
-              class="pageContent"
-              class:frontPage={page.no % 2 === 0}
-              class:backPage={page.no % 2 === 1}
-            >
-              {#if page.content.indexOf("<img") != -1}
-                {@html page.content}
-              {:else}
-                {page.content}
-              {/if}
-
-              {#if pageNumber !== 1 && pageNumber !== pages.length}
-                <div class="page-number">{pageNumber}</div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      {/each}
-    </div>
+    {#each $rightPagePairs as pair}
+      <div
+        class="pageContainer"
+        class:flipPageToLeft={pair[1].no === $targetTopPageNo}
+        use:setPageFlipAnimation={{
+          ctx,
+          pagePair: pair,
+          direction: "rtl",
+          animationDuration,
+          animationTimingFunction,
+        }}
+      >
+        {#each pair as page (page.no)}
+          <PageContent
+            totalPageCount={$totalPageCount}
+            {page}
+            pageRegion="right"
+          />
+        {/each}
+      </div>
+    {/each}
   </div>
 </div>
 <div class="navigation-button">
-  <button on:click={flipPageToLeft}>&lt;</button>
-  <button on:click={flipPageToRight}>&gt;</button>
+  <button on:click={() => ctx.setFlipPageToRightAnimation()}>&lt;</button>
+  <button on:click={() => ctx.setFlipPageToLeftAnimation()}>&gt;</button>
 </div>
 
 <style lang="scss">
@@ -186,97 +97,30 @@
     justify-content: center;
     align-items: stretch;
     height: calc(100% - 2em);
+    transform: translate3d(0, 0, 0); /* NOTE: 'GPU 가속' 유도를 위한 설정 */
+    transform-style: preserve-3d; /* NOTE: '3D 변환' 효과 보존 */
+  }
+
+  .leftPageRegion,
+  .rightPageRegion {
+    position: relative;
+    flex: 1;
+    margin: 0;
+    padding: 0;
   }
 
   .leftPageRegion {
-    flex: 1;
     border-top: 1px solid black;
+    border-right: none;
     border-bottom: 1px solid black;
     border-left: 1px solid black;
   }
 
   .rightPageRegion {
-    flex: 1;
     border-top: 1px solid black;
-    border-bottom: 1px solid black;
     border-right: 1px solid black;
-  }
-
-  .leftPageContentStack,
-  .rightPageContentStack {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  .pageContent {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: calc(95% - 1em);
-    height: calc(95% - 1em);
-    padding: 1em;
-    border-radius: 0.1em;
-    background-color: lightcoral;
-    font-size: 1.5em;
-    overflow: hidden;
-  }
-
-  .leftPageContentStack .pageContent {
-    right: 0;
-    border-right: 1.5px solid rgb(62, 53, 53);
-    box-shadow:
-      -5px 0 5px rgba(0, 0, 0, 0.25),
-      0 5px 5px rgba(0, 0, 0, 0.15),
-      0 -5px 5px rgba(0, 0, 0, 0.15);
-
-    &.backPage {
-      transform: translateY(-50%) rotateY(180deg);
-    }
-
-    .page-number {
-      position: absolute;
-      bottom: 1em;
-      left: 1em;
-      font-size: 0.5em;
-    }
-  }
-
-  .rightPageContentStack .pageContent {
-    left: 0;
-    border-left: 1.5px solid rgb(62, 53, 53);
-    box-shadow:
-      5px 0 5px rgba(0, 0, 0, 0.25),
-      0 5px 5px rgba(0, 0, 0, 0.15),
-      0 -5px 5px rgba(0, 0, 0, 0.15);
-
-    &.backPage {
-      transform: translateY(-50%) rotateY(180deg);
-    }
-
-    .page-number {
-      position: absolute;
-      bottom: 1em;
-      right: 1em;
-      font-size: 0.5em;
-    }
-  }
-
-  .navigation-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  @keyframes flipPagePair {
-    from {
-      transform: rotateY(0deg);
-    }
-    to {
-      transform: rotateY(-180deg);
-    }
+    border-bottom: 1px solid black;
+    border-left: none;
   }
 
   .pageContainer {
@@ -298,6 +142,21 @@
       z-index: 9999;
       transform-origin: right;
       animation-name: flipPagePair;
+    }
+  }
+
+  .navigation-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @keyframes flipPagePair {
+    from {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(-180deg);
     }
   }
 </style>
