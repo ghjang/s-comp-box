@@ -1,6 +1,6 @@
 <script>
   import { setContext, onDestroy } from "svelte";
-  import { createContext, setPageFlipAnimation } from "./book.js";
+  import { createContext, setAnimationConfig } from "./book.js";
   import PageContent from "./PageContent.svelte";
 
   // '페이지 컨텐츠' 원본 목록
@@ -42,7 +42,7 @@
   //       아래와 같이 'flipPageToRight, flipPageToLeft' CSS 클래스를
   //       '반응형'으로 설정하는 방법을 취하고 있다.
   //
-  //       원래는 'use:setPageFlipAnimation' 액션 코드에서 해당 CSS 클래스를
+  //       원래는 'use:setAnimationConfig' 액션 코드에서 해당 CSS 클래스를
   //       '자바스크립트'에서 설정하려 했으나 '.svelte'가 빌드되는 과정에서
   //       해당 'CSS 클래스 명'에 '해시값'이 붙어서 출력되어 '자바스크립트' 코드 상에서
   //       해당 'CSS 클래스'를 찾을 수 없고 결국 '애니메이션'이 시작되지 않는 문제가 있었다.
@@ -56,7 +56,7 @@
         class:flipPageToRight={pair[1].no === $targetTopPageNo}
         class:firstHalf={$firstHalf}
         class:lastHalf={$lastHalf}
-        use:setPageFlipAnimation={{
+        use:setAnimationConfig={{
           ctx,
           pagePair: pair,
           direction: "ltr",
@@ -82,7 +82,7 @@
         class:flipPageToLeft={pair[1].no === $targetTopPageNo}
         class:firstHalf={$firstHalf}
         class:lastHalf={$lastHalf}
-        use:setPageFlipAnimation={{
+        use:setAnimationConfig={{
           ctx,
           pagePair: pair,
           direction: "rtl",

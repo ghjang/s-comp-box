@@ -94,7 +94,7 @@ export function createContext() {
     };
 }
 
-export function setPageFlipAnimation(pageContainerElem, params) {
+export function setAnimationConfig(pageContainerElem, params) {
     const { ctx, pagePair, direction } = params;
 
     pageContainerElem.style.animationDuration = params.animationDuration;
