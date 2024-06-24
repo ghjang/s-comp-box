@@ -4,6 +4,10 @@
         "data": "Book/Book.html"
     },
     {
+        "name": "Calendar",
+        "data": "Calendar/Calendar.html"
+    },
+    {
         "name": "Console",
         "data": "Console/Console.html"
     },
