@@ -150,7 +150,11 @@
   // - '오늘' 날짜에 '원' 보더 표시
 </script>
 
-<div class="calendar" bind:this={calendar}>
+<div
+  class="calendar"
+  style:max-height={calendarSize ? `${calendarSize.height}px` : "auto"}
+  bind:this={calendar}
+>
   <div class="header">
     <div class="monthYear">{monthNames[selectedMonth - 1]} {selectedYear}</div>
     <button
@@ -201,6 +205,7 @@
   .calendar {
     position: relative;
     overflow: hidden;
+    user-select: none;
 
     .header {
       display: grid;
