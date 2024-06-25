@@ -26,7 +26,8 @@
   let selectedMonth = -1;
   let selectedDayNumber = -1;
 
-  let xDirection = 1;
+  let xDirection = 0;
+  const animationDuration = 500;
 
   // 'getDaysInMonth()'는 '해당 월의 일 수'를 반환한다.
   const getDaysInMonth = (year, month) => {
@@ -98,10 +99,10 @@
     const firstDayOfMonth = getFirstDayOfMonth(year, month);
 
     for (let i = 0; i < firstDayOfMonth; ++i) {
-      dayNumbers.push(null);
+      dayNumbers.push({ day: null, key: crypto.randomUUID() });
     }
     for (let i = 1; i <= daysInMonth; ++i) {
-      dayNumbers.push(i);
+      dayNumbers.push({ day: i, key: crypto.randomUUID() });
     }
 
     selectedYear = year;
@@ -121,14 +122,14 @@
   //       'DOM'에서 제거될 때 '속성 객체'를 설정하기 때문에 '현재의 이동 방향'이 아닌 '이전의 이동 방향'이
   //       반영되어 문제가 발생한다. 이 문제를 해결하기 위해 'FlyOutProp' 클래스 객체를 사용하여
   //       'out:fly'에서 동적으로 현재의 이동 방향에을 참조할 수 있도록 함.
-  //       
+  //
   class FlyOutProp {
     get x() {
       return xDirection * -calendarSize.width;
     }
 
     get duration() {
-      return 600;
+      return animationDuration;
     }
   }
 
@@ -150,97 +151,139 @@
 </script>
 
 <div class="calendar" bind:this={calendar}>
-  <div class="monthYear">{monthNames[selectedMonth - 1]} {selectedYear}</div>
-  <button class="prevMonth" on:click={handlePrevMonthClick}>&lt;</button>
-  <button class="nextMonth" on:click={handleNextMonthClick}>&gt;</button>
-  {#each dayNamesOfWeek as dayName}
-    <div class="dayName">{dayName}</div>
-  {/each}
-
-  {#each dayNumbers as day}
+  <div class="header">
+    <div class="monthYear">{monthNames[selectedMonth - 1]} {selectedYear}</div>
     <button
-      tabindex="-1"
-      class="dayNumber"
-      class:hoverable={day}
-      class:selected={selectedDayNumber === day}
-      on:click={handleDayNumberClick}
-      in:fly={{ x: xDirection * calendarSize.width, duration: 600 }}
-      out:fly={flyOutProp}
+      class="prevMonth"
+      disabled={xDirection !== 0}
+      on:click={handlePrevMonthClick}>&lt;</button
     >
-      {day || ""}
-    </button>
-  {/each}
+    <button
+      class="nextMonth"
+      disabled={xDirection !== 0}
+      on:click={handleNextMonthClick}>&gt;</button
+    >
+    {#each dayNamesOfWeek as dayName}
+      <div class="dayName">{dayName}</div>
+    {/each}
+  </div>
+  <div class="body">
+    {#key selectedMonth}
+      <div
+        class="dayNumbers"
+        class:flyToPrev={xDirection === -1}
+        class:flyToNext={xDirection === 1}
+        in:fly={{
+          x: xDirection * calendarSize.width,
+          duration: animationDuration,
+        }}
+        out:fly={flyOutProp}
+        on:introend={() => (xDirection = 0)}
+        on:outroend={() => (xDirection = 0)}
+      >
+        {#each dayNumbers as { day, key } (key)}
+          <button
+            tabindex="-1"
+            class="dayNumber"
+            class:hoverable={day}
+            class:selected={selectedDayNumber === day}
+            on:click={handleDayNumberClick}
+          >
+            {day || ""}
+          </button>
+        {/each}
+      </div>
+    {/key}
+  </div>
 </div>
 
 <style lang="scss">
   .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    align-items: center;
-    width: min-content;
+    position: relative;
     overflow: hidden;
 
-    .monthYear {
-      grid-column: 1 / -3;
-      padding: 10px;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-
-    .prevMonth,
-    .nextMonth {
-      display: flex;
-      justify-content: center;
+    .header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
       align-items: center;
-      padding: 10px;
-      width: 1.7em;
-      height: 1.7em;
-      font-size: 1.2em;
-      font-weight: bold;
-      background: none;
-      border: none;
-      border-radius: 50%;
-      outline: none;
-      cursor: pointer;
 
-      &:hover {
-        background-color: lighten(darkgray, 20%);
+      .monthYear {
+        grid-column: 1 / -3;
+        padding: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
       }
 
-      &:focus {
-        background-color: darkgray;
-
-        &:hover {
-          background-color: darken(darkgray, 10%);
-        }
-      }
-    }
-
-    .dayName {
-      padding: 10px;
-    }
-
-    .dayNumber {
-      background: none;
-      border: none;
-      padding: 10px;
-      outline: none;
-
-      &.hoverable {
+      .prevMonth,
+      .nextMonth {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        width: 1.7em;
+        height: 1.7em;
+        font-size: 1.2em;
+        font-weight: bold;
+        background: none;
+        border: none;
         border-radius: 50%;
+        outline: none;
         cursor: pointer;
 
         &:hover {
-          background-color: lighten(lightcoral, 20%);
+          background-color: lighten(darkgray, 20%);
         }
 
-        &.selected {
-          background-color: lightcoral;
+        &:focus {
+          background-color: darkgray;
 
           &:hover {
-            background-color: darken(lightcoral, 10%);
+            background-color: darken(darkgray, 10%);
           }
+        }
+      }
+
+      .dayName {
+        padding: 10px;
+      }
+    }
+
+    .body {
+      .dayNumbers {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        text-align: center;
+        align-items: center;
+
+        .dayNumber {
+          background: none;
+          border: none;
+          padding: 10px;
+          outline: none;
+
+          &.hoverable {
+            border-radius: 50%;
+            cursor: pointer;
+
+            &:hover {
+              background-color: lighten(lightcoral, 20%);
+            }
+
+            &.selected {
+              background-color: lightcoral;
+
+              &:hover {
+                background-color: darken(lightcoral, 10%);
+              }
+            }
+          }
+        }
+
+        &.flyToPrev:last-child,
+        &.flyToNext:last-child {
+          transform: translateY(-100%);
         }
       }
     }
