@@ -171,51 +171,50 @@
       <div class="dayName">{dayName}</div>
     {/each}
   </div>
-  <div class="body">
-    {#key selectedMonth}
-      <div
-        class="dayNumbers"
-        class:flyToPrev={xDirection === -1}
-        class:flyToNext={xDirection === 1}
-        in:fly={{
-          x: xDirection * calendarSize.width,
-          duration: animationDuration,
-        }}
-        out:fly={flyOutProp}
-        on:introend={() => (xDirection = 0)}
-        on:outroend={() => (xDirection = 0)}
-      >
-        {#each dayNumbers as { day, key } (key)}
-          <button
-            tabindex="-1"
-            class="dayNumber"
-            class:hoverable={day}
-            class:selected={selectedDayNumber === day}
-            on:click={handleDayNumberClick}
-          >
-            {day || ""}
-          </button>
-        {/each}
-      </div>
-    {/key}
-  </div>
+  {#key `${selectedYear}-${selectedMonth}`}
+    <div
+      class="dayNumbers"
+      class:isFlying={xDirection !== 0}
+      in:fly={{
+        x: xDirection * calendarSize.width,
+        duration: animationDuration,
+      }}
+      out:fly={flyOutProp}
+      on:introend={() => (xDirection = 0)}
+      on:outroend={() => (xDirection = 0)}
+    >
+      {#each dayNumbers as { day, key } (key)}
+        <button
+          tabindex="-1"
+          class="dayNumber"
+          class:hoverable={day}
+          class:selected={selectedDayNumber === day}
+          on:click={handleDayNumberClick}
+        >
+          {day || ""}
+        </button>
+      {/each}
+    </div>
+  {/key}
 </div>
 
 <style lang="scss">
+  $grid-item-padding: 10px;
+
   .calendar {
-    position: relative;
     overflow: hidden;
     user-select: none;
 
     .header {
       display: grid;
+      grid-template-rows: repeat(2, 1fr);
       grid-template-columns: repeat(7, 1fr);
       text-align: center;
       align-items: center;
 
       .monthYear {
         grid-column: 1 / -3;
-        padding: 10px;
+        padding: $grid-item-padding;
         font-size: 1.2em;
         font-weight: bold;
       }
@@ -225,7 +224,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 10px;
+        padding: $grid-item-padding;
         width: 1.7em;
         height: 1.7em;
         font-size: 1.2em;
@@ -250,46 +249,43 @@
       }
 
       .dayName {
-        padding: 10px;
+        padding: $grid-item-padding;
       }
     }
 
-    .body {
-      .dayNumbers {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        grid-template-rows: repeat(6, 1fr);
-        text-align: center;
-        align-items: center;
+    .dayNumbers {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      align-items: center;
 
-        .dayNumber {
-          background: none;
-          border: none;
-          padding: 10px;
-          outline: none;
+      .dayNumber {
+        background: none;
+        border: none;
+        padding: $grid-item-padding;
+        outline: none;
 
-          &.hoverable {
-            border-radius: 50%;
-            cursor: pointer;
+        &.hoverable {
+          border-radius: 50%;
+          cursor: pointer;
+
+          &:hover {
+            background-color: lighten(lightcoral, 20%);
+          }
+
+          &.selected {
+            background-color: lightcoral;
 
             &:hover {
-              background-color: lighten(lightcoral, 20%);
-            }
-
-            &.selected {
-              background-color: lightcoral;
-
-              &:hover {
-                background-color: darken(lightcoral, 10%);
-              }
+              background-color: darken(lightcoral, 10%);
             }
           }
         }
+      }
 
-        &.flyToPrev:last-child,
-        &.flyToNext:last-child {
-          transform: translateY(-100%);
-        }
+      &.isFlying:last-child {
+        transform: translateY(-100%);
       }
     }
   }
