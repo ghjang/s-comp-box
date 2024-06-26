@@ -76,17 +76,37 @@
     });
   };
 
-  const handleFlyIntroStart = (event) => {
+  const handleFlyOutroStart = (event) => {
     if (xDirection === 1) {
-      event.target.style.top = `-${xDirection * bottomPartSize.height}px`;
+      event.target.style.willChange = "top";
     } else if (xDirection === -1) {
-      event.target.style.top = `${xDirection * bottomPartSize.height}px`;
+      event.target.style.willChange = "top";
+    } else {
+      // do nothing
+    }
+  };
+
+  const handleFlyOutroEnd = (event) => {
+    event.target.style.willChange = "auto";
+  };
+
+  const handleFlyIntroStart = (event) => {
+    const h = xDirection * bottomPartSize.height;
+    const style = event.target.style;
+
+    if (xDirection === 1) {
+      style.willChange = "top";
+      style.top = `-${h}px`;
+    } else if (xDirection === -1) {
+      style.willChange = "top";
+      style.top = `${h}px`;
     } else {
       // do nothing
     }
   };
 
   const handleFlyIntroEnd = (event) => {
+    event.target.style.willChange = "auto";
     event.target.style.top = "0";
     xDirection = 0;
   };
@@ -164,8 +184,6 @@
   let initialCalendarHeight = "auto";
   let bottomPart;
   let bottomPartSize;
-  const flyInProp = new FlyInProp();
-  const flyOutProp = new FlyOutProp();
 
   $: if (calendar) {
     // NOTE: 'calendar'가 최초에 마운트된 시점의 초기 영역 크기 값을 저장한다.
@@ -174,6 +192,9 @@
     initialCalendarHeight = `${calendarSize.height}px`;
     bottomPartSize = bottomPart.getBoundingClientRect();
   }
+
+  const flyInProp = new FlyInProp();
+  const flyOutProp = new FlyOutProp();
 
   // TODO: Calendar 컴포넌트 개선
   //
@@ -224,6 +245,8 @@
           out:fly={flyOutProp}
           on:introstart={handleFlyIntroStart}
           on:introend={handleFlyIntroEnd}
+          on:outrostart={handleFlyOutroStart}
+          on:outroend={handleFlyOutroEnd}
         >
           {#each dayNumbers as { day, key } (key)}
             <button
