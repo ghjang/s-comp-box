@@ -27,7 +27,7 @@
   let selectedDayNumber = -1;
 
   let xDirection = 0;
-  const animationDuration = 500;
+  const animationDuration = 600;
 
   // 'getDaysInMonth()'는 '해당 월의 일 수'를 반환한다.
   const getDaysInMonth = (year, month) => {
@@ -76,6 +76,21 @@
     });
   };
 
+  const handleFlyIntroStart = (event) => {
+    if (xDirection === 1) {
+      event.target.style.top = `-${xDirection * bottomPartSize.height}px`;
+    } else if (xDirection === -1) {
+      event.target.style.top = `${xDirection * bottomPartSize.height}px`;
+    } else {
+      // do nothing
+    }
+  };
+
+  const handleFlyIntroEnd = (event) => {
+    event.target.style.top = "0";
+    xDirection = 0;
+  };
+
   let dayNumbers = [];
 
   $: {
@@ -116,6 +131,16 @@
     }
   }
 
+  class FlyInProp {
+    get y() {
+      return xDirection * bottomPartSize.height;
+    }
+
+    get duration() {
+      return animationDuration;
+    }
+  }
+
   // NOTE: 'fly' 애니메이션에 설정되는 '속성 객체'는 'DOM'에 추가될 때 설정된다.
   //       'in:fly'의 경우는 해당 요소 객체가 'DOM'에 추가될 때 '속성 객체'를 설정하기 때문에
   //       '현재의 이동 방향'이 반영되어 문제가 없다. 하지만 'out:fly'의 경우는 해당 요소 객체가
@@ -124,8 +149,8 @@
   //       'out:fly'에서 동적으로 현재의 이동 방향에을 참조할 수 있도록 함.
   //
   class FlyOutProp {
-    get x() {
-      return xDirection * -calendarSize.width;
+    get y() {
+      return xDirection * -calendarSize.height;
     }
 
     get duration() {
@@ -135,10 +160,19 @@
 
   let calendar;
   let calendarSize;
+  let initialCalendarWidth = "auto";
+  let initialCalendarHeight = "auto";
+  let bottomPart;
+  let bottomPartSize;
+  const flyInProp = new FlyInProp();
   const flyOutProp = new FlyOutProp();
 
   $: if (calendar) {
+    // NOTE: 'calendar'가 최초에 마운트된 시점의 초기 영역 크기 값을 저장한다.
     calendarSize = calendar.getBoundingClientRect();
+    initialCalendarWidth = `${calendarSize.width}px`;
+    initialCalendarHeight = `${calendarSize.height}px`;
+    bottomPartSize = bottomPart.getBoundingClientRect();
   }
 
   // TODO: Calendar 컴포넌트 개선
@@ -146,17 +180,22 @@
   // - 'https://mui.com/x/react-date-pickers/date-calendar/' 와 유사한 형태로 개선할 것.
   //
   // - '년, 달' 선택 및 이동 기능 보완
-  // - 키보드 네비게이션 추가
+  // - 키보드 네비게이션 추가: '사방' 방향으로 날짜 이동?
   // - '오늘' 날짜에 '원' 보더 표시
+  // - 애니메이션 도중에 '일 숫자'에 대한 사용자 인터랙션 제한
+  // - 간혹 발생하는 '애니메이션 종료'후 '깜빡임' 가능하면 제거
 </script>
 
 <div class="calendar-container">
   <div
     class="calendar"
-    style:max-height={calendarSize ? `${calendarSize.height}px` : "auto"}
+    style:min-width={initialCalendarWidth}
+    style:max-width={initialCalendarWidth}
+    style:min-height={initialCalendarHeight}
+    style:max-height={initialCalendarHeight}
     bind:this={calendar}
   >
-    <div class="top">
+    <div class="topPart">
       <div class="header">
         <div class="monthYear">
           {monthNames[selectedMonth - 1]}
@@ -177,17 +216,14 @@
         {/each}
       </div>
     </div>
-    <div class="bottom">
+    <div class="bottomPart" bind:this={bottomPart}>
       {#key `${selectedYear}-${selectedMonth}`}
         <div
           class="dayNumbers"
-          class:isFlying={xDirection !== 0}
-          in:fly={{
-            x: xDirection * calendarSize.width,
-            duration: animationDuration
-          }}
+          in:fly={flyInProp}
           out:fly={flyOutProp}
-          on:introend={() => (xDirection = 0)}
+          on:introstart={handleFlyIntroStart}
+          on:introend={handleFlyIntroEnd}
         >
           {#each dayNumbers as { day, key } (key)}
             <button
@@ -210,6 +246,10 @@
   $grid-item-padding: 10px;
   $bg-color: white;
 
+  /*
+    '.calendar-container'는 캘린더 보더를 설정하고,
+    'z-index' 스태킹 컨텍스트(Stacking Context)를 리셋한다.
+   */
   .calendar-container {
     border: 1px solid darkgray;
     border-radius: 5px;
@@ -223,7 +263,7 @@
       overflow: hidden;
       user-select: none;
 
-      .top {
+      .topPart {
         position: relative;
         z-index: 2;
         background-color: $bg-color;
@@ -278,14 +318,14 @@
         }
       }
 
-      .bottom {
+      .bottomPart {
         position: relative;
         z-index: 1;
         background-color: $bg-color;
 
         .dayNumbers {
+          position: relative;
           display: grid;
-          z-index: 0;
           grid-template-rows: repeat(6, 1fr);
           grid-template-columns: repeat(7, 1fr);
           text-align: center;
@@ -313,10 +353,6 @@
                 }
               }
             }
-          }
-
-          &.isFlying:not(:first-child):last-child {
-            transform: translateY(-100%);
           }
         }
       }
