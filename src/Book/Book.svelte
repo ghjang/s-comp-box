@@ -148,11 +148,11 @@
     margin: 0;
     padding: 0;
     border: none;
-    will-change: transform;
 
     &.flipPageToLeft {
       z-index: 9999;
       transform-origin: left;
+      will-change: transform;
 
       &.firstHalf {
         animation-name: flipPagePairFirstHalf;
@@ -166,6 +166,7 @@
     &.flipPageToRight {
       z-index: 9999;
       transform-origin: right;
+      will-change: transform;
 
       &.firstHalf {
         animation-name: flipPagePairFirstHalf;
