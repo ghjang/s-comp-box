@@ -29,6 +29,7 @@
   let selectedDayNumber = -1;
   let dayNumbers = [];
 
+  // 'targetDate'로부터 캘린더 구성
   $: {
     const data = getCalendarData(targetDate);
 
@@ -40,7 +41,6 @@
       selectedDayNumber = data.day;
     } else {
       selectedDayNumber = -1;
-      autoSelectTargetDay = true;
     }
   }
 
@@ -78,6 +78,8 @@
       return;
     }
 
+    event.target.focus();
+
     selectedDayNumber = dayNumber;
 
     selectedYear = targetDate.getFullYear();
@@ -88,12 +90,126 @@
     });
   };
 
+  const handleDayNumberKeyDown = (event) => {
+    const ctrlKey = event.ctrlKey;
+    const metaKey = event.metaKey;
+    const key = event.key;
+
+    const parent = event.target.parentElement;
+
+    if (key === "ArrowLeft") {
+      const prevSibling = event.target.previousElementSibling;
+      if (prevSibling && prevSibling.dataset.day != "") {
+        prevSibling.focus();
+      }
+    } else if (key === "ArrowRight") {
+      event.target.nextElementSibling?.focus();
+    } else if (key === "ArrowUp") {
+      const curDay = parseInt(event.target.dataset.day);
+      if (!isNaN(curDay)) {
+        const preRowDay = curDay - 7;
+        parent.querySelector(`[data-day="${preRowDay}"]`)?.focus();
+      }
+    } else if (key === "ArrowDown") {
+      const curDay = parseInt(event.target.dataset.day);
+      if (!isNaN(curDay)) {
+        const nextRowDay = curDay + 7;
+        parent.querySelector(`[data-day="${nextRowDay}"]`)?.focus();
+      }
+    } else if (key === "Home") {
+      if (ctrlKey) {
+        parent.querySelector(`[data-day]:not([data-day=""])`)?.focus();
+      } else {
+        const curDay = parseInt(event.target.dataset.day);
+        const curDate = new Date(selectedYear, selectedMonth - 1, curDay);
+        const dayOfWeek = curDate.getDay();
+        const sundayDay = curDay - dayOfWeek;
+        if (sundayDay > 0) {
+          parent.querySelector(`[data-day="${sundayDay}"]`)?.focus();
+        }
+      }
+    } else if (key === "End") {
+      if (ctrlKey) {
+        parent
+          .querySelector(`[data-day]:not([data-day=""]):last-child`)
+          ?.focus();
+      } else {
+        const curDay = parseInt(event.target.dataset.day);
+        const curDate = new Date(selectedYear, selectedMonth - 1, curDay);
+        const dayOfWeek = curDate.getDay();
+        const saturdayDay = curDay + (6 - dayOfWeek);
+        const lastDay = parent.querySelector(
+          `[data-day]:not([data-day=""]):last-child`
+        ).dataset.day;
+        if (saturdayDay <= lastDay) {
+          parent.querySelector(`[data-day="${saturdayDay}"]`)?.focus();
+        }
+      }
+    } else if (key === "PageUp" || key === "PageDown") {
+      const curDay = parseInt(event.target.dataset.day);
+
+      if (isNaN(curDay)) {
+        return;
+      }
+
+      autoSelectTargetDay = false;
+
+  
+      // NOTE: 'Ctrl(Command) + PageUp/PageDown'을 통해서 각각 '1월'과 '12월'로 점프시에는
+      //       '애니메이션' 없이 곧바로 이동하도록 하기 위한 workaround 코드이다.
+      let animationDurationBak = animationDuration;
+
+      ctx.setFlyEndAction(() => {
+        const targetDay = targetDate.getDate();
+        calendar.querySelector(`button[data-day="${targetDay}"]`)?.focus();
+        if (animationDurationBak !== animationDuration) {
+          animationDuration = animationDurationBak;
+        }
+      });
+
+      if (key === "PageUp") {
+        // NOTE: 'macOS'에서 'Ctrl + PageUp' 코드가 정상적으로 오지 않는다.
+        //        macOS의 경우는 'Command(Meta) + PageUp'을 사용을 사용하도록 일단 변경함.
+        if (ctrlKey || metaKey) {
+          if (selectedMonth !== 1) {
+            animationDuration = 0;
+            const januaryLastDay = new Date(selectedYear, 0, 0);
+            const targetDay = Math.min(curDay, januaryLastDay.getDate());
+            targetDate = new Date(selectedYear, 0, targetDay);
+          } else {
+            // do nothing
+          }
+        } else {
+          ctx.direction.set("up");
+          const prevMonLastDay = new Date(selectedYear, selectedMonth - 1, 0);
+          const targetDay = Math.min(curDay, prevMonLastDay.getDate());
+          targetDate = new Date(selectedYear, selectedMonth - 2, targetDay);
+        }
+      } else {
+        if (ctrlKey || metaKey) {
+          if (selectedMonth !== 12) {
+            animationDuration = 0;
+            const decemberLastDay = new Date(selectedYear, 12, 0);
+            const targetDay = Math.min(curDay, decemberLastDay.getDate());
+            targetDate = new Date(selectedYear, 11, targetDay);
+          } else {
+            // do nothing
+          }
+        } else {
+          ctx.direction.set("down");
+          const nextMonLastDay = new Date(selectedYear, selectedMonth + 1, 0);
+          const targetDay = Math.min(curDay, nextMonLastDay.getDate());
+          targetDate = new Date(selectedYear, selectedMonth, targetDay);
+        }
+      }
+    }
+  };
+
   // TODO: Calendar 컴포넌트 개선
   //
   // - 'https://mui.com/x/react-date-pickers/date-calendar/' 와 유사한 형태로 개선할 것.
   //
   // - '년, 달' 선택 및 이동 기능 보완
-  // - 키보드 네비게이션 추가: '사방' 방향으로 날짜 이동?
   // - 간혹 발생하는 '애니메이션 종료'후 '깜빡임' 가능하면 제거
 </script>
 
@@ -139,14 +255,17 @@
           on:outroend={ctx.flyOutroEnd}
         >
           {#each dayNumbers as { day, key } (key)}
+            {@const dayVal = day || ""}
             <button
               tabindex="-1"
               class="dayNumber"
               class:hoverable={day}
               class:selected={selectedDayNumber === day}
+              data-day={dayVal}
               on:click={handleDayNumberClick}
+              on:keydown={handleDayNumberKeyDown}
             >
-              {day || ""}
+              {dayVal}
             </button>
           {/each}
         </div>
@@ -266,13 +385,18 @@
               cursor: pointer;
 
               &:hover {
+                background-color: lighten(darkgray, 20%);
+              }
+
+              &:focus {
                 background-color: lighten(lightcoral, 20%);
               }
 
               &.selected {
                 background-color: lightcoral;
 
-                &:hover {
+                &:hover,
+                &:focus {
                   background-color: darken(lightcoral, 10%);
                 }
               }

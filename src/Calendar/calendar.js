@@ -52,6 +52,7 @@ export function getCalendarData(targetDate) {
 }
 
 
+
 // NOTE: 'calendar'가 최초에 마운트된 후에 캘린더 자체의 크기가 변경되지는 않는 것을 가정한다.
 //       최초 마운트 시점의 초기 영역 크기 값을 저장한다. 캘린더의 크기가 동적으로 변하게 추후에
 //       수정할 경우 'ResizeObserver'를 사용해서 캘린더 크기 변화를 감지하고 'calendarWidth',
@@ -59,6 +60,7 @@ export function getCalendarData(targetDate) {
 export function createContext(calendarElem) {
     let _direction = writable("");
     let _duration = writable(600);
+    let _flyEndAction = null;
 
     const calendarSize = calendarElem.getBoundingClientRect();
     const initialCalendarWidth = `${calendarSize.width}px`;
@@ -198,6 +200,20 @@ export function createContext(calendarElem) {
             event.target.style.top = "0";
             event.target.style.left = "0";
             _direction.set("");
+
+            if (typeof _flyEndAction === "function") {
+                _flyEndAction();
+            }
+            _flyEndAction = null;
+        },
+
+        // NOTE: 'set flyEndAction(action)'과 같은 'setter'를 의도적으로 사용하지 않음.
+        //       현재 작성된 코드 구조상 'Calendar.svelte'에서 'ctx.flyEndAction = <함수>'와 같이
+        //       '대입'을 할 경우에 의도하지 않게 'createContext'를 호출하는 '스벨트 반응형 블럭'이
+        //       호출되는 문제가 있다. 결과적으로 새로운 '익명 컨텍스트 객체'가 생성되어 '_flyEndAction'가
+        //       'null'이 되어 버린다.
+        setFlyEndAction(action) {
+            _flyEndAction = action;
         }
     };
 }
