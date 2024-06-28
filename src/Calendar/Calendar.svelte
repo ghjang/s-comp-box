@@ -126,6 +126,8 @@
         const sundayDay = curDay - dayOfWeek;
         if (sundayDay > 0) {
           parent.querySelector(`[data-day="${sundayDay}"]`)?.focus();
+        } else {
+          parent.querySelector(`[data-day="1"]`)?.focus();
         }
       }
     } else if (key === "End") {
@@ -138,11 +140,13 @@
         const curDate = new Date(selectedYear, selectedMonth - 1, curDay);
         const dayOfWeek = curDate.getDay();
         const saturdayDay = curDay + (6 - dayOfWeek);
-        const lastDay = parent.querySelector(
+        const lastDayElem = parent.querySelector(
           `[data-day]:not([data-day=""]):last-child`
-        ).dataset.day;
-        if (saturdayDay <= lastDay) {
+        );
+        if (saturdayDay <= lastDayElem.dataset.day) {
           parent.querySelector(`[data-day="${saturdayDay}"]`)?.focus();
+        } else {
+          lastDayElem.focus();
         }
       }
     } else if (key === "PageUp" || key === "PageDown") {
@@ -154,7 +158,6 @@
 
       autoSelectTargetDay = false;
 
-  
       // NOTE: 'Ctrl(Command) + PageUp/PageDown'을 통해서 각각 '1월'과 '12월'로 점프시에는
       //       '애니메이션' 없이 곧바로 이동하도록 하기 위한 workaround 코드이다.
       let animationDurationBak = animationDuration;
