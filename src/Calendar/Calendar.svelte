@@ -90,6 +90,9 @@
     });
   };
 
+  // TODO: 'handleDayNumberKeyDown' 키보드 네비게이션 코드 분리 및 개선
+  //
+  // - '달 네비게이션'용의 '스토어 객체' 따위를 별도로 추가?
   const handleDayNumberKeyDown = (event) => {
     const ctrlKey = event.ctrlKey;
     const metaKey = event.metaKey;
