@@ -4,6 +4,9 @@ import Calendar from '/build/dev/default/Calendar.js';
 const calendar = new Calendar({
     target: document.getElementById('container'),
     props: {
+        targetDate: new Date(),
+        autoSelectTargetDay: true,
+        animationDuration: 600
     }
 });
 
