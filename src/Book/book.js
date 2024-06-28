@@ -1,4 +1,3 @@
-import { tick } from "svelte";
 import { writable, derived, get } from "svelte/store";
 
 
