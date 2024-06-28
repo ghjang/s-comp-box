@@ -26,7 +26,7 @@
   let selectedMonth = -1;
   let selectedDayNumber = -1;
 
-  let xDirection = 0;
+  let direction = "";
   const animationDuration = 600;
 
   // 'getDaysInMonth()'는 '해당 월의 일 수'를 반환한다.
@@ -47,14 +47,14 @@
 
   const handlePrevMonthClick = (event) => {
     event.target.blur();
-    xDirection = -1;
+    direction = "up";
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth - 2, 1);
   };
 
   const handleNextMonthClick = (event) => {
     event.target.blur();
-    xDirection = 1;
+    direction = "down";
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth, 1);
   };
@@ -77,10 +77,10 @@
   };
 
   const handleFlyOutroStart = (event) => {
-    if (xDirection === 1) {
+    if (direction === "up" || direction === "down") {
       event.target.style.willChange = "top";
-    } else if (xDirection === -1) {
-      event.target.style.willChange = "top";
+    } else if (direction === "left" || direction === "right") {
+      event.target.style.willChange = "left";
     } else {
       // do nothing
     }
@@ -91,15 +91,12 @@
   };
 
   const handleFlyIntroStart = (event) => {
-    const h = xDirection * bottomPartSize.height;
     const style = event.target.style;
+    const h = bottomPartSize.height;
 
-    if (xDirection === 1) {
+    if (direction === "up" || direction === "down") {
       style.willChange = "top";
-      style.top = `-${h}px`;
-    } else if (xDirection === -1) {
-      style.willChange = "top";
-      style.top = `${h}px`;
+      style.top = `${-h}px`;
     } else {
       // do nothing
     }
@@ -108,7 +105,7 @@
   const handleFlyIntroEnd = (event) => {
     event.target.style.willChange = "auto";
     event.target.style.top = "0";
-    xDirection = 0;
+    direction = "";
   };
 
   let dayNumbers = [];
@@ -151,9 +148,11 @@
     }
   }
 
+  // NOTE: 'in:fly'에서 'x, y'의 의미는 '현재의 위치'로 최종적으로 도착하기 전의 '애니메이션 시작 위치'를 의미한다.
   class FlyInProp {
     get y() {
-      return xDirection * bottomPartSize.height;
+      const yOffset = bottomPartSize.height;
+      return direction === "up" ? -yOffset : yOffset;
     }
 
     get duration() {
@@ -168,9 +167,11 @@
   //       반영되어 문제가 발생한다. 이 문제를 해결하기 위해 'FlyOutProp' 클래스 객체를 사용하여
   //       'out:fly'에서 동적으로 현재의 이동 방향에을 참조할 수 있도록 함.
   //
+  // NOTE: 'out:fly'에서 'x, y'의 의미는 '현재의 위치'에서 최종적으로 '이동할 위치'를 의미한다.
   class FlyOutProp {
     get y() {
-      return xDirection * -calendarSize.height;
+      const yOffset = bottomPartSize.height;
+      return direction === "up" ? yOffset : -yOffset;
     }
 
     get duration() {
@@ -224,12 +225,12 @@
         </div>
         <button
           class="prevMonth"
-          disabled={xDirection !== 0}
+          disabled={!!direction}
           on:click={handlePrevMonthClick}>&lt;</button
         >
         <button
           class="nextMonth"
-          disabled={xDirection !== 0}
+          disabled={!!direction}
           on:click={handleNextMonthClick}>&gt;</button
         >
         {#each dayNamesOfWeek as dayName}
@@ -346,6 +347,13 @@
         z-index: 1;
         background-color: $bg-color;
 
+        /*
+          NOTE: '.dayNumbers'에 'position: absolute'를 설정하면
+                'display: grid'가 제대로 동작하지 않는다. 'relative'로
+                설정후 'document flow'에 의해서 차례대로 배치된 2개의 div중에서
+                1번째 div는 'out'되는 div이고 2번째 div는 'in'되는 div이다.
+                이 2개의 div의 'top'값을 조정하여 'fly' 애니메이션을 구현했다.
+         */
         .dayNumbers {
           position: relative;
           display: grid;
