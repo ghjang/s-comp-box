@@ -94,8 +94,6 @@
   //
   // - '년, 달' 선택 및 이동 기능 보완
   // - 키보드 네비게이션 추가: '사방' 방향으로 날짜 이동?
-  // - '오늘' 날짜에 '원' 보더 표시
-  // - 애니메이션 도중에 '일 숫자'에 대한 사용자 인터랙션 제한
   // - 간혹 발생하는 '애니메이션 종료'후 '깜빡임' 가능하면 제거
 </script>
 
@@ -129,7 +127,7 @@
         {/each}
       </div>
     </div>
-    <div class="bottomPart">
+    <div class="bottomPart" class:isFlying={$direction !== ""}>
       {#key `${selectedYear}-${selectedMonth}`}
         <div
           class="dayNumbers"
@@ -237,6 +235,10 @@
         position: relative;
         z-index: 1;
         background-color: $bg-color;
+
+        &.isFlying {
+          pointer-events: none;
+        }
 
         /*
           NOTE: '.dayNumbers'에 'position: absolute'를 설정하면
