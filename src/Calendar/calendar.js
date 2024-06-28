@@ -70,9 +70,32 @@ export function createContext(calendarElem) {
 
     // NOTE: 'in:fly'에서 'x, y'의 의미는 '현재의 위치'로 최종적으로 도착하기 전의 '애니메이션 시작 위치'를 의미한다.
     class FlyInProp {
+        get x() {
+            const direction = get(_direction);
+            const xOffset = _bottomPartSize.width;
+
+            switch (direction) {
+                case "left":
+                    return xOffset;
+                case "right":
+                    return -xOffset;
+                default:
+                    return 0;
+            }
+        }
+
         get y() {
+            const direction = get(_direction);
             const yOffset = _bottomPartSize.height;
-            return get(_direction) === "up" ? -yOffset : yOffset;
+
+            switch (direction) {
+                case "up":
+                    return yOffset;
+                case "down":
+                    return -yOffset;
+                default:
+                    return 0;
+            }
         }
 
         get duration() {
@@ -89,9 +112,32 @@ export function createContext(calendarElem) {
     //
     // NOTE: 'out:fly'에서 'x, y'의 의미는 '현재의 위치'에서 최종적으로 '이동할 위치'를 의미한다.
     class FlyOutProp {
+        get x() {
+            const direction = get(_direction);
+            const xOffset = _bottomPartSize.width;
+
+            switch (direction) {
+                case "left":
+                    return -xOffset;
+                case "right":
+                    return xOffset;
+                default:
+                    return 0;
+            }
+        }
+
         get y() {
+            const direction = get(_direction);
             const yOffset = _bottomPartSize.height;
-            return get(_direction) === "up" ? yOffset : -yOffset;
+
+            switch (direction) {
+                case "up":
+                    return -yOffset;
+                case "down":
+                    return yOffset;
+                default:
+                    return 0;
+            }
         }
 
         get duration() {
@@ -125,13 +171,22 @@ export function createContext(calendarElem) {
             event.target.style.willChange = "auto";
         },
 
+        // NOTE: 'in:fly' 대상인 'div'는 'display: relative'로 설정되어 있는 'block' 요소이다.
+        //       'document flow'상 'out:fly' 대상인 'div'의 아래에 위치하고 있다. 'in:fly' 애니메이션의
+        //       'offset'값이 정상 적용될 수 있도록 div의 위치를 미리 조정해 주어야 한다.
         flyIntroStart: (event) => {
             const style = event.target.style;
             const h = _bottomPartSize.height;
             const direction = get(_direction);
 
+            // 'style.top = `${-h}px`;'의 의미는 'out:fly'가 적용되는 이전 'div'의 위치로
+            // 'in:fly' 애니메이션을 적용한 'div'의 최종 도착 위치로 설정하기 위함이다.
+            // 'in:fly' 애니메이션은 설정된 최종 도착 위치에 대한 'offset'값을 적용해서 실행된다.
             if (direction === "up" || direction === "down") {
                 style.willChange = "top";
+                style.top = `${-h}px`;
+            } else if (direction === "left" || direction === "right") {
+                style.willChange = "top, left";
                 style.top = `${-h}px`;
             } else {
                 // do nothing
@@ -141,6 +196,7 @@ export function createContext(calendarElem) {
         flyIntroEnd: (event) => {
             event.target.style.willChange = "auto";
             event.target.style.top = "0";
+            event.target.style.left = "0";
             _direction.set("");
         }
     };

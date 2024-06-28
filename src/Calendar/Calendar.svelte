@@ -59,14 +59,14 @@
 
   const handlePrevMonthClick = (event) => {
     event.target.blur();
-    ctx.direction.set("up");
+    ctx.direction.set("left");
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth - 2, 1);
   };
 
   const handleNextMonthClick = (event) => {
     event.target.blur();
-    ctx.direction.set("down");
+    ctx.direction.set("right");
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth, 1);
   };
