@@ -386,6 +386,11 @@
             padding: $grid-item-padding;
             outline: none;
 
+            /* '일요일'은 '빨간색'으로 표시 */
+            &:nth-child(7n + 1) {
+              color: red;
+            }
+
             &.hoverable {
               border-radius: 50%;
               cursor: pointer;
