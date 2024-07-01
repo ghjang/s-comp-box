@@ -59,14 +59,14 @@
 
   const handlePrevMonthClick = (event) => {
     event.target.blur();
-    ctx.direction.set("left");
+    ctx.direction.set("right");
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth - 2, 1);
   };
 
   const handleNextMonthClick = (event) => {
     event.target.blur();
-    ctx.direction.set("right");
+    ctx.direction.set("left");
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth, 1);
   };
@@ -186,7 +186,7 @@
             // do nothing
           }
         } else {
-          ctx.direction.set("up");
+          ctx.direction.set("down");
           const prevMonLastDay = new Date(selectedYear, selectedMonth - 1, 0);
           const targetDay = Math.min(curDay, prevMonLastDay.getDate());
           targetDate = new Date(selectedYear, selectedMonth - 2, targetDay);
@@ -202,7 +202,7 @@
             // do nothing
           }
         } else {
-          ctx.direction.set("down");
+          ctx.direction.set("up");
           const nextMonLastDay = new Date(selectedYear, selectedMonth + 1, 0);
           const targetDay = Math.min(curDay, nextMonLastDay.getDate());
           targetDate = new Date(selectedYear, selectedMonth, targetDay);
