@@ -6,6 +6,7 @@
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import Console from "../Console/Console.svelte";
+  import DataStore from "../DataStore/DataStore.svelte";
 
   export let pyodideIndexURL = ".";
   export let editorResourcePath;
@@ -14,6 +15,10 @@
   export let autoClearConsole = false;
   export let noConsole = false;
   export let consoleFontSize = "0.5em";
+
+  export const getDataStore = () => dataStore;
+
+  let dataStore = undefined;
 
   let pyodide;
   let editor;
@@ -73,6 +78,25 @@
       editor.layout(true);
     }
   });
+
+  $: if (noConsole && dataStore) {
+    customConsole = {
+      log: (msg) => {
+        if (dataStore.subscriberCount > 0) {
+          dataStore.set({ log: msg });
+        } else {
+          console.log(msg);
+        }
+      },
+      error: (msg) => {
+        if (dataStore.subscriberCount > 0) {
+          dataStore.set({ error: msg });
+        } else {
+          console.error(msg);
+        }
+      }
+    };
+  }
 </script>
 
 <Pyodide
@@ -92,6 +116,7 @@
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />
+    <DataStore bind:this={dataStore} />
   {:else}
     <Splitter
       orientation="vertical"
