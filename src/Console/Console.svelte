@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   // TODO: 여러 유형의 '콘솔 출력' 정의
   //
   // 현재 '문자열'을 입력하는 것으로만 처리하고 있음. 다음과 같은 유형을 지원할 수 있을 것 같음:
@@ -9,6 +9,7 @@
 
   import { onMount } from "svelte";
   import { preventOverscroll } from "../common/action/preventOverscroll.js";
+  import { DataSink } from "../common/data/DataStoreAdaptor";
 
   export let height = "100%";
   export let fontSize = "0.5em";
@@ -17,7 +18,34 @@
   export let autoClear = false;
   export let autoScrollDown = true;
 
-  let consoleDiv;
+  type ConsoleOutput = string | object;
+
+  let consoleDiv: HTMLDivElement;
+
+  export function getDataSink(): DataSink {
+    interface Data {
+      detail?: {
+        log?: ConsoleOutput;
+        error?: ConsoleOutput;
+      };
+      [key: string]: any;
+    }
+
+    return new (class extends DataSink {
+      update(data: Data) {
+        const { detail } = data;
+        if (Object.keys(data).length === 0) {
+          // 완전히 '빈 객체'는 무시
+        } else if (detail?.log) {
+          log(detail.log);
+        } else if (detail?.error) {
+          error(detail.error);
+        } else {
+          error(`invalid console data: ${JSON.stringify(data)}`);
+        }
+      }
+    })();
+  }
 
   export function clear() {
     if (!consoleDiv) {
@@ -27,7 +55,7 @@
     consoleDiv.innerHTML = "";
   }
 
-  export function log(output) {
+  export function log(output: ConsoleOutput) {
     if (!consoleDiv) {
       return;
     }
@@ -45,7 +73,7 @@
     }
   }
 
-  export function error(output) {
+  export function error(output: ConsoleOutput) {
     if (!consoleDiv) {
       return;
     }
@@ -67,7 +95,7 @@
     }
   }
 
-  function processNewLine(output) {
+  function processNewLine(output: ConsoleOutput) {
     return typeof output !== "string" ? output : output.replace(/\n/g, "<br>");
   }
 

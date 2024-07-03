@@ -7,6 +7,7 @@ import postcss from 'rollup-plugin-postcss';
 //import { string } from 'rollup-plugin-string';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
+import typescript from '@rollup/plugin-typescript';
 import { execSync } from 'child_process';
 import sveltePreprocess from 'svelte-preprocess';
 import readline from 'readline';
@@ -92,6 +93,10 @@ function createConfig(targetComponentFilePaths, customElement = false) {
             nodeResolve({
                 browser: true,
                 dedupe: ['svelte']
+            }),
+            typescript({
+                sourceMap: !production,
+                inlineSources: !production
             }),
             production && terser({})
         ].filter(Boolean),

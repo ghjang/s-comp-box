@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
   import TabButtonGroup from "./TabButtonGroup.svelte";
 
@@ -6,6 +7,8 @@
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
+
+  export const getTabComponents = () => tabComponents;
 
   let tabComponents = [];
 
@@ -110,7 +113,9 @@
               {...props}
             />
           {:else}
-            {JSON.stringify(tab)}
+            <div bind:this={tabComponents[index]}>
+              {JSON.stringify(tab)}
+            </div>
           {/if}
         </div>
       {/each}
