@@ -13,6 +13,7 @@
   const dispatch = createEventDispatcher();
 
   export let orientation = "horizontal";
+  export let showPanelCollapseControl = false;
 
   export let content_panel_0_length = "50%";
 
@@ -21,10 +22,40 @@
 
   export let customEvents = [];
 
-  let panelSize = {};
+  export const toggleOrientation = () => {
+    if (orientation === "horizontal") {
+      orientation = "vertical";
+      const sizeInfo = panelSize.panelSize;
+      const prevTotalWidth = sizeInfo.panel_1.right - sizeInfo.panel_0.left;
+      const prevPanel0WidthPercent =
+        (sizeInfo.panel_0.width / prevTotalWidth) * 100;
+      content_panel_0_length = `${prevPanel0WidthPercent}%`;
+    } else if (orientation === "vertical") {
+      orientation = "horizontal";
+      const sizeInfo = panelSize.panelSize;
+      const prevTotalHeight = sizeInfo.panel_1.bottom - sizeInfo.panel_0.top;
+      const prevPanel0HeightPercent =
+        (sizeInfo.panel_0.height / prevTotalHeight) * 100;
+      content_panel_0_length = `${prevPanel0HeightPercent}%`;
+    }
+  };
 
-  let component_0_props = { ...component_0.props, ...panelSize };
-  let component_1_props = { ...component_1.props, ...panelSize };
+  export const clearPanel = () => {
+    component_0 = { component: null, props: {} };
+    component_1 = { component: null, props: {} };
+  };
+  export const clearPanel_0 = () =>
+    (component_0 = { component: null, props: {} });
+  export const clearPanel_1 = () =>
+    (component_1 = { component: null, props: {} });
+
+  export const swapPanel = () => {
+    const temp = component_0;
+    component_0 = { ...component_1 };
+    component_1 = { ...temp };
+  };
+
+  let panelSize = {};
 
   let this_component_0;
   let this_component_1;
@@ -65,6 +96,12 @@
 
   function handlePanelSizeChange(event) {
     panelSize = { panelSize: event.detail };
+  
+    if (orientation === "horizontal") {
+      content_panel_0_length = `${event.detail.panel_0.width}px`;
+    } else if (orientation === "vertical") {
+      content_panel_0_length = `${event.detail.panel_0.height}px`;
+    }
   }
 
   /**
@@ -87,37 +124,40 @@
   {#if orientation === "horizontal"}
     {#if component_0.component && component_1.component}
       <SplitterH
+        {showPanelCollapseControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
           this={component_0.component}
           bind:this={this_component_0}
-          {...component_0_props}
+          {...component_0.props}
           slot="left"
         />
         <svelte:component
           this={component_1.component}
           bind:this={this_component_1}
-          {...component_1_props}
+          {...component_1.props}
           slot="right"
         />
       </SplitterH>
     {:else if component_0.component}
       <SplitterH
+        {showPanelCollapseControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
           this={component_0.component}
           bind:this={this_component_0}
-          {...component_0_props}
+          {...component_0.props}
           slot="left"
         />
         <slot name="right" slot="right" />
       </SplitterH>
     {:else if component_1.component}
       <SplitterH
+        {showPanelCollapseControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -125,12 +165,16 @@
         <svelte:component
           this={component_1.component}
           bind:this={this_component_1}
-          {...component_1_props}
+          {...component_1.props}
           slot="right"
         />
       </SplitterH>
     {:else}
-      <SplitterH {content_panel_0_length} on:panelSizeChanged>
+      <SplitterH
+        {showPanelCollapseControl}
+        {content_panel_0_length}
+        on:panelSizeChanged
+      >
         <slot name="left" slot="left" />
         <slot name="right" slot="right" />
       </SplitterH>
@@ -138,37 +182,40 @@
   {:else if orientation === "vertical"}
     {#if component_0.component && component_1.component}
       <SplitterV
+        {showPanelCollapseControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
           this={component_0.component}
           bind:this={this_component_0}
-          {...component_0_props}
+          {...component_0.props}
           slot="top"
         />
         <svelte:component
           this={component_1.component}
           bind:this={this_component_1}
-          {...component_1_props}
+          {...component_1.props}
           slot="bottom"
         />
       </SplitterV>
     {:else if component_0.component}
       <SplitterV
+        {showPanelCollapseControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
           this={component_0.component}
           bind:this={this_component_0}
-          {...component_0_props}
+          {...component_0.props}
           slot="top"
         />
         <slot name="bottom" slot="bottom" />
       </SplitterV>
     {:else if component_1.component}
       <SplitterV
+        {showPanelCollapseControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -176,12 +223,16 @@
         <svelte:component
           this={component_1.component}
           bind:this={this_component_1}
-          {...component_1_props}
+          {...component_1.props}
           slot="bottom"
         />
       </SplitterV>
     {:else}
-      <SplitterV {content_panel_0_length} on:panelSizeChanged>
+      <SplitterV
+        {showPanelCollapseControl}
+        {content_panel_0_length}
+        on:panelSizeChanged
+      >
         <slot name="top" slot="top" />
         <slot name="bottom" slot="bottom" />
       </SplitterV>

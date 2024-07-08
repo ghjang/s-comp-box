@@ -1,7 +1,9 @@
+import debounce from "lodash-es/debounce";
+
 export function resizeObserver(panel_0, params) {
     let currentParams = params;
 
-    const observer = new ResizeObserver((entries) => {
+    const debouncedHandler = debounce((entries) => {
         const entry = entries[0];
         if (entry.target === panel_0) {
             const panelSizeInfo = {
@@ -10,8 +12,9 @@ export function resizeObserver(panel_0, params) {
             };
             currentParams.onPanelSizeChanged(panelSizeInfo);
         }
-    });
+    }, 100); // 100ms debounce
 
+    const observer = new ResizeObserver(debouncedHandler);
     observer.observe(panel_0);
 
     return {

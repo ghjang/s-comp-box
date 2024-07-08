@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Splitter Dynamic Component Loading Test</title>
+
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+
+    <style>
+        #container {
+            width: 100%;
+            height: 80vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <button id="btnToggle">Toggle Splitter Orientation</button>
+        <button id="btnSwap">Swap Splitter Panel Contents</button>
+        <button id="btnClear">Clear Splitter Panel</button>
+        <br><br>
+    </div>
+
+    <div id="container"></div>
+
+    <script type="module">
+        import Marquee from '/build/dev/default/Marquee.js';
+        import Splitter from '/build/dev/default/Splitter.js';
+
+        const splitter = new Splitter({
+            target: document.querySelector('#container'),
+            props: {
+                orientation: 'horizontal',
+                showPanelCollapseControl: true,
+
+                component_0: {
+                    component: Marquee,
+                    props: {
+                        text: 'Marquee 1'
+                    }
+                },
+
+                component_1: {
+                    component: Marquee,
+                    props: {
+                        text: 'Marquee 2'
+                    }
+                }
+            }
+        });
+
+        document.querySelector('#btnToggle').addEventListener('click', () => {
+            splitter.toggleOrientation();
+        });
+
+        document.querySelector('#btnSwap').addEventListener('click', () => {
+            splitter.swapPanel();
+        });
+
+        document.querySelector('#btnClear').addEventListener('click', () => {
+            splitter.clearPanel();
+        });
+
+        window.addEventListener("beforeunload", () => splitter?.$destroy());
+    </script>
+</body>
+
+</html>
