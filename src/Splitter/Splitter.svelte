@@ -13,7 +13,7 @@
   const dispatch = createEventDispatcher();
 
   export let orientation = "horizontal";
-  export let showPanelCollapseControl = false;
+  export let showPanelControl = false;
 
   export let content_panel_0_length = "50%";
 
@@ -96,7 +96,7 @@
 
   function handlePanelSizeChange(event) {
     panelSize = { panelSize: event.detail };
-  
+
     if (orientation === "horizontal") {
       content_panel_0_length = `${event.detail.panel_0.width}px`;
     } else if (orientation === "vertical") {
@@ -124,7 +124,7 @@
   {#if orientation === "horizontal"}
     {#if component_0.component && component_1.component}
       <SplitterH
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -143,7 +143,7 @@
       </SplitterH>
     {:else if component_0.component}
       <SplitterH
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -157,7 +157,7 @@
       </SplitterH>
     {:else if component_1.component}
       <SplitterH
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -171,7 +171,7 @@
       </SplitterH>
     {:else}
       <SplitterH
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged
       >
@@ -182,7 +182,7 @@
   {:else if orientation === "vertical"}
     {#if component_0.component && component_1.component}
       <SplitterV
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -201,7 +201,7 @@
       </SplitterV>
     {:else if component_0.component}
       <SplitterV
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -215,7 +215,7 @@
       </SplitterV>
     {:else if component_1.component}
       <SplitterV
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
@@ -229,7 +229,7 @@
       </SplitterV>
     {:else}
       <SplitterV
-        {showPanelCollapseControl}
+        {showPanelControl}
         {content_panel_0_length}
         on:panelSizeChanged
       >

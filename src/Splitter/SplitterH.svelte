@@ -6,7 +6,7 @@
 
   const dispatch = createEventDispatcher();
 
-  export let showPanelCollapseControl = false;
+  export let showPanelControl = false;
   export let content_panel_0_length = "50%";
 
   let panel_0;
@@ -17,7 +17,7 @@
   let resetLtrPanelCollapseButtonClicked = null;
   let splitterPanelLength = "auto";
 
-  $: if (showPanelCollapseControl) {
+  $: if (showPanelControl) {
     resetLtrPanelCollapseButtonClicked = debounce(
       () => (ltrPanelCollapseButtonClicked = false),
       300
@@ -32,7 +32,7 @@
     content_panel_0_length = `${sizeInfo.panel_0.width}px`;
     dispatch("panelSizeChanged", sizeInfo);
 
-    if (!showPanelCollapseControl) {
+    if (!showPanelControl) {
       return;
     }
 
@@ -53,7 +53,7 @@
       // - 'ltrPanelCollapseButtonClicked' 플래그를 이용해서 '>' 버튼 클릭 직후에 이 코드 블럭이
       //   실행되지 않도록 막는다.
       // - '오른쪽 패널'이 화면에 안보이고 있는 상태가 '오른쪽 패널이 접힌 상태'이다.
-      // - '오른쪽 패널'이 접힌 상태에서 'splitter-grip-content' 요소를 드래깅해서 '오른쪽 패널'을
+      // - '오른쪽 패널'이 접힌 상태에서 'divider-grip-content' 요소를 드래깅해서 '오른쪽 패널'을
       //   다시 보이게 하는 경우에 'onPanelSizeChanged' 이벤트가 여러번 트리거되는데, 첫번째 이벤트에서
       //   sizeInfo.panel_1.width 값이 0으로 시작한다.
       //
@@ -79,49 +79,46 @@
   // NOTE: 'slot' 요소의 'name, slot' 속성은 동적으로 설정이 불가능하다.
 </script>
 
-<div id="svelte-splitter-container">
+<div class="splitter-container">
   <div
-    id="content-panel-0"
     bind:this={panel_0}
-    class="content-panel"
+    class="content-panel content-panel-0"
     class:ltrPanelCollapseButtonClicked
     style:width={content_panel_0_length}
     use:resizeObserver={{ panel_1, onPanelSizeChanged }}
   >
     <slot name="left"></slot>
   </div>
-  <div id="splitter-panel" style:width={splitterPanelLength}>
-    {#if showPanelCollapseControl}
+  <div class="divider-panel" style:width={splitterPanelLength}>
+    {#if showPanelControl}
       <div
-        id="splitter-grip-content"
-        class="panel-collapse"
+        class="divider-grip-content panel-collapse"
         use:dragGrip={{ direction: "horizontal", panel_0, panel_1 }}
       >
         {#if !rightPanelCollapsed}
           <button
             on:click={() => handlePanelCollapseButtonClick("ltr")}
-            on:mousedown|stopPropagation>&gt;</button
+            on:mousedown|stopPropagation>▶</button
           >
         {/if}
         {#if !leftPanelCollapsed}
           <button
             on:click={() => handlePanelCollapseButtonClick("rtl")}
-            on:mousedown|stopPropagation>&lt;</button
+            on:mousedown|stopPropagation>◀</button
           >
         {/if}
       </div>
     {:else}
       <div
-        class="splitter-grip"
+        class="divider-grip"
         use:dragGrip={{ direction: "horizontal", panel_0, panel_1 }}
       ></div>
     {/if}
   </div>
   <div
-    id="content-panel-1"
-    class="content-panel"
-    class:rightPanelCollapsed
     bind:this={panel_1}
+    class="content-panel content-panel-1"
+    class:rightPanelCollapsed
   >
     <slot name="right"></slot>
   </div>
@@ -130,44 +127,33 @@
 <style lang="scss">
   @import "./splitter.scss";
 
-  #svelte-splitter-container {
+  .splitter-container {
     flex-direction: row;
 
-    #content-panel-0 {
+    .content-panel-0 {
       &.ltrPanelCollapseButtonClicked {
         flex-grow: 1;
       }
     }
 
-    #splitter-panel {
+    .divider-panel {
       flex-direction: row;
 
-      .splitter-grip {
+      .divider-grip {
         width: 1px;
         cursor: ew-resize;
       }
 
-      #splitter-grip-content {
+      .divider-grip-content {
         &.panel-collapse {
-          display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
           min-width: 1px;
           cursor: ew-resize;
-
-          button {
-            display: block;
-            margin: 0;
-            padding: 0;
-            font-size: 0.01em;
-            user-select: none;
-          }
         }
       }
     }
 
-    #content-panel-1 {
+    .content-panel-1 {
       flex-grow: 1;
 
       &.rightPanelCollapsed {
