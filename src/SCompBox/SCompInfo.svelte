@@ -1,15 +1,16 @@
 <script>
-  import Splitter from "../Splitter/Splitter.svelte";
   import Floor from "../Floor/Floor.svelte";
+  import Splitter from "../Splitter/Splitter.svelte";
+  import Tab from "../Tab/Tab.svelte";
 
   export let customElementConfigBasePath;
 
   const configFileName = "s-custom-elements.json";
 
-   // TODO: 내용이 거의 같은 설정 객체 '코드 중복' 제거
-   // 'lodash-es' 패키지를 설치하고 '_.cloneDeep()' 함수를 사용해 '코드 중복'을
-   // 제거 시도했지만, 'Splitter, Floor'등의 '생성자 함수'등을 제대로 딥카피
-   // 하지 못하는 것인지 제대로 동작하지 않음.
+  // TODO: 내용이 거의 같은 설정 객체 '코드 중복' 제거
+  // 'lodash-es' 패키지를 설치하고 '_.cloneDeep()' 함수를 사용해 '코드 중복'을
+  // 제거 시도했지만, 'Splitter, Floor'등의 '생성자 함수'등을 제대로 딥카피
+  // 하지 못하는 것인지 제대로 동작하지 않음.
   export function getAvailableCustomContainers(menuItems) {
     return [
       {
@@ -56,8 +57,25 @@
           },
         },
       },
+      {
+        component: {
+          componentClass: Tab,
+          description: "Tab",
+          props: {
+            selectedTabIndex: 0,
 
-      // TODO: 'Tab' 컨테이너 추가
+            tabs: [
+              {
+                label: "Tab 1",
+                component: Floor,
+                props: {
+                  menuItems,
+                },
+              },
+            ],
+          },
+        },
+      },
     ];
   }
 

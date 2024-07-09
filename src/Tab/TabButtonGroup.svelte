@@ -42,7 +42,7 @@
       tabItems = [...tabItems];
     }
 
-    activatedValue = tabItems[selectedTabIndex].value;
+    activatedValue = tabItems[selectedTabIndex]?.value;
 
     updateTabPosition(tabPosition);
   }
