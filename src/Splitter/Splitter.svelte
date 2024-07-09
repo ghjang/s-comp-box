@@ -14,8 +14,8 @@
 
   export let orientation = "horizontal";
   export let showPanelControl = false;
-
-  export let content_panel_0_length = "50%";
+  
+  export let panel_0_length = "50%";
 
   export let component_0 = { component: null, props: {} };
   export let component_1 = { component: null, props: {} };
@@ -29,14 +29,14 @@
       const prevTotalWidth = sizeInfo.panel_1.right - sizeInfo.panel_0.left;
       const prevPanel0WidthPercent =
         (sizeInfo.panel_0.width / prevTotalWidth) * 100;
-      content_panel_0_length = `${prevPanel0WidthPercent}%`;
+      panel_0_length = `${prevPanel0WidthPercent}%`;
     } else if (orientation === "vertical") {
       orientation = "horizontal";
       const sizeInfo = panelSize.panelSize;
       const prevTotalHeight = sizeInfo.panel_1.bottom - sizeInfo.panel_0.top;
       const prevPanel0HeightPercent =
         (sizeInfo.panel_0.height / prevTotalHeight) * 100;
-      content_panel_0_length = `${prevPanel0HeightPercent}%`;
+      panel_0_length = `${prevPanel0HeightPercent}%`;
     }
   };
 
@@ -98,9 +98,9 @@
     panelSize = { panelSize: event.detail };
 
     if (orientation === "horizontal") {
-      content_panel_0_length = `${event.detail.panel_0.width}px`;
+      panel_0_length = `${event.detail.panel_0.width}px`;
     } else if (orientation === "vertical") {
-      content_panel_0_length = `${event.detail.panel_0.height}px`;
+      panel_0_length = `${event.detail.panel_0.height}px`;
     }
   }
 
@@ -125,7 +125,7 @@
     {#if component_0.component && component_1.component}
       <SplitterH
         {showPanelControl}
-        {content_panel_0_length}
+        {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
@@ -144,7 +144,7 @@
     {:else if component_0.component}
       <SplitterH
         {showPanelControl}
-        {content_panel_0_length}
+        {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
@@ -158,7 +158,7 @@
     {:else if component_1.component}
       <SplitterH
         {showPanelControl}
-        {content_panel_0_length}
+        {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <slot name="left" slot="left" />
@@ -170,11 +170,7 @@
         />
       </SplitterH>
     {:else}
-      <SplitterH
-        {showPanelControl}
-        {content_panel_0_length}
-        on:panelSizeChanged
-      >
+      <SplitterH {showPanelControl} {panel_0_length} on:panelSizeChanged>
         <slot name="left" slot="left" />
         <slot name="right" slot="right" />
       </SplitterH>
@@ -183,7 +179,7 @@
     {#if component_0.component && component_1.component}
       <SplitterV
         {showPanelControl}
-        {content_panel_0_length}
+        {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
@@ -202,7 +198,7 @@
     {:else if component_0.component}
       <SplitterV
         {showPanelControl}
-        {content_panel_0_length}
+        {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <svelte:component
@@ -216,7 +212,7 @@
     {:else if component_1.component}
       <SplitterV
         {showPanelControl}
-        {content_panel_0_length}
+        {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
       >
         <slot name="top" slot="top" />
@@ -228,11 +224,7 @@
         />
       </SplitterV>
     {:else}
-      <SplitterV
-        {showPanelControl}
-        {content_panel_0_length}
-        on:panelSizeChanged
-      >
+      <SplitterV {showPanelControl} {panel_0_length} on:panelSizeChanged>
         <slot name="top" slot="top" />
         <slot name="bottom" slot="bottom" />
       </SplitterV>

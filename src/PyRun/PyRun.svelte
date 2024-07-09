@@ -120,7 +120,7 @@
   {:else}
     <Splitter
       orientation="vertical"
-      content_panel_0_length={"60%"}
+      panel_0_length={"60%"}
       on:panelSizeChanged={handlePanelSizeChange}
     >
       <MonacoEditor

@@ -7,7 +7,7 @@
   const dispatch = createEventDispatcher();
 
   export let showPanelControl = false;
-  export let content_panel_0_length = "50%";
+  export let panel_0_length = "50%";
 
   let panel_0;
   let panel_1;
@@ -29,7 +29,7 @@
   }
 
   function onPanelSizeChanged(sizeInfo) {
-    content_panel_0_length = `${sizeInfo.panel_0.width}px`;
+    panel_0_length = `${sizeInfo.panel_0.width}px`;
     dispatch("panelSizeChanged", sizeInfo);
 
     if (!showPanelControl) {
@@ -84,7 +84,7 @@
     bind:this={panel_0}
     class="content-panel content-panel-0"
     class:ltrPanelCollapseButtonClicked
-    style:width={content_panel_0_length}
+    style:width={panel_0_length}
     use:resizeObserver={{ panel_1, onPanelSizeChanged }}
   >
     <slot name="left"></slot>

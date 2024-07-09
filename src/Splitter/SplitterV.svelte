@@ -7,7 +7,7 @@
   const dispatch = createEventDispatcher();
 
   export let showPanelControl = false;
-  export let content_panel_0_length = "50%";
+  export let panel_0_length = "50%";
 
   let panel_0;
   let panel_1;
@@ -29,7 +29,7 @@
   }
 
   function onPanelSizeChanged(panelSizeInfo) {
-    content_panel_0_length = `${panelSizeInfo.panel_0.height}px`;
+    panel_0_length = `${panelSizeInfo.panel_0.height}px`;
     dispatch("panelSizeChanged", panelSizeInfo);
 
     if (!showPanelControl) {
@@ -69,7 +69,7 @@
     bind:this={panel_0}
     class="content-panel content-panel-0"
     class:ttbPanelCollapseButtonClicked
-    style:height={content_panel_0_length}
+    style:height={panel_0_length}
     use:resizeObserver={{ panel_1, onPanelSizeChanged }}
   >
     <slot name="top"></slot>
