@@ -24,7 +24,7 @@
     };
 
     // NOTE: '디버깅'시 유용할 수 있다. 필요시 주석처리 해제하고 사용할 것.
-    console.log(menuLevel ? "sub menu" : "main menu", menuSize);
+    //console.log(menuLevel ? "sub menu" : "main menu", menuSize);
 
     // NOTE: '상하위 메뉴' 내용이 겹쳐서 표시되지 않도록 'z-index' 값을 설정한다.
     contextMenu.style.zIndex = 1000 + menuLevel;
