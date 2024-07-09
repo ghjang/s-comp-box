@@ -16,6 +16,8 @@
   let sCompInfo;
 
   $: if (sCompInfo) {
+    // NOTE; 아래 비동기 코드에서 채워질 'menuItems' 배열 참조를 넘긴다.
+    //       '커스텀 컨테이너'의 내부에서 로딩된 '커스텀 엘리먼트'를 참조하기 위함이다.
     const customContainers = sCompInfo.getAvailableCustomContainers(menuItems);
 
     sCompInfo
@@ -24,7 +26,16 @@
         return loadCustomElementsInfo(customContainers, customElements);
       })
       .then((_menuItems) => {
-        menuItems = _menuItems;
+        // NOTE: 이 대입문은 이 반응형 블럭을 '무한 루프'로 만든다.
+        //       'menuItems'는 이 반응형 블럭 실행 의존성에 포함되어 있기 때문이다.
+        //menuItems = _menuItems;
+
+        // NOTE: 이 속성 설정 역시 이 반응형 블럭을 '무한 루프'로 만든다.
+        //       이 빈응형 블럭은 초기에 '빈 배열'인 상태에서 실행되기 때문에
+        //       현재 구현에서 명시적으로 'length'를 설정해주지 않아도 문제 없다.
+        //menuItems.length = 0;
+        
+        menuItems.push(..._menuItems);
       })
       .catch((error) => {
         console.error("Failed to load custom elements info: ", error);
@@ -122,4 +133,4 @@
 
 <SCompInfo bind:this={sCompInfo} {customElementConfigBasePath} />
 
-<Floor {menuItems} />
+<Floor {menuItems} designMode={true} />

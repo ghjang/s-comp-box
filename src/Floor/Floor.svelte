@@ -1,11 +1,17 @@
 <script>
+  import Splitter from "../Splitter/Splitter.svelte";
+  import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
+  import FloorChild from "./FloorChild.svelte";
 
   export let menuItems = [];
   export let childComponentInfo = null;
   export let pattern = "honeycomb";
   export let defaultActionHandler = null;
+  export let designMode = false;
+  export let floorLevel = -1;
+  export const floorId = crypto.randomUUID();
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -18,9 +24,28 @@
   export const setFloorPattern = (newPattern) => (pattern = newPattern);
 
   let contextMenu;
+  let floorContainer;
+  let ancestorFloorId;
+
+  let componentTreeData = [];
 
   let showPopUp = false;
   let popUpProps = {};
+
+  $: if (floorContainer) {
+    const ancestorFloorContainer =
+      floorContainer.parentElement.closest(".floor-container");
+
+    // NOTE: '자식 컴포넌트'가 먼저 바인딩된다는 것을 기억할 것.
+    //       아래 'floorLevel'에 대입된 값이 생성된 자식에게 나중에 전달되는
+    //       실행 순서를 기억할 것.
+    if (ancestorFloorContainer) {
+      floorLevel = parseInt(ancestorFloorContainer.dataset.floorLevel) + 1;
+      ancestorFloorId = ancestorFloorContainer.dataset.floorId;
+    } else {
+      floorLevel = 0;
+    }
+  }
 
   function handleMenuItemClicked(event) {
     if (event.detail.link) {
@@ -33,7 +58,7 @@
       }
     } else if (event.detail.popup) {
       // TODO: 'info' 팝업외의 다른 종류의 팝업 처리 추가
-      popUpProps = { ...event.detail.popup } ;
+      popUpProps = { ...event.detail.popup };
       delete popUpProps.text; // '메뉴 항목' 표시용 'text' 속성을 전달하지 않는다.
       showPopUp = true;
     } else if (event.detail.action) {
@@ -67,27 +92,56 @@
       // Do nothing
     }
   }
+
+  function handleComponentTreeChanged(event) {
+    componentTreeData = event.detail.componentTreeData;
+  }
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="floor-box {pattern}"
-  on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+  bind:this={floorContainer}
+  class="floor-container"
+  data-floor-level={floorLevel}
+  data-floor-id={floorId}
 >
-  {#if childComponentInfo}
-    {#if childComponentInfo.componentClass}
-      <svelte:component
-        this={childComponentInfo.componentClass}
-        {...childComponentInfo.props}
+  {#if designMode}
+    <Splitter
+      orientation="horizontal"
+      panel_0_length="20%"
+      showPanelControl="true"
+    >
+      <TreeView slot="left" data={componentTreeData} />
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        slot="right"
+        class="floor-box {pattern}"
+        on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+      >
+        <FloorChild
+          {childComponentInfo}
+          {floorLevel}
+          {floorId}
+          {ancestorFloorId}
+          on:componentTreeChanged={handleComponentTreeChanged}
+        />
+        <slot />
+      </div>
+    </Splitter>
+  {:else}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="floor-box {pattern}"
+      on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+    >
+      <FloorChild
+        {childComponentInfo}
+        {floorLevel}
+        {floorId}
+        {ancestorFloorId}
       />
-    {:else if childComponentInfo.customElementName}
-      <svelte:element
-        this={childComponentInfo.customElementName}
-        {...childComponentInfo.props}
-      />
-    {/if}
+      <slot />
+    </div>
   {/if}
-  <slot />
 </div>
 
 <ContextMenuMediator
@@ -104,31 +158,39 @@
   @import "./pattern.scss";
   @import "./color.scss";
 
-  .floor-box {
+  .floor-container {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     border: none;
 
-    &.dots {
-      @include dots-pattern($primary-color, $secondary-color);
-    }
+    .floor-box {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
 
-    &.honeycomb {
-      @include honeycomb-pattern($primary-color, $secondary-color);
-    }
+      &.dots {
+        @include dots-pattern($primary-color, $secondary-color);
+      }
 
-    &.checkerboard {
-      @include checkerboard-pattern($primary-color, $secondary-color);
-    }
+      &.honeycomb {
+        @include honeycomb-pattern($primary-color, $secondary-color);
+      }
 
-    &.squares {
-      @include squares-pattern($primary-color, $secondary-color);
-    }
+      &.checkerboard {
+        @include checkerboard-pattern($primary-color, $secondary-color);
+      }
 
-    &.stripes {
-      @include stripes-pattern($primary-color, $secondary-color);
+      &.squares {
+        @include squares-pattern($primary-color, $secondary-color);
+      }
+
+      &.stripes {
+        @include stripes-pattern($primary-color, $secondary-color);
+      }
     }
   }
 </style>
