@@ -26,15 +26,32 @@
         return loadCustomElementsInfo(customContainers, customElements);
       })
       .then((_menuItems) => {
-        // NOTE: 이 대입문은 이 반응형 블럭을 '무한 루프'로 만든다.
-        //       'menuItems'는 이 반응형 블럭 실행 의존성에 포함되어 있기 때문이다.
+        // NOTE: 이 '반응형 블럭'과 다른 '비동기 실행 컨텍스트'에 있는
+        //       이 대입문의 실행은 결과적으로 이 반응형 블럭을 '무한 루프'에 빠뜨린다.
+        //       'menuItems'는 이 반응형 블럭 실행 의존성에 포함되어 있다.
         //menuItems = _menuItems;
 
-        // NOTE: 이 속성 설정 역시 이 반응형 블럭을 '무한 루프'로 만든다.
+        // NOTE: 'length' 속성을 설정하는 것은 menuItems 배열 자체를 수정한 것으로
+        //       취급되기 때문에 역시 이 반응형 블럭을 재트리거하게해 '무한 루프'로 만든다.
         //       이 빈응형 블럭은 초기에 '빈 배열'인 상태에서 실행되기 때문에
         //       현재 구현에서 명시적으로 'length'를 설정해주지 않아도 문제 없다.
         //menuItems.length = 0;
         
+        // NOTE: 'push' 메소드 호출은 '객체의 변경'으로 취급되지 않아 이 반응형 블럭을
+        //       재트리거하지 않는다. 결과적으로 '무한 루프'에 빠지지 않는다.
+        //
+        //       '무한 루프'를 회피하는 또다른 방법은 아예 이 반응형 블럭을 별도의 함수로
+        //       분리하고 오직 'sCompInfo' 객체에 대해서만 반응형 블럭의 '의존성 변수'로
+        //       설정하게하는 것이다. 다음과 같이 할 수도 있겠다:
+        //
+        //       function updateMenuItems() {
+        //         // ... 'sCompInfo, menuItems'를 사용한 코드
+        //       }
+        //
+        //       // 'sCompInfo' 객체에 대해서만 반응형 블럭의 '의존성 변수'로 설정
+        //       $: sCompInfo && updateMenuItems();
+        //
+        //       일단 학습 목적의 코드이므로 이 방법을 적용하지 않고 주석내용으로 기록한다.
         menuItems.push(..._menuItems);
       })
       .catch((error) => {

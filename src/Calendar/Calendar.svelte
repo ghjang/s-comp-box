@@ -48,14 +48,23 @@
   let ctx = {}; // '애니메이션'과 관련된 '상태'를 관리하는 '컨텍스트' 객체
   let direction;
 
+  // NOTE: 이 '반응형 블럭'에서 '의존성 변수'는 'calendar' 1개이다.
+  //       'ctx'의 경우는 '코드 텍스트' 자체로만 보았을때는 'ctx.direction'에
+  //       대한 참조가 있어서 '의존성 변수'로 보일 수 있지만, 'ctx'는 'calendar'를
+  //       인자로 하는 'createContext' 함수 호출로 생성(대입)됨으로 이 반응성
+  //       블럭을 트리거하는 '의존성 변수'가 아니라고 '세멘틱 분석' 단계에서 배제되는 것으로 보임.
+  //
+  //       특정 반응성 블럭과 관계된 '의존성 변수'를 판단하는 것은 '최적화'를 거친다.
+  //       대략 다음과 같은 내부 단계를 거친다:
+  //        1. 의존성 추적 - 1차적 '의존성 변수' 추적?
+  //        2. 구분 분석 - '의존성 그래프'의 생성? 의존성 그래프를 통해서 후속 반응형 블럭 트리거 순서 결정?
+  //        3. 세멘틱 분석 - 최종적 '의존성 변수' 판단?
   $: if (calendar) {
     ctx = createContext(calendar);
     direction = ctx.direction;
   }
 
-  $: if (ctx.duration) {
-    ctx.duration.set(animationDuration);
-  }
+  $: ctx.duration?.set(animationDuration);
 
   const handlePrevMonthClick = (event) => {
     event.target.blur();

@@ -15,11 +15,9 @@
   $: floorLevel >= 0 && (context = initContext(contextName));
   $: context && updateFloorState($context);
 
-  $: if (childComponentInfo) {
-    updateChildComponentTreeData();
-  } else {
-    clearChildComponentTreeData();
-  }
+  $: childComponentInfo
+    ? updateChildComponentTreeData()
+    : clearChildComponentTreeData();
 
   function initContext(ctxName) {
     let context;
