@@ -139,7 +139,7 @@ import 'monaco-editor/esm/vs/basic-languages/python/python.contribution.js';
 
 let workerUrl = './editor.worker.bundle.js';
 
-self.MonacoEnvironment = {
+globalThis.MonacoEnvironment = {
 	getWorkerUrl: function (moduleId, label) {
 		// if (label === 'json') {
 		// 	return './json.worker.bundle.js';
