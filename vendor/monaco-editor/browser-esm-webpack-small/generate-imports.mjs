@@ -3,11 +3,15 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const glob = require('glob');
-const path = require('path');
-const fs = require('fs');
+import { glob } from 'glob';
+import { join, dirname, posix } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 
-const FILE_PATH = path.join(__dirname, 'index.js');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const FILE_PATH = join(__dirname, 'index.js');
 generateLanguages();
 generateFeatures();
 
@@ -18,7 +22,7 @@ function getBasicLanguages() {
 	return new Promise((resolve, reject) => {
 		glob(
 			'./node_modules/monaco-editor/esm/vs/basic-languages/*/*.contribution.js',
-			{ cwd: path.dirname(__dirname) },
+			{ cwd: dirname(__dirname) },
 			(err, files) => {
 				if (err) {
 					reject(err);
@@ -42,7 +46,7 @@ function getAdvancedLanguages() {
 	return new Promise((resolve, reject) => {
 		glob(
 			'./node_modules/monaco-editor/esm/vs/language/*/monaco.contribution.js',
-			{ cwd: path.dirname(__dirname) },
+			{ cwd: dirname(__dirname) },
 			(err, files) => {
 				if (err) {
 					reject(err);
@@ -72,12 +76,12 @@ function generateLanguages() {
 				.map((l) => `${/python/.test(l) ? '' : '// '}${l}`)
 				.join('\n');
 
-			let contents = fs.readFileSync(FILE_PATH).toString();
+			let contents = readFileSync(FILE_PATH).toString();
 			contents = contents.replace(
 				/\/\/ BEGIN_LANGUAGES\n([\/ a-zA-Z0-9'\/\-\.;]+\n)+\/\/ END_LANGUAGES/,
 				`// BEGIN_LANGUAGES\n${imports}\n// END_LANGUAGES`
 			);
-			fs.writeFileSync(FILE_PATH, contents);
+			writeFileSync(FILE_PATH, contents);
 		}
 	);
 }
@@ -105,20 +109,18 @@ function generateFeatures() {
 
 	let features = [];
 	const files =
-		fs
-			.readFileSync(
-				path.join(__dirname, '../node_modules/monaco-editor/esm/vs/editor/edcore.main.js')
+		readFileSync(
+				join(__dirname, '../../../node_modules/monaco-editor/esm/vs/editor/edcore.main.js')
 			)
 			.toString() +
-		fs
-			.readFileSync(
-				path.join(__dirname, '../node_modules/monaco-editor/esm/vs/editor/editor.all.js')
+		readFileSync(
+				join(__dirname, '../../../node_modules/monaco-editor/esm/vs/editor/editor.all.js')
 			)
 			.toString();
 	files.split(/\r\n|\n/).forEach((line) => {
 		const m = line.match(/import '([^']+)'/);
 		if (m) {
-			const tmp = path.posix.join('vs/editor', m[1]).replace(/\.js$/, '');
+			const tmp = posix.join('vs/editor', m[1]).replace(/\.js$/, '');
 			if (skipImports.indexOf(tmp) === -1) {
 				features.push(tmp);
 			}
@@ -131,10 +133,10 @@ function generateFeatures() {
 		.map((l) => `${/(coreCommands)|(findController)/.test(l) ? '' : '// '}${l}`)
 		.join('\n');
 
-	let contents = fs.readFileSync(FILE_PATH).toString();
+	let contents = readFileSync(FILE_PATH).toString();
 	contents = contents.replace(
 		/\/\/ BEGIN_FEATURES\n([\/ a-zA-Z0-9'\/\-\.;]+\n)+\/\/ END_FEATURES/,
 		`// BEGIN_FEATURES\n${imports}\n// END_FEATURES`
 	);
-	fs.writeFileSync(FILE_PATH, contents);
+	writeFileSync(FILE_PATH, contents);
 }
