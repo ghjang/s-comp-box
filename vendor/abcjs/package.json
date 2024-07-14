@@ -1,0 +1,7 @@
+{
+    "scripts": {
+        "prebuild": "rimraf dist",
+        "build": "npx rollup -c",
+        "postbuild": "cp abcjs.html dist/"
+    }
+}
