@@ -1,5 +1,6 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const { library } = require('webpack');
 
 module.exports = {
 	mode: 'production',
@@ -14,8 +15,15 @@ module.exports = {
 	output: {
 		globalObject: 'self',
 		filename: '[name].bundle.js',
-		path: path.resolve(__dirname, 'dist')
+		path: path.resolve(__dirname, 'dist'),
+		library: {
+			type: 'module'
+		}
 	},
+	experiments: {
+		outputModule: true
+	},
+	devtool: 'source-map',
 	module: {
 		rules: [
 			{
