@@ -5,7 +5,7 @@ const { library } = require('webpack');
 module.exports = {
 	mode: 'production',
 	entry: {
-		app: './index.js',
+		'monaco-editor': './index.js',
 		'editor.worker': 'monaco-editor/esm/vs/editor/editor.worker.js'
 		// "json.worker": 'monaco-editor/esm/vs/language/json/json.worker',
 		// "css.worker": 'monaco-editor/esm/vs/language/css/css.worker',
