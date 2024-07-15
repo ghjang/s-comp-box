@@ -2,7 +2,7 @@
 	"name": "browser-esm-webpack-small",
 	"scripts": {
 		"prebuild": "rimraf dist",
-		"build": "node ../../../node_modules/webpack/bin/webpack.js --progress",
+		"build": "webpack --progress && webpack --config webpack.config.worker.js --progress",
 		"postbuild": "cp ./src/monaco-editor.html dist/",
 		"generate-imports": "node ./src/generate-imports.mjs"
 	}
