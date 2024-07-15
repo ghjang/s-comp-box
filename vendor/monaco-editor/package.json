@@ -1,0 +1,6 @@
+{
+	"name": "browser-esm-rollup-small",
+	"scripts": {
+		"generate-imports": "node ./generate-imports.mjs"
+	}
+}

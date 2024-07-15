@@ -1,55 +1,62 @@
 // (1) Desired editor features:
 // BEGIN_FEATURES
-
-//import 'monaco-editor/esm/vs/editor/browser/controller/coreCommands.js';
 import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
-
 // import 'monaco-editor/esm/vs/editor/browser/widget/codeEditorWidget.js';
-// import 'monaco-editor/esm/vs/editor/browser/widget/diffEditorWidget.js';
-// import 'monaco-editor/esm/vs/editor/browser/widget/diffNavigator.js';
-// import 'monaco-editor/esm/vs/editor/contrib/anchorSelect/anchorSelect.js';
-// import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/bracketMatching.js';
-// import 'monaco-editor/esm/vs/editor/contrib/caretOperations/caretOperations.js';
-// import 'monaco-editor/esm/vs/editor/contrib/caretOperations/transpose.js';
-// import 'monaco-editor/esm/vs/editor/contrib/clipboard/clipboard.js';
-// import 'monaco-editor/esm/vs/editor/contrib/codeAction/codeActionContributions.js';
-// import 'monaco-editor/esm/vs/editor/contrib/codelens/codelensController.js';
-// import 'monaco-editor/esm/vs/editor/contrib/colorPicker/colorContributions.js';
-// import 'monaco-editor/esm/vs/editor/contrib/comment/comment.js';
-// import 'monaco-editor/esm/vs/editor/contrib/contextmenu/contextmenu.js';
-// import 'monaco-editor/esm/vs/editor/contrib/cursorUndo/cursorUndo.js';
-// import 'monaco-editor/esm/vs/editor/contrib/dnd/dnd.js';
-// import 'monaco-editor/esm/vs/editor/contrib/documentSymbols/documentSymbols.js';
+// import 'monaco-editor/esm/vs/editor/browser/widget/diffEditor/diffEditor.contribution.js';
+// import 'monaco-editor/esm/vs/editor/contrib/anchorSelect/browser/anchorSelect.js';
+// import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js';
+// import 'monaco-editor/esm/vs/editor/contrib/caretOperations/browser/caretOperations.js';
+// import 'monaco-editor/esm/vs/editor/contrib/caretOperations/browser/transpose.js';
+// import 'monaco-editor/esm/vs/editor/contrib/clipboard/browser/clipboard.js';
+// import 'monaco-editor/esm/vs/editor/contrib/codeAction/browser/codeActionContributions.js';
+// import 'monaco-editor/esm/vs/editor/contrib/codelens/browser/codelensController.js';
+// import 'monaco-editor/esm/vs/editor/contrib/colorPicker/browser/colorContributions.js';
+// import 'monaco-editor/esm/vs/editor/contrib/colorPicker/browser/standaloneColorPickerActions.js';
+// import 'monaco-editor/esm/vs/editor/contrib/comment/browser/comment.js';
+// import 'monaco-editor/esm/vs/editor/contrib/contextmenu/browser/contextmenu.js';
+// import 'monaco-editor/esm/vs/editor/contrib/cursorUndo/browser/cursorUndo.js';
+// import 'monaco-editor/esm/vs/editor/contrib/diffEditorBreadcrumbs/browser/contribution.js';
+// import 'monaco-editor/esm/vs/editor/contrib/dnd/browser/dnd.js';
+// import 'monaco-editor/esm/vs/editor/contrib/documentSymbols/browser/documentSymbols.js';
+// import 'monaco-editor/esm/vs/editor/contrib/dropOrPasteInto/browser/copyPasteContribution.js';
+// import 'monaco-editor/esm/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorContribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
-// import 'monaco-editor/esm/vs/editor/contrib/folding/folding.js';
-// import 'monaco-editor/esm/vs/editor/contrib/fontZoom/fontZoom.js';
-
-// TODO: 기능 활성화에 따른 '번들링 파일 크기 증가' 문제를 어떻게 완화시킬 수 있는지 고민해볼 것.
-import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js';
-
-// import 'monaco-editor/esm/vs/editor/contrib/gotoError/gotoError.js';
-// import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/goToCommands.js';
-// import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/link/goToDefinitionAtPosition.js';
-// import 'monaco-editor/esm/vs/editor/contrib/hover/hover.js';
-// import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/inPlaceReplace.js';
-// import 'monaco-editor/esm/vs/editor/contrib/indentation/indentation.js';
-// import 'monaco-editor/esm/vs/editor/contrib/inlineHints/inlineHintsController.js';
-// import 'monaco-editor/esm/vs/editor/contrib/linesOperations/linesOperations.js';
-// import 'monaco-editor/esm/vs/editor/contrib/linkedEditing/linkedEditing.js';
-// import 'monaco-editor/esm/vs/editor/contrib/links/links.js';
-// import 'monaco-editor/esm/vs/editor/contrib/multicursor/multicursor.js';
-// import 'monaco-editor/esm/vs/editor/contrib/parameterHints/parameterHints.js';
-// import 'monaco-editor/esm/vs/editor/contrib/rename/rename.js';
-// import 'monaco-editor/esm/vs/editor/contrib/smartSelect/smartSelect.js';
-// import 'monaco-editor/esm/vs/editor/contrib/snippet/snippetController2.js';
-// import 'monaco-editor/esm/vs/editor/contrib/suggest/suggestController.js';
-// import 'monaco-editor/esm/vs/editor/contrib/toggleTabFocusMode/toggleTabFocusMode.js';
-// import 'monaco-editor/esm/vs/editor/contrib/unusualLineTerminators/unusualLineTerminators.js';
-// import 'monaco-editor/esm/vs/editor/contrib/viewportSemanticTokens/viewportSemanticTokens.js';
-// import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/wordHighlighter.js';
-// import 'monaco-editor/esm/vs/editor/contrib/wordOperations/wordOperations.js';
-// import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/wordPartOperations.js';
-// import 'monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp.js';
+// import 'monaco-editor/esm/vs/editor/contrib/folding/browser/folding.js';
+// import 'monaco-editor/esm/vs/editor/contrib/fontZoom/browser/fontZoom.js';
+// import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js';
+// import 'monaco-editor/esm/vs/editor/contrib/gotoError/browser/gotoError.js';
+// import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/goToCommands.js';
+// import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js';
+// import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hover.js';
+// import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/browser/inPlaceReplace.js';
+// import 'monaco-editor/esm/vs/editor/contrib/indentation/browser/indentation.js';
+// import 'monaco-editor/esm/vs/editor/contrib/inlayHints/browser/inlayHintsContribution.js';
+import 'monaco-editor/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution.js';
+import 'monaco-editor/esm/vs/editor/contrib/inlineEdit/browser/inlineEdit.contribution.js';
+import 'monaco-editor/esm/vs/editor/contrib/inlineProgress/browser/inlineProgress.js';
+// import 'monaco-editor/esm/vs/editor/contrib/lineSelection/browser/lineSelection.js';
+// import 'monaco-editor/esm/vs/editor/contrib/linesOperations/browser/linesOperations.js';
+// import 'monaco-editor/esm/vs/editor/contrib/linkedEditing/browser/linkedEditing.js';
+// import 'monaco-editor/esm/vs/editor/contrib/links/browser/links.js';
+// import 'monaco-editor/esm/vs/editor/contrib/longLinesHelper/browser/longLinesHelper.js';
+// import 'monaco-editor/esm/vs/editor/contrib/multicursor/browser/multicursor.js';
+// import 'monaco-editor/esm/vs/editor/contrib/parameterHints/browser/parameterHints.js';
+// import 'monaco-editor/esm/vs/editor/contrib/readOnlyMessage/browser/contribution.js';
+// import 'monaco-editor/esm/vs/editor/contrib/rename/browser/rename.js';
+// import 'monaco-editor/esm/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.js';
+// import 'monaco-editor/esm/vs/editor/contrib/semanticTokens/browser/viewportSemanticTokens.js';
+// import 'monaco-editor/esm/vs/editor/contrib/smartSelect/browser/smartSelect.js';
+// import 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetController2.js';
+// import 'monaco-editor/esm/vs/editor/contrib/stickyScroll/browser/stickyScrollContribution.js';
+// import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js';
+// import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestInlineCompletions.js';
+// import 'monaco-editor/esm/vs/editor/contrib/toggleTabFocusMode/browser/toggleTabFocusMode.js';
+// import 'monaco-editor/esm/vs/editor/contrib/tokenization/browser/tokenization.js';
+// import 'monaco-editor/esm/vs/editor/contrib/unicodeHighlighter/browser/unicodeHighlighter.js';
+// import 'monaco-editor/esm/vs/editor/contrib/unusualLineTerminators/browser/unusualLineTerminators.js';
+// import 'monaco-editor/esm/vs/editor/contrib/wordHighlighter/browser/wordHighlighter.js';
+// import 'monaco-editor/esm/vs/editor/contrib/wordOperations/browser/wordOperations.js';
+// import 'monaco-editor/esm/vs/editor/contrib/wordPartOperations/browser/wordPartOperations.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/inspectTokens/inspectTokens.js';
 // import 'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess.js';
@@ -137,7 +144,7 @@ import 'monaco-editor/esm/vs/basic-languages/python/python.contribution.js';
 // import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js';
 // END_LANGUAGES
 
-let workerUrl = './editor.worker.bundle.js';
+let workerUrl = new URL('./editor.worker.bundle.js', import.meta.url);
 
 globalThis.MonacoEnvironment = {
 	getWorkerUrl: function (moduleId, label) {
@@ -179,7 +186,7 @@ monaco.editor.create(document.getElementById('container'), {
 */
 
 export function setWorkerUrl(url) {
-	workerUrl = url;
+	workerUrl = new URL(url, import.meta.url);
 }
 
 export function createMonacoEditor(element, options) {
