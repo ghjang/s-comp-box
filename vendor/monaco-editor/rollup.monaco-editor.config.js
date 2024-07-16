@@ -13,31 +13,41 @@ const inputs = {
     'editor.worker': '../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js'
 };
 
-export default Object.keys(inputs).map(name => ({
-    input: inputs[name],
-    output: {
-        dir: path.resolve(__dirname, outputDirPath),
-        format: 'esm',
-        sourcemap: true,
-        entryFileNames: '[name].bundle.js',
-        chunkFileNames: '[name].bundle.[hash].js',
-        manualChunks(id) {
-            if (id.includes('node_modules')) {
-                const libraryName = id.split('node_modules/')[1].split('/')[0];
-                return `vendor.${libraryName}`;
+export default Object.keys(inputs).map(name => {
+    const configObj = {
+        input: inputs[name],
+        output: {
+            dir: path.resolve(__dirname, outputDirPath),
+            format: 'esm',
+            sourcemap: true,
+            entryFileNames: '[name].bundle.js',
+            chunkFileNames: '[name].bundle.[hash].js',
+            manualChunks(id) {
+                if (id.includes('node_modules')) {
+                    const libraryName = id.split('node_modules/')[1].split('/')[0];
+                    return `vendor.${libraryName}`;
+                }
             }
-        }
-    },
-    plugins: [
-        nodeResolve({
-            browser: true,
-            preferBuiltins: false
-        }),
-        css({ output: `${name}.css` }),
-        url({
-            include: ['**/*.ttf'],
-            limit: Infinity
-        }),
-        isProduction && terser()
-    ]
-}));
+        },
+        plugins: [
+            nodeResolve({
+                browser: true,
+                preferBuiltins: false
+            }),
+            css({ output: `${name}.css` }),
+            url({
+                include: ['**/*.ttf'],
+                limit: Infinity
+            }),
+            isProduction && terser()
+        ]
+    }
+
+    // NOTE: '모나코 에디터'의 '웹 워커'를 'ESM'으로 빌드시 '런타임 에러'가 발생함.
+    if (name.endsWith('worker')) {
+        configObj.output.format = 'umd';
+        configObj.output.name = 'MonacoEditorWorker'; // UMD 네임스페이스
+    }
+
+    return configObj;
+});
