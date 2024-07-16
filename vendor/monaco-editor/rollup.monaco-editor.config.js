@@ -9,7 +9,7 @@ const outputDirBaseName = isProduction ? 'dist' : 'dev';
 const outputDirPath = `../../build/${outputDirBaseName}/vendor/monaco-editor`;
 
 const inputs = {
-    'monaco-editor-small-python': './monaco-editor-small-python.js',
+    'monaco-editor-custom': './monaco-editor-custom.js',
     'editor.worker': '../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js'
 };
 

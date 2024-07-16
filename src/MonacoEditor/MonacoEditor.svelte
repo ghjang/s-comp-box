@@ -6,10 +6,10 @@
     createMonacoEditor,
     getMonacoKeyBindingConstant,
     setWorkerUrl
-  } from "../../vendor/monaco-editor/dist-bundle/monaco-editor-small-python.bundle.js";
+  } from "../../vendor/monaco-editor/dist-bundle/monaco-editor-custom.bundle.js";
 
   export let resourcePath = null;
-  export let bundleName = "monaco-editor-small-python";
+  export let bundleName = "monaco-editor-custom";
   export let workerPath = "editor.worker.bundle.js";
 
   export let width = "100%";

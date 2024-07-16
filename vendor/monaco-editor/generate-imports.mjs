@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const FILE_PATH = join(__dirname, 'monaco-editor-small-python.js');
+const FILE_PATH = join(__dirname, 'monaco-editor-custom.js');
 generateLanguages();
 generateFeatures();
 

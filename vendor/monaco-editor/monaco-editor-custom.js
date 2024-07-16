@@ -144,6 +144,10 @@ import 'monaco-editor/esm/vs/basic-languages/python/python.contribution.js';
 // import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js';
 // END_LANGUAGES
 
+
+//==============================================================================
+// NOTE: 'browser-esm-webpack-small' 샘플 번들링 예제를 참고해서 작성함.
+//==============================================================================
 let workerUrl = new URL('./editor.worker.bundle.js', import.meta.url);
 
 globalThis.MonacoEnvironment = {
