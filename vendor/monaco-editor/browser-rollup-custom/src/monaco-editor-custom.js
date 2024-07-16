@@ -148,6 +148,7 @@ import 'monaco-editor/esm/vs/basic-languages/python/python.contribution.js';
 //==============================================================================
 // NOTE: 'browser-esm-webpack-small' 샘플 번들링 예제를 참고해서 작성함.
 //==============================================================================
+
 let workerUrl = new URL('./editor.worker.bundle.js', import.meta.url);
 
 globalThis.MonacoEnvironment = {
@@ -169,26 +170,6 @@ globalThis.MonacoEnvironment = {
 	}
 };
 
-/*
-monaco.editor.create(document.getElementById('container'), {
-	value: [
-		'from banana import *',
-		'',
-		'class Monkey:',
-		'	# Bananas the monkey can eat.',
-		'	capacity = 10',
-		'	def eat(self, N):',
-		"		'''Make the monkey eat N bananas!'''",
-		'		capacity = capacity - N*banana.size',
-		'',
-		'	def feeding_frenzy(self):',
-		'		eat(9.25)',
-		'		return "Yum yum"'
-	].join('\n'),
-	language: 'python'
-});
-*/
-
 export function setWorkerUrl(url) {
 	workerUrl = new URL(url, import.meta.url);
 }
@@ -202,4 +183,12 @@ export function getMonacoKeyBindingConstant() {
 		keyMod: monaco.KeyMod,
 		keyCode: monaco.KeyCode
 	};
+}
+
+export function registerCustomLanguage(langOpts) {
+	const { id, tokenizer } = langOpts;
+
+	monaco.languages.register({ id });
+
+	monaco.languages.setMonarchTokensProvider(id, { tokenizer });
 }

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const FILE_PATH = join(__dirname, 'monaco-editor-custom.js');
+const FILE_PATH = join(__dirname, 'src/monaco-editor-custom.js');
 generateLanguages();
 generateFeatures();
 
@@ -110,11 +110,11 @@ function generateFeatures() {
 	let features = [];
 	const files =
 		readFileSync(
-				join(__dirname, '../../node_modules/monaco-editor/esm/vs/editor/edcore.main.js')
+				join(__dirname, '../../../node_modules/monaco-editor/esm/vs/editor/edcore.main.js')
 			)
 			.toString() +
 		readFileSync(
-				join(__dirname, '../../node_modules/monaco-editor/esm/vs/editor/editor.all.js')
+				join(__dirname, '../../../node_modules/monaco-editor/esm/vs/editor/editor.all.js')
 			)
 			.toString();
 	files.split(/\r\n|\n/).forEach((line) => {

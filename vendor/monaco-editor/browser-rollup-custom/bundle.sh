@@ -6,8 +6,8 @@ if [ -z "${NODE_ENV}" ]; then
   exit 1
 fi
 
-BUILD_DIR="../../build/${NODE_ENV}/vendor/monaco-editor"
-DEST_DIR="../../vendor/monaco-editor/dist-bundle"
+BUILD_DIR="../../../build/${NODE_ENV}/vendor/monaco-editor"
+DEST_DIR="../../../vendor/monaco-editor/browser-rollup-custom/dist"
 
 printf "Running rollup..."
 npx rollup --config rollup.monaco-editor.config.js
@@ -19,7 +19,8 @@ if [ -d "${BUILD_DIR}" ]; then
   echo "done."
 
   printf "Copying 'codicon.ttf'..."
-  cp ./codicon.ttf ${BUILD_DIR}
+  cp ./src/codicon.ttf ${BUILD_DIR}
+  echo "done."
 
   printf "Copying build directory to destination..."
   cp -r ${BUILD_DIR} ${DEST_DIR}

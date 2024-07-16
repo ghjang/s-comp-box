@@ -5,8 +5,11 @@
   import {
     createMonacoEditor,
     getMonacoKeyBindingConstant,
-    setWorkerUrl
-  } from "../../vendor/monaco-editor/dist-bundle/monaco-editor-custom.bundle.js";
+    setWorkerUrl,
+    registerCustomLanguage as register,
+  } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
+
+  const dispatch = createEventDispatcher();
 
   export let resourcePath = null;
   export let bundleName = "monaco-editor-custom";
@@ -21,8 +24,7 @@
 
   export const setCodeText = (code) => (value = code);
   export const getCodeText = () => value;
-
-  const dispatch = createEventDispatcher();
+  export const registerCustomLanguage = register;
 
   let editorContainer;
   let editor;
@@ -91,7 +93,7 @@
 
     if (workerPath) {
       setWorkerUrl(`${resourcePath}/${workerPath}`);
-    } 
+    }
 
     editor = createMonacoEditor(editorContainer, {
       value,

@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "bundle-monaco-editor": "cd vendor/monaco-editor && sh bundle.sh dist",
+    "clean": "rimraf build/*",
+    "bundle-monaco-editor": "cd vendor/monaco-editor/browser-rollup-custom && sh bundle.sh dist",
     "bundle-mathjax": "cd vendor/mathjax && sh bundle.sh dist",
     "predev": "rimraf build/dev",
     "dev": "rollup -c -w",

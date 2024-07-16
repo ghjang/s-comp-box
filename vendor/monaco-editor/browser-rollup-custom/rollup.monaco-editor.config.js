@@ -6,11 +6,11 @@ import url from '@rollup/plugin-url';
 
 const isProduction = process.env.NODE_ENV === 'dist';
 const outputDirBaseName = isProduction ? 'dist' : 'dev';
-const outputDirPath = `../../build/${outputDirBaseName}/vendor/monaco-editor`;
+const outputDirPath = `../../../build/${outputDirBaseName}/vendor/monaco-editor`;
 
 const inputs = {
-    'monaco-editor-custom': './monaco-editor-custom.js',
-    'editor.worker': '../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js'
+    'monaco-editor-custom': './src/monaco-editor-custom.js',
+    'editor.worker': '../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js'
 };
 
 export default Object.keys(inputs).map(name => {

@@ -86,7 +86,7 @@ jobs:
           cp -r test pages/docroot/test
           mv pages/docroot/test/${REPO_NAME}.html pages/docroot/test/index.html
           find pages/docroot/test -type f \( -name "*.html" -o -name "*.js" \) -exec sed -i \
-            -e "s|/vendor/monaco-editor/dist-bundle|/${REPO_NAME}/resources/monaco-editor|g" \
+            -e "s|/vendor/monaco-editor/browser-rollup-custom/dist|/${REPO_NAME}/resources/monaco-editor|g" \
             -e "s|/build/dev/vendor/pyodide|/${REPO_NAME}/resources/pyodide|g" \
             -e "s|/build/dev/vendor/pdfjs|/${REPO_NAME}/resources/pdfjs|g" \
             -e "s|/build/dev/vendor/mathjax|/${REPO_NAME}/resources/mathjax|g" \

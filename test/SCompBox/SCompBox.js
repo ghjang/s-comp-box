@@ -15,7 +15,7 @@ const sCompBox = new SCompBox({
             },
             PyRun: {
                 pyodideIndexURL: "/build/dev/vendor/pyodide",
-                editorResourcePath: "/vendor/monaco-editor/dist-bundle",
+                editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist",
                 code: 'print("Hello, Pyodide!")'
             }
         }

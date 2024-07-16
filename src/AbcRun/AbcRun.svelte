@@ -1,25 +1,59 @@
 <script>
-  import { onMount } from "svelte";
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
+  import tokenizer from "./abc.tokenizer.js";
 
-  onMount(() => {
-    abcjs.renderAbc("note-staff", "X:1\nK:C\nCDEFGABcdefgab");
-  });
+  export let editorResourcePath;
+  export let abcText = "";
+
+  const renderAbc = () => abcjs.renderAbc("note-staff", abcText);
+
+  let editor;
+
+  $: if (editor) {
+    const languageId = "abc";
+    editor.registerCustomLanguage({ id: languageId, tokenizer });
+    renderAbc();
+  }
+
+  function handlePanelSizeChange() {
+    editor?.update();
+  }
+
+  function handleContentChange(event) {
+    abcText = event.detail.value;
+    renderAbc();
+  }
 </script>
 
 <div class="abcrun-box">
-  <div id="note-staff"></div>
-  <MonacoEditor />
+  <Splitter orientation="vertical" on:panelSizeChanged={handlePanelSizeChange}>
+    <div id="note-staff" slot="top"></div>
+    <MonacoEditor
+      bind:this={editor}
+      slot="bottom"
+      resourcePath={editorResourcePath}
+      language="abc"
+      value={abcText}
+      on:contentChange={handleContentChange}
+    />
+  </Splitter>
 </div>
 
-<style>
+<style lang="scss">
   .abcrun-box {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     border: none;
+
+    #note-staff {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: lightgray;
+    }
   }
 </style>

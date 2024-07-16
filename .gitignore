@@ -165,5 +165,5 @@ pages/docroot/scripts/custom/**/*.js
 pages/docroot/scripts/custom/**/*.css
 pages/docroot/scripts/custom/**/*.json
 
-vendor/monaco-editor/dist-bundle/
+vendor/monaco-editor/browser-rollup-custom/dist/
 vendor/mathjax/dist-bundle/

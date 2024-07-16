@@ -14,7 +14,7 @@ const tab = new Tab({
                 component: PyRun,
                 props: {
                     pyodideIndexURL: "/build/dev/vendor/pyodide",
-                    editorResourcePath: "/vendor/monaco-editor/dist-bundle",
+                    editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist",
                     code: 'print("Hello, Pyodide!")'
                 }
             },
@@ -23,7 +23,7 @@ const tab = new Tab({
                 component: PyRun,
                 props: {
                     pyodideIndexURL: "/build/dev/vendor/pyodide",
-                    editorResourcePath: "/vendor/monaco-editor/dist-bundle",
+                    editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist",
                     code: 'print("From Tab, Hello, Pyodide!")',
                     autoClearConsole: true
                 }
@@ -34,7 +34,7 @@ const tab = new Tab({
                 component: PyRun,
                 props: {
                     pyodideIndexURL: "/build/dev/vendor/pyodide",
-                    editorResourcePath: "/vendor/monaco-editor/dist-bundle",
+                    editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist",
                     code: 'print("From Tab, Hello, Pyodide!")',
                     noConsole: true
                 }

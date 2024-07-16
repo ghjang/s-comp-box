@@ -1,6 +1,7 @@
 {
 	"name": "browser-esm-rollup-small",
 	"scripts": {
+		"bundle": "./bundle.sh dev",
 		"generate-imports": "node ./generate-imports.mjs"
 	}
 }
