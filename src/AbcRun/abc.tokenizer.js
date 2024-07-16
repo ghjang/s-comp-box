@@ -1,3 +1,4 @@
+// NOTE: abc.bnf 파일로부터 작성함.
 const tokenizer = {
     root: [
         // Comments
