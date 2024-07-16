@@ -45,6 +45,9 @@ jobs:
       - name: Bundle Monaco Editor
         run: npm run bundle-monaco-editor
 
+      - name: Bundle abcjs
+        run: npm run bundle-abcjs
+
       #- name: Bundle MathJax
       #  run: npm run bundle-mathjax
 
