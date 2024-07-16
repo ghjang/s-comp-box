@@ -41,6 +41,7 @@
       resourcePath={editorResourcePath}
       language="abc"
       value={abcText}
+      hover={true}
       on:contentChange={handleContentChange}
     />
   </Splitter>

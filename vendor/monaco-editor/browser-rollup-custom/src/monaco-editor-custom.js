@@ -200,7 +200,7 @@ export function registerCustomLanguage(langOpts) {
 		monaco.languages.setMonarchTokensProvider(id, { tokenizer });
 	}
 
-	if (completionItemProvider) {		
+	if (completionItemProvider) {
 		monaco.languages.registerCompletionItemProvider(id, completionItemProvider);
 	}
 }

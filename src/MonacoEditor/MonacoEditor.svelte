@@ -21,6 +21,7 @@
   export let value = "";
   export let language = "python";
   export let theme = "vs-dark";
+  export let hover = false;
 
   export const setCodeText = (code) => (value = code);
   export const getCodeText = () => value;
@@ -99,8 +100,9 @@
       value,
       language,
       theme,
+      hover,
       contextmenu: false,
-      scrollBeyondLastLine: false,
+      scrollBeyondLastLine: false
     });
 
     editor.getModel().onDidChangeContent(async () => {

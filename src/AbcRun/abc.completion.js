@@ -11,7 +11,7 @@ const completionItemProvider = {
 
         if (textUntilPosition.match(/^K:\s*/)) {
             let suggestions = [
-                // Major keys
+                { label: 'Select [Key]:', kind: _.Text, insertText: '', selectable: false },
                 { label: 'C Major', insertText: 'C' },
                 { label: 'G Major', insertText: 'G' },
                 { label: 'D Major', insertText: 'D' },
@@ -27,7 +27,6 @@ const completionItemProvider = {
                 { label: 'Db Major', insertText: 'Db' },
                 { label: 'Gb Major', insertText: 'Gb' },
                 { label: 'Cb Major', insertText: 'Cb' },
-                // Minor keys
                 { label: 'A Minor', insertText: 'Am' },
                 { label: 'E Minor', insertText: 'Em' },
                 { label: 'B Minor', insertText: 'Bm' },
@@ -52,6 +51,7 @@ const completionItemProvider = {
 
         if (textUntilPosition.match(/^L:\s*/)) {
             let suggestions = [
+                { label: 'Select [Default Note Length]', kind: _.Text, insertText: '', selectable: false },
                 { label: 'Whole', insertText: '1/1' },
                 { label: 'Half', insertText: '1/2' },
                 { label: 'Quarter', insertText: '1/4' },
@@ -67,13 +67,25 @@ const completionItemProvider = {
         }
 
         return { suggestions: [] };
+    },
+
+    // TODO: 'item'에 맞는 설명 작성
+    // 
+    // 'documentation' 속성에는 '일반 텍스트' 또는 '마크다운' 형식의 문자열을 설정할 수 있다.
+    resolveCompletionItem: function (item) {
+        if (item.selectable === false) {
+            return null;
+        }
+
+        item.documentation = `You selected ${item.label}`;
+        return item;
     }
 };
 
 function setKindAndSortText(suggestions) {
     return suggestions.map((item, index) => ({
         ...item,
-        kind: _.Constant,
+        kind: item.kind || _.Constant,
         sortText: String(index).padStart(2, '0')
     }));
 }
