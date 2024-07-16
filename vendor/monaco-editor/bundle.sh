@@ -18,6 +18,9 @@ if [ -d "${BUILD_DIR}" ]; then
   rm -rf ${DEST_DIR}
   echo "done."
 
+  printf "Copying 'codicon.ttf'..."
+  cp ./codicon.ttf ${BUILD_DIR}
+
   printf "Copying build directory to destination..."
   cp -r ${BUILD_DIR} ${DEST_DIR}
   echo "done."
