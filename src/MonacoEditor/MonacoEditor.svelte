@@ -6,7 +6,7 @@
     createMonacoEditor,
     getMonacoKeyBindingConstant,
     setWorkerUrl,
-    registerCustomLanguage as register,
+    registerCustomLanguage as register
   } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
   const dispatch = createEventDispatcher();

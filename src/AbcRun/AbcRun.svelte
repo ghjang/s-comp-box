@@ -3,6 +3,7 @@
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import tokenizer from "./abc.tokenizer.js";
+  import completionItemProvider from "./abc.completion.js";
 
   export let editorResourcePath;
   export let abcText = "";
@@ -13,7 +14,11 @@
 
   $: if (editor) {
     const languageId = "abc";
-    editor.registerCustomLanguage({ id: languageId, tokenizer });
+    editor.registerCustomLanguage({
+      id: languageId,
+      tokenizer,
+      completionItemProvider,
+    });
     renderAbc();
   }
 

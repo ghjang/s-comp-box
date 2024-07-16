@@ -170,6 +170,8 @@ globalThis.MonacoEnvironment = {
 	}
 };
 
+export const CompletionItemKind = monaco.languages.CompletionItemKind;
+
 export function setWorkerUrl(url) {
 	workerUrl = new URL(url, import.meta.url);
 }
@@ -186,9 +188,19 @@ export function getMonacoKeyBindingConstant() {
 }
 
 export function registerCustomLanguage(langOpts) {
-	const { id, tokenizer } = langOpts;
+	const { id, tokenizer, completionItemProvider } = langOpts;
+
+	if (!id) {
+		throw new Error("custom language 'id' is required.");
+	}
 
 	monaco.languages.register({ id });
 
-	monaco.languages.setMonarchTokensProvider(id, { tokenizer });
+	if (tokenizer) {
+		monaco.languages.setMonarchTokensProvider(id, { tokenizer });
+	}
+
+	if (completionItemProvider) {		
+		monaco.languages.registerCompletionItemProvider(id, completionItemProvider);
+	}
 }
