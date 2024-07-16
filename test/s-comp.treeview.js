@@ -39,7 +39,7 @@ fetch('./s-comp.treeview.node-data.json')
             target: document.querySelector('#container'),
             props: {
                 orientation: 'horizontal',
-                content_panel_0_length: '25%',
+                panel_0_length: '25%',
 
                 component_0: {
                     component: TreeView,
