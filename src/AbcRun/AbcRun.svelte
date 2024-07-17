@@ -7,8 +7,18 @@
 
   export let editorResourcePath;
   export let abcText = "";
+  export let showPlayControl = false;
 
-  const renderAbc = () => abcjs.renderAbc("note-staff", abcText);
+  let visualObj = null;
+
+  function renderAbc() {
+    visualObj = abcjs.renderAbc("note-staff", abcText);
+    needToInitSynth = true;
+  }
+
+  const synth = new abcjs.synth.CreateSynth();
+  let needToInitSynth = true;
+  let isPlaying = false;
 
   let editor;
 
@@ -30,11 +40,45 @@
     abcText = event.detail.value;
     renderAbc();
   }
+
+  async function handlePlayButtonClick() {
+    if (synth.isRunning) {
+      synth.stop();
+      return;
+    }
+
+    if (needToInitSynth) {
+      await synth.init({ visualObj: visualObj[0] });
+      await synth.prime();
+      synth.onEnded = () => {
+        // NOTE: 'onEnded'가 호출된 후에도 여전히 'synth.isRunning'이 'true'일 수 있음.
+        synth.stop();
+
+        isPlaying = false;
+      };
+      needToInitSynth = false;
+    }
+
+    synth.start();
+    isPlaying = true;
+  }
+
+  // FIXME: abcjs 최신 버전(6.4.1)에서 'synth.init'에서 오류 발생
+  //
+  // 6.3.0 버전에서는 정상 동작함. 다음 이슈 참고할 것:
+  // - https://github.com/paulrosen/abcjs/issues/1024
 </script>
 
 <div class="abcrun-box">
   <Splitter orientation="vertical" on:panelSizeChanged={handlePanelSizeChange}>
-    <div id="note-staff" slot="top"></div>
+    <div slot="top">
+      <div id="note-staff"></div>
+      {#if showPlayControl}
+        <button on:click={handlePlayButtonClick}
+          >{isPlaying ? "Stop" : "Play"}</button
+        >
+      {/if}
+    </div>
     <MonacoEditor
       bind:this={editor}
       slot="bottom"
