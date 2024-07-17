@@ -4,15 +4,17 @@
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import tokenizer from "./abc.tokenizer.js";
   import completionItemProvider from "./abc.completion.js";
+  import { downloadMidiFile } from "./abc.download.js";
 
   export let editorResourcePath;
   export let abcText = "";
   export let showPlayControl = false;
+  export let enableMidiFileDownload = false;
 
   let visualObj = null;
 
   function renderAbc() {
-    visualObj = abcjs.renderAbc("note-staff", abcText);
+    visualObj = abcjs.renderAbc("note-staff", abcText, { add_classes: true });
     needToInitSynth = true;
   }
 
@@ -76,6 +78,11 @@
       {#if showPlayControl}
         <button on:click={handlePlayButtonClick}
           >{isPlaying ? "Stop" : "Play"}</button
+        >
+      {/if}
+      {#if !isPlaying && enableMidiFileDownload}
+        <button use:downloadMidiFile={{ abcjs, visualObj }}
+          >Download MIDI</button
         >
       {/if}
     </div>
