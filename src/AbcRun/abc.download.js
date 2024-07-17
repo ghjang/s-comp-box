@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { svg2pdf } from 'svg2pdf.js';
 
 
 export function downloadMidiFile(node, params) {
@@ -45,9 +46,12 @@ export function downloadMidiFile(node, params) {
     };
 }
 
-
 export function downloadPdfFile(node, params) {
-    let { abcjs, visualObj } = params;
+    let { abcjs, visualObj, scaleFactor, rasterize, saveFileName } = params;
+
+    scaleFactor = scaleFactor || 2; // PDF내에 저장되는 이미지의 해상도 조정을 위한 배율
+    rasterize = rasterize === undefined ? true : rasterize;
+    saveFileName = saveFileName || "sheet-music.pdf";
 
     const handleClick = () => {
         if (!abcjs) {
@@ -64,29 +68,87 @@ export function downloadPdfFile(node, params) {
             throw new Error("svg is not a Node");
         }
 
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        const img = new Image();
+        // PDF 페이지 크기 설정 (A4 크기 예시)
+        const pdfWidth = 210; // A4 width in mm
+        const pdfHeight = 297; // A4 height in mm
 
-        img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
+        const pdf = new jsPDF('portrait', 'mm', 'a4');
+        const svgWidth = svg.getBoundingClientRect().width;
+        const svgHeight = svg.getBoundingClientRect().height;
 
-            const pdf = new jsPDF('portrait');
-            pdf.addImage(canvas.toDataURL("image/png"), 'PNG', 0, 0);
-            pdf.save("sheet-music.pdf");
-        };
+        // 이미지 크기를 PDF 페이지 크기에 맞추기 위해 비율 계산
+        const widthRatio = pdfWidth / svgWidth;
+        const heightRatio = pdfHeight / svgHeight;
+        const ratio = Math.min(widthRatio, heightRatio);
 
-        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        // 이미지 크기 조정
+        const imgWidth = svgWidth * ratio;
+        const imgHeight = svgHeight * ratio;
+
+        if (rasterize) {
+            const img = new Image();
+
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                canvas.width = svgWidth * scaleFactor;
+                canvas.height = svgHeight * scaleFactor;
+
+                ctx.scale(scaleFactor, scaleFactor);
+                ctx.drawImage(img, 0, 0);
+
+                pdf.addImage(canvas.toDataURL("image/png"), 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save(saveFileName);
+            };
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        } else {
+            const svgClone = svg.cloneNode(true);
+            svgClone.setAttribute("width", imgWidth);
+            svgClone.setAttribute("height", imgHeight);
+
+            // FIXME: '잘못된 스타일' 삽입
+            //
+            // 아래의 방법은 정상적으로 해당 SVG와 관련된 스타일을 삽입하지 못한다.
+            // 결과적으로 '백지' PDF가 출력된다. 개발자 도구에서 스타일 삽입후의
+            // 'svgClone' 데이터를 텍스트로 '.svg'에 저장해서 살펴보면 스타일이
+            // 문제인 것으로 일단 보인다.
+            const style = document.createElement('style');
+            style.textContent = Array.from(document.styleSheets)
+                .map(styleSheet => {
+                    try {
+                        return Array.from(styleSheet.cssRules)
+                            .map(rule => rule.cssText)
+                            .join('');
+                    } catch (e) {
+                        console.warn('Could not read the stylesheet:', styleSheet.href);
+                        return '';
+                    }
+                })
+                .join('');
+            svgClone.insertBefore(style, svgClone.firstChild);
+
+            svg2pdf(svgClone, pdf, {
+                x: 0,
+                y: 0,
+                width: imgWidth,
+                height: imgHeight
+            }).then(() => {
+                pdf.save(saveFileName);
+            });
+        }
     };
 
     node.addEventListener('click', handleClick);
 
     return {
         update(newParams) {
-            ({ abcjs, visualObj } = newParams);
+            ({ abcjs, visualObj, scaleFactor, rasterize, saveFileName } = newParams);
+            scaleFactor = scaleFactor || 2;
+            rasterize = rasterize === undefined ? true : rasterize;
+            saveFileName = saveFileName || "sheet-music.pdf";
         },
 
         destroy() {
@@ -94,3 +156,4 @@ export function downloadPdfFile(node, params) {
         }
     };
 }
+

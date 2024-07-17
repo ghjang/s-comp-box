@@ -58,6 +58,7 @@
     "monaco-editor": "^0.47.0",
     "pdfjs-dist": "^4.3.136",
     "pyodide": "^0.26.1",
-    "sass": "^1.76.0"
+    "sass": "^1.76.0",
+    "svg2pdf.js": "^2.2.4"
   }
 }

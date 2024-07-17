@@ -70,7 +70,7 @@
     class="content-panel content-panel-0"
     class:ttbPanelCollapseButtonClicked
     style:height={panel_0_length}
-    use:resizeObserver={{ panel_1, onPanelSizeChanged }}
+    use:resizeObserver={{ panel_1, onPanelSizeChanged, observePanel1: true }}
   >
     <slot name="top"></slot>
   </div>
