@@ -51,6 +51,7 @@
     "abcjs": "^6.3.0",
     "autoprefixer": "^10.4.19",
     "js-yaml": "^4.1.0",
+    "jspdf": "^2.5.1",
     "lodash-es": "^4.17.21",
     "mathjax": "^3.2.2",
     "mathjax-full": "^3.2.2",

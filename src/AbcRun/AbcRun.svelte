@@ -4,12 +4,13 @@
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import tokenizer from "./abc.tokenizer.js";
   import completionItemProvider from "./abc.completion.js";
-  import { downloadMidiFile } from "./abc.download.js";
+  import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
 
   export let editorResourcePath;
   export let abcText = "";
   export let showPlayControl = false;
   export let enableMidiFileDownload = false;
+  export let enablePdfFileDownload = false;
 
   let visualObj = null;
 
@@ -84,6 +85,9 @@
         <button use:downloadMidiFile={{ abcjs, visualObj }}
           >Download MIDI</button
         >
+      {/if}
+      {#if !isPlaying && enablePdfFileDownload}
+        <button use:downloadPdfFile={{ abcjs, visualObj }}>Download PDF</button>
       {/if}
     </div>
     <MonacoEditor
