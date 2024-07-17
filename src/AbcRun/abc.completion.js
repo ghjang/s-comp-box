@@ -1,5 +1,68 @@
 import { CompletionItemKind as _ } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
+
+function createCompletionItems(items) {
+    return items.map((item, index) => ({
+        label: item[0],
+        insertText: item[1],
+        kind: item.kind || _.Constant,
+        sortText: String(index + 1).padStart(2, '0')
+    }));
+}
+
+// NOTE: 'whiteKeys'와 'blackKeys'에는 'b, #'을 최대 1개만 사용한 음이름만을 포함시킴.
+function createKeyCompletionItems() {
+    const whiteKeys = [
+        'C', 'D', 'E', 'F', 'G', 'A', 'B',
+        'Cb', 'Fb', 'B#', 'E#'
+    ];
+
+    const blackKeys = [
+        'C#', 'D#', 'F#', 'G#', 'A#',
+        'Db', 'Eb', 'Gb', 'Ab', 'Bb'
+    ];
+
+    const twelveKeys = [...whiteKeys, ...blackKeys].sort();
+    
+    const keyPairs = [
+        ...twelveKeys.map(key => [`${key} Major`, key]),
+        ...twelveKeys.map(key => [`${key} Minor`, `${key}m`])
+    ];
+
+    const header = {
+        label: 'Select [Key]:',
+        kind: _.Text,
+        insertText: '',
+        selectable: false,
+        sortText: '00'
+    };
+
+    return [header, ...createCompletionItems(keyPairs)];
+}
+
+function createDefaultNoteLengthCompletionItems() {
+    const notes = [
+        ['Whole', '1/1'],
+        ['Half', '1/2'],
+        ['Quarter', '1/4'],
+        ['Eighth', '1/8'],
+        ['Sixteenth', '1/16'],
+        ['Thirty-second', '1/32'],
+        ['Sixty-fourth', '1/64']
+    ];
+
+    const header = {
+        label: 'Select [Default Note Length]',
+        kind: _.Text,
+        insertText: '',
+        selectable: false,
+        sortText: '00'
+    };
+
+    return [header, ...createCompletionItems(notes)];
+}
+
+
 const completionItemProvider = {
     provideCompletionItems: function (model, position) {
         const textUntilPosition = model.getValueInRange({
@@ -9,64 +72,23 @@ const completionItemProvider = {
             endColumn: position.column
         });
 
-        if (textUntilPosition.match(/^K:\s*/)) {
-            let suggestions = [
-                { label: 'Select [Key]:', kind: _.Text, insertText: '', selectable: false },
-                { label: 'C Major', insertText: 'C' },
-                { label: 'G Major', insertText: 'G' },
-                { label: 'D Major', insertText: 'D' },
-                { label: 'A Major', insertText: 'A' },
-                { label: 'E Major', insertText: 'E' },
-                { label: 'B Major', insertText: 'B' },
-                { label: 'F# Major', insertText: 'F#' },
-                { label: 'C# Major', insertText: 'C#' },
-                { label: 'F Major', insertText: 'F' },
-                { label: 'Bb Major', insertText: 'Bb' },
-                { label: 'Eb Major', insertText: 'Eb' },
-                { label: 'Ab Major', insertText: 'Ab' },
-                { label: 'Db Major', insertText: 'Db' },
-                { label: 'Gb Major', insertText: 'Gb' },
-                { label: 'Cb Major', insertText: 'Cb' },
-                { label: 'A Minor', insertText: 'Am' },
-                { label: 'E Minor', insertText: 'Em' },
-                { label: 'B Minor', insertText: 'Bm' },
-                { label: 'F# Minor', insertText: 'F#m' },
-                { label: 'C# Minor', insertText: 'C#m' },
-                { label: 'G# Minor', insertText: 'G#m' },
-                { label: 'D# Minor', insertText: 'D#m' },
-                { label: 'A# Minor', insertText: 'A#m' },
-                { label: 'D Minor', insertText: 'Dm' },
-                { label: 'G Minor', insertText: 'Gm' },
-                { label: 'C Minor', insertText: 'Cm' },
-                { label: 'F Minor', insertText: 'Fm' },
-                { label: 'Bb Minor', insertText: 'Bbm' },
-                { label: 'Eb Minor', insertText: 'Ebm' },
-                { label: 'Ab Minor', insertText: 'Abm' }
-            ];
+        const matched = (regex) => textUntilPosition.match(regex);
 
-            suggestions = setKindAndSortText(suggestions);
+        const headers = [
+            [/^K:\s*/, createKeyCompletionItems],
+            [/^L:\s*/, createDefaultNoteLengthCompletionItems]
+        ];
 
-            return { suggestions };
+        let suggestions = [];
+
+        for (const [regex, createItems] of headers) {
+            if (matched(regex)) {
+                suggestions = createItems();
+                break;
+            }
         }
 
-        if (textUntilPosition.match(/^L:\s*/)) {
-            let suggestions = [
-                { label: 'Select [Default Note Length]', kind: _.Text, insertText: '', selectable: false },
-                { label: 'Whole', insertText: '1/1' },
-                { label: 'Half', insertText: '1/2' },
-                { label: 'Quarter', insertText: '1/4' },
-                { label: 'Eighth', insertText: '1/8' },
-                { label: 'Sixteenth', insertText: '1/16' },
-                { label: 'Thirty-second', insertText: '1/32' },
-                { label: 'Sixty-fourth', insertText: '1/64' }
-            ];
-
-            suggestions = setKindAndSortText(suggestions);
-
-            return { suggestions };
-        }
-
-        return { suggestions: [] };
+        return { suggestions };
     },
 
     // TODO: 'item'에 맞는 설명 작성
@@ -82,12 +104,5 @@ const completionItemProvider = {
     }
 };
 
-function setKindAndSortText(suggestions) {
-    return suggestions.map((item, index) => ({
-        ...item,
-        kind: item.kind || _.Constant,
-        sortText: String(index).padStart(2, '0')
-    }));
-}
 
 export default completionItemProvider;
