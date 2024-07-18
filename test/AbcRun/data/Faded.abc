@@ -1,0 +1,30 @@
+%%barnumbers 0
+
+X: 1
+T: Faded
+M: 4/4
+L: 1/8
+Q: 1/4=85
+K: F#
+V:1 treble nm="R.H."
+V:2 bass nm="L.H."
+V:1
+|: F2 F2 F2 A2 | d2 d2 d2 c2 | A2 A2 A2 A2 | E2 E2 E2 E2 :|
+|: zFFD FDFG | A2 FF C A2 A- | A4 zFFG | E2> E2 ED F2 |
+| zFFD FDFG | A2 FF c G2 A- | A4 zFFG| E4 zAAA |
+| A8- | A4 zAAA | A8- | A4 zAAA |
+| A8- | A4 zAAA | A8- | A4 z4 |
+| FFFF FFAA | dddd ddcc | AAAA AAAA | EEEE EEEE |
+| FFFF FFAA | dddd ddcc | AAAA AAAA | EEEE EEEE |
+| FFFF AAfe | dddc cccc | AAAA cBAF | EEEE GGEE |
+| FFFF AAfe | dddc cccc | AAAA cBAF | EEEE GGEE :|
+V:2
+|: D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, :|
+|: D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, |
+| D,A,F,A, D,A,F,A, | B,,F,D,F, B,,F,D,F, | F,CA,C F,CA,C | C,G,E,G, C,G,E,G, :|

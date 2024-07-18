@@ -15,6 +15,7 @@
   const saveToLocalStorage = createLocalStorageDebouncedSaver(localStorageKey);
 
   export let editorResourcePath;
+  export let editorMiniMap = false;
   export let abcText = "";
   export let autoSave = false;
   export let showPlayControl = false;
@@ -147,6 +148,7 @@
       slot="bottom"
       resourcePath={editorResourcePath}
       language="abc"
+      minimap={editorMiniMap}
       hover={true}
       on:editorInit={handleEditorInit}
       on:contentChange={handleContentChange}
@@ -181,7 +183,7 @@
         #note-staff {
           width: min-content;
           height: 100%;
-          overflow: auto;
+          overflow: scroll !important;
           background-color: lightgray;
         }
 

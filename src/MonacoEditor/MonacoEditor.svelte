@@ -21,6 +21,7 @@
   export let value = "";
   export let language = "python";
   export let theme = "vs-dark";
+  export let minimap = true;
   export let hover = false;
 
   export const setCodeText = (code) => (value = code);
@@ -100,6 +101,9 @@
       value,
       language,
       theme,
+      minimap: {
+        enabled: minimap,
+      },
       hover,
       contextmenu: false,
       scrollBeyondLastLine: false,
