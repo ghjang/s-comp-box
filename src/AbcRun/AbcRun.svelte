@@ -24,8 +24,78 @@
 
   let visualObj = null;
 
+  // FIXME: '오류 메시지 문자열 패턴' 분석 방식을 제거하고 '파서 API'로 가능하면 대체할 것.
+  //
+  // 아래 'regex 문자열' 패턴은 오류 메시지를 확인해 가면서 직접 작성한 것이다.
+  // 추후 오류 메시지 포맷이 변경되면 이 부분은 제대로 동작하지 않을 것이다.
+  //
+  // 'abcjs'에서 파서 API를 제공한다면 오류 문자열이 아닌 'abc 텍스트'를 분석해서 오류를 가능할 것이다.
+  //  다만 이경우 성능상에 문제가 있을지도 모르겠다.
+  //
+  // 아니면, renderAbc후에 '경고 문자열'이 아닌 오류 정보를 나타내는 객체가 어딘가에 있다면
+  // 그것을 활용할 수도 있을 것이다.
+  function extractWarnings(warnings, unique = false) {
+    const warningMap = new Map();
+    const allWarnings = [];
+
+    warnings.forEach((warning) => {
+      const regex = /Music Line:(\d+):(\d+): ([^:]+):( ([^:]+):)? (.+)/;
+      const match = warning.match(regex);
+
+      if (!match) {
+        console.warn("not supported warning format: ", warning);
+        return;
+      }
+
+      const lineNumber = parseInt(match[1]);
+      const columnNumber = parseInt(match[2]);
+      const message = match[3].trim();
+      const problemText = match[6].replace(/<[^>]+>/g, "").trim();
+
+      if (!message || !problemText) {
+        console.warn("not supported warning format: ", warning);
+        return;
+      }
+
+      if (unique) {
+        // 유니크한 경고만 저장
+        if (!warningMap.has(problemText)) {
+          warningMap.set(problemText, {
+            lineNumber,
+            columnNumber,
+            message,
+            problemText,
+          });
+        }
+      } else {
+        // 모든 경고를 배열에 추가
+        allWarnings.push({
+          lineNumber,
+          columnNumber,
+          message,
+          problemText,
+        });
+      }
+    });
+
+    return unique ? Array.from(warningMap.values()) : allWarnings;
+  }
+
   function renderAbc() {
-    visualObj = abcjs.renderAbc("note-staff", abcText, { add_classes: true });
+    visualObj = abcjs.renderAbc("note-staff", abcText, {
+      add_classes: true,
+    });
+
+    editor.clearEditorWarnings();
+
+    const abcjsWarnings = visualObj[0].warnings;
+    if (abcjsWarnings) {
+      console.log("before extractWarnings", abcjsWarnings);
+      const warnings = extractWarnings(abcjsWarnings);
+      console.log("after extractWarnings", warnings);
+      editor.setEditorWarnings(warnings);
+    }
+
     needToInitSynth = true;
   }
 

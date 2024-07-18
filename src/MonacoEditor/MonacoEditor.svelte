@@ -7,6 +7,8 @@
     getMonacoKeyBindingConstant,
     setWorkerUrl,
     registerCustomLanguage as register,
+    setWarnings,
+    clearWarnings,
   } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
   const dispatch = createEventDispatcher();
@@ -27,6 +29,9 @@
   export const setCodeText = (code) => (value = code);
   export const getCodeText = () => value;
   export const registerCustomLanguage = register;
+  export const setEditorWarnings = (warnings) =>
+    editor && setWarnings(editor, warnings);
+  export const clearEditorWarnings = () => editor && clearWarnings(editor);
 
   let editorContainer;
   let editor;
@@ -113,6 +118,7 @@
       value = editor.getValue();
       await tick();
       dispatch("contentChange", { value });
+      console.log("contentChange");
     });
 
     const { keyMod, keyCode } = getMonacoKeyBindingConstant();

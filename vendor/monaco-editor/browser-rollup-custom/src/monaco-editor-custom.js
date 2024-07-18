@@ -27,7 +27,7 @@ import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoError/browser/gotoError.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/goToCommands.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js';
-// import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hover.js';
+import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hover.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/browser/inPlaceReplace.js';
 // import 'monaco-editor/esm/vs/editor/contrib/indentation/browser/indentation.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inlayHints/browser/inlayHintsContribution.js';
@@ -203,4 +203,83 @@ export function registerCustomLanguage(langOpts) {
 	if (completionItemProvider) {
 		monaco.languages.registerCompletionItemProvider(id, completionItemProvider);
 	}
+}
+
+
+let markerStore = {};
+
+function decodeHtmlEntities(text) {
+    const entities = {
+        '&amp;': '&',
+        '&lt;': '<',
+        '&gt;': '>',
+        '&quot;': '"',
+        '&#39;': "'",
+        '&#x2F;': '/',
+        '&#x5C;': '\\',
+        '&#x60;': '`'
+    };
+    return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => entities[entity] || entity);
+}
+
+function escapeRegExp(string) {
+    const decodedString = decodeHtmlEntities(string);
+    return decodedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $&는 일치한 전체 문자열을 의미
+}
+
+export function getMarkerStore() {
+	return markerStore;
+}
+
+export function setWarnings(editor, warnings) {
+	const model = editor.getModel();
+	const text = model.getValue();
+	const markers = [];
+
+	warnings.forEach((warning, index) => {
+		const problemText = escapeRegExp(warning.problemText);
+		const regex = new RegExp(problemText, 'g');
+		let match;
+		while ((match = regex.exec(text)) !== null) {
+			const start = model.getPositionAt(match.index);
+			const end = model.getPositionAt(match.index + match[0].length);
+			const lineNumber = warning.lineNumber;
+			const columnNumber = warning.columnNumber;
+			const lineNumColNum = lineNumber && columnNumber && `${lineNumber}:${columnNumber}`;
+			const markerId = lineNumColNum || `warning-${index}-${match.index}`;
+
+			const marker = {
+				startLineNumber: start.lineNumber,
+				startColumn: columnNumber || start.column,
+				endLineNumber: end.lineNumber,
+				endColumn: columnNumber ? columnNumber + 1 : end.column,
+				message: warning.message,
+				severity: monaco.MarkerSeverity.Warning,
+				id: markerId
+			};
+
+			markers.push(marker);
+			markerStore[markerId] = marker;
+		}
+	});
+
+	monaco.editor.setModelMarkers(model, 'owner', markers);
+
+	return markerStore;
+}
+
+export function clearWarnings(editor) {
+	const model = editor.getModel();
+	monaco.editor.setModelMarkers(model, 'owner', []);
+	markerStore = {}; // Clear the marker store
+}
+
+export function clearSpecificWarning(editor, markerId) {
+	const model = editor.getModel();
+	const markers = monaco.editor.getModelMarkers({ owner: 'owner' });
+
+	const updatedMarkers = markers.filter(marker => marker.id !== markerId);
+	monaco.editor.setModelMarkers(model, 'owner', updatedMarkers);
+
+	delete markerStore[markerId];
 }
