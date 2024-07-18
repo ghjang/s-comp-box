@@ -6,7 +6,7 @@
     createMonacoEditor,
     getMonacoKeyBindingConstant,
     setWorkerUrl,
-    registerCustomLanguage as register
+    registerCustomLanguage as register,
   } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
   const dispatch = createEventDispatcher();
@@ -102,7 +102,7 @@
       theme,
       hover,
       contextmenu: false,
-      scrollBeyondLastLine: false
+      scrollBeyondLastLine: false,
     });
 
     editor.getModel().onDidChangeContent(async () => {
@@ -134,7 +134,10 @@
     }
   }
 
-  $: editorContainer && initMonacoEditor(editorContainer);
+  $: if (editorContainer) {
+    initMonacoEditor(editorContainer);
+    dispatch("editorInit");
+  }
 </script>
 
 <div

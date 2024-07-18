@@ -1,13 +1,22 @@
 <script>
+  import { onMount, onDestroy } from "svelte";
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import tokenizer from "./abc.tokenizer.js";
   import completionItemProvider from "./abc.completion.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
+  import {
+    createLocalStorageDebouncedSaver,
+    loadFromLocalStorage,
+  } from "./storage.js";
+
+  const localStorageKey = "abcText";
+  const saveToLocalStorage = createLocalStorageDebouncedSaver(localStorageKey);
 
   export let editorResourcePath;
   export let abcText = "";
+  export let autoSave = false;
   export let showPlayControl = false;
   export let enableMidiFileDownload = false;
   export let enablePdfFileDownload = false;
@@ -35,6 +44,16 @@
     renderAbc();
   }
 
+  // NOTE: 'MonacoEditor' 자식 컴포넌트 내부에서 '모나코 에디터'가 'init'되는 시점이
+  //       현재 구현에서 'AbcRun' 컴포넌트의 'onMount' 이벤트 핸들러가 호출되는 시점보다
+  //       나중이다. 실제 모나코 에디터 내부 인스턴스가 생성되는 'editorInit' 시점에 텍스트를
+  //       로딩하도록 함.
+  function handleEditorInit() {
+    if (abcText) {
+      editor?.setText(abcText);
+    }
+  }
+
   // FIXME: 'AbcRun' 컴포넌트의 '스플릿터 그립'을 드래그해서 '패널'의 크기 조정시 배경색이 제대로 표시되지 않음.
   //
   // '스플릿터 그립'을 드래그해서 스플릿터 패널의 크기를 조정시에 빠르게 아래 '모나코 에디터 레이아웃' 조정 메쏘드가
@@ -51,6 +70,9 @@
   function handleContentChange(event) {
     abcText = event.detail.value;
     renderAbc();
+    if (autoSave) {
+      saveToLocalStorage(abcText);
+    }
   }
 
   async function handlePlayButtonClick() {
@@ -75,6 +97,21 @@
     isPlaying = true;
   }
 
+  onMount(() => {
+    if (!abcText) {
+      const savedAbcText = loadFromLocalStorage("abcText");
+      if (savedAbcText) {
+        abcText = savedAbcText;
+      }
+    }
+  });
+
+  onDestroy(() => {
+    if (autoSave) {
+      saveToLocalStorage(abcText);
+    }
+  });
+
   // FIXME: abcjs 최신 버전(6.4.1)에서 'synth.init'에서 오류 발생
   //
   // 6.3.0 버전에서는 정상 동작함. 다음 이슈 참고할 것:
@@ -87,17 +124,17 @@
       <div class="note-item-group">
         <div id="note-staff"></div>
         <div class="control-box">
-          {#if !isPlaying && enableMidiFileDownload}
+          {#if abcText && !isPlaying && enableMidiFileDownload}
             <button use:downloadMidiFile={{ abcjs, visualObj }}
               >Download MIDI</button
             >
           {/if}
-          {#if !isPlaying && enablePdfFileDownload}
+          {#if abcText && !isPlaying && enablePdfFileDownload}
             <button use:downloadPdfFile={{ abcjs, visualObj }}
               >Download PDF</button
             >
           {/if}
-          {#if showPlayControl}
+          {#if abcText && showPlayControl}
             <button on:click={handlePlayButtonClick}
               >{isPlaying ? "Stop" : "Play"}</button
             >
@@ -110,8 +147,8 @@
       slot="bottom"
       resourcePath={editorResourcePath}
       language="abc"
-      value={abcText}
       hover={true}
+      on:editorInit={handleEditorInit}
       on:contentChange={handleContentChange}
     />
   </Splitter>
