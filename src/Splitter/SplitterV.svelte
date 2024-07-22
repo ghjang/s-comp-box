@@ -2,6 +2,7 @@
   import debounce from "lodash-es/debounce";
   import { createEventDispatcher } from "svelte";
   import { resizeObserver } from "./resizeObserver.js";
+  import { styleObserver } from "./styleObserver.js";
   import { dragGrip } from "./dragGrip.js";
 
   const dispatch = createEventDispatcher();
@@ -15,6 +16,7 @@
   let bottomPanelCollapsed = false;
   let ttbPanelCollapseButtonClicked = false;
   let resetTtbPanelCollapseButtonClicked = null;
+  let lastNonZeroPanel0Height = panel_0_length;
   let splitterPanelLength = "auto";
 
   $: if (showPanelControl) {
@@ -26,6 +28,10 @@
   } else {
     resetTtbPanelCollapseButtonClicked = null;
     splitterPanelLength = "2px";
+  }
+
+  $: if (panel_0_length !== "0%" && panel_0_length !== "0px") {
+    lastNonZeroPanel0Height = panel_0_length;
   }
 
   function onPanelSizeChanged(panelSizeInfo) {
@@ -61,6 +67,28 @@
     }
   }
 
+  // NOTE: 현재의 구현 방식에서 'collapse 버튼'을 클릭해서 패널을 접는 과정에서
+  //       한쪽의 패널이 화면에서 사라진후(display: none)에 다시 화면에 나타날때
+  //       원래의 컨텐트 패널의 크기를 유지하지 못하는 문제가 있다.
+  //
+  //       특히 'MonacoEditor'를 한쪽 컨텐트 패널에 설정한 'Splitter'가
+  //       자식 컴포넌트로 설정된 경우에(ex.> AbcRun) 이 문제가 확실히 발생하는
+  //       것으로 보인다. 아마도 모나코 에디터의 '재레이아웃' 메쏘드가 호출되면서
+  //       최대한의 영역을 차지하려고 하는 것이 문제인 것으로 보인다.
+  function onStyleChange(computedStyle) {
+    if (
+      computedStyle.display !== "none" &&
+      !topPanelCollapsed &&
+      !bottomPanelCollapsed &&
+      (panel_0.style.height === "0%" ||
+        panel_0.style.height === "0px" ||
+        panel_1.style.height === "0%" ||
+        panel_1.style.height === "0px")
+    ) {
+      panel_0.style.height = lastNonZeroPanel0Height;
+    }
+  }
+
   // NOTE: 'slot' 요소의 'name, slot' 속성은 동적으로 설정이 불가능하다.
 </script>
 
@@ -71,6 +99,7 @@
     class:ttbPanelCollapseButtonClicked
     style:height={panel_0_length}
     use:resizeObserver={{ panel_1, onPanelSizeChanged, observePanel1: true }}
+    use:styleObserver={onStyleChange}
   >
     <slot name="top"></slot>
   </div>
