@@ -41,7 +41,12 @@
   });
 </script>
 
-<div bind:this={exprContainer} id="exprContainer"></div>
+<div bind:this={exprContainer} id="exprContainer">
+  <div class="dummyToSuppressMathJaxStyleWarning">
+    <mjx-container></mjx-container>
+    <mjx-assistive-mml></mjx-assistive-mml>
+  </div>  
+</div>
 
 <style>
   #exprContainer {
@@ -52,6 +57,10 @@
     font-size: 3em;
   }
 
+  .dummyToSuppressMathJaxStyleWarning {
+    display: none;
+  }
+  
   mjx-container {
     display: block;
     text-align: center;
