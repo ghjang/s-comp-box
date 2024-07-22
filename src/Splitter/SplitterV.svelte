@@ -115,6 +115,11 @@
             on:mousedown|stopPropagation>▼</button
           >
         {/if}
+        <button
+          class="rotate-90"
+          on:click={() => dispatch("panelSwapButtonClicked")}
+          on:mousedown|stopPropagation>⇄</button
+        >
         {#if !topPanelCollapsed}
           <button
             on:click={() => handlePanelCollapseButtonClick("btt")}
@@ -163,6 +168,10 @@
           flex-direction: row;
           min-height: 1px;
           cursor: ns-resize;
+        }
+
+        .rotate-90 {
+          transform: rotate(90deg);
         }
       }
     }

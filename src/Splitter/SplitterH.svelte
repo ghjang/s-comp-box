@@ -123,6 +123,10 @@
             on:mousedown|stopPropagation>▶</button
           >
         {/if}
+        <button
+          on:click={() => dispatch("panelSwapButtonClicked")}
+          on:mousedown|stopPropagation>⇄</button
+        >
         {#if !leftPanelCollapsed}
           <button
             on:click={() => handlePanelCollapseButtonClick("rtl")}
