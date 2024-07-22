@@ -1,6 +1,19 @@
 [
     {
         "component": {
+            "name": "AbcRun",
+            "description": "AbcRun",
+            "props": {
+                "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
+                "autoSave": true,
+                "showPlayControl": true,
+                "enableMidiFileDownload": true,
+                "enablePdfFileDownload": true
+            }
+        }
+    },
+    {
+        "component": {
             "name": "Marquee",
             "customElementName": "s-marquee",
             "description": "Marquee",
@@ -22,7 +35,9 @@
         }
     },
     {
-        "divider": { "style": {} }
+        "divider": {
+            "style": {}
+        }
     },
     {
         "subMenu": {
