@@ -23,11 +23,16 @@ export function loadClassFromModule(modulePath, className) {
     return new Promise((resolve, reject) => {
         import(modulePath)
             .then((module) => {
-                const Class = module[className];
-                if (Class) {
+                let Class = module[className];
+
+                if (!Class && module.default && module.default.name === className) {
+                    Class = module.default;
+                }
+
+                if (Class && typeof Class === 'function' && Class.prototype) {
                     resolve(Class);
                 } else {
-                    reject(new Error(`Class ${className} not found in module ${modulePath}`));
+                    reject(new Error(`Class ${className} not found or is not a valid class in module ${modulePath}`));
                 }
             })
             .catch((error) => {
