@@ -68,6 +68,10 @@
     }
   }
 
+  function handlePanelSwapButtonClick() {
+    dispatch("panelSwapButtonClicked");
+  }
+
   // NOTE: 현재의 구현 방식에서 'collapse 버튼'을 클릭해서 패널을 접는 과정에서
   //       한쪽의 패널이 화면에서 사라진후(display: none)에 다시 화면에 나타날때
   //       원래의 컨텐트 패널의 크기를 유지하지 못하는 문제가 있다.
@@ -112,13 +116,14 @@
       >
         {#if !bottomPanelCollapsed}
           <button
+            class="rotate-180"
             on:click={() => handlePanelCollapseButtonClick("ttb")}
-            on:mousedown|stopPropagation>▼</button
+            on:mousedown|stopPropagation>▲</button
           >
         {/if}
         <button
           class="rotate-90"
-          on:click={() => dispatch("panelSwapButtonClicked")}
+          on:click={() => handlePanelSwapButtonClick()}
           on:mousedown|stopPropagation>⇄</button
         >
         {#if !topPanelCollapsed}
@@ -173,6 +178,10 @@
 
         .rotate-90 {
           transform: rotate(90deg);
+        }
+
+        .rotate-180 {
+          transform: rotate(180deg);
         }
       }
     }

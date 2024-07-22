@@ -55,6 +55,8 @@
     component_1 = { ...temp };
   };
 
+  export const getPanelSize = () => panelSize;
+
   let panelSize = {};
 
   let this_component_0;

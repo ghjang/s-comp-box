@@ -83,6 +83,10 @@
     }
   }
 
+  function handlePanelSwapButtonClick() {
+    dispatch("panelSwapButtonClicked");
+  }
+
   // NOTE: 'SplitterV'의 'onStyleChange' 주석 참고할 것.
   function onStyleChange(computedStyle) {
     if (
@@ -125,13 +129,14 @@
           >
         {/if}
         <button
-          on:click={() => dispatch("panelSwapButtonClicked")}
+          on:click={() => handlePanelSwapButtonClick()}
           on:mousedown|stopPropagation>⇄</button
         >
         {#if !leftPanelCollapsed}
           <button
+            class="rotate-180"
             on:click={() => handlePanelCollapseButtonClick("rtl")}
-            on:mousedown|stopPropagation>◀</button
+            on:mousedown|stopPropagation>▶</button
           >
         {/if}
       </div>
@@ -176,6 +181,10 @@
           flex-direction: column;
           min-width: 1px;
           cursor: ew-resize;
+        }
+
+        .rotate-180 {
+          transform: rotate(180deg);
         }
       }
     }
