@@ -73,6 +73,7 @@
   // NOTE: 패널의 크기값 설정시 'onPanelSizeChanged' 이벤트가 자동으로 트리거 된다.
   function handlePanelCollapseButtonClick(direction = "rtl") {
     if (direction === "rtl") {
+      leftPanelCollapsed = true;
       panel_0.style.width = "0%";
     } else if (direction === "ltr") {
       rightPanelCollapsed = true; // 'rightPanelCollapsed' 클래스 추가

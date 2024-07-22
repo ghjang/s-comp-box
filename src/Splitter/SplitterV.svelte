@@ -61,6 +61,7 @@
       bottomPanelCollapsed = true; // 'bottomPanelCollapsed' 클래스 추가
       ttbPanelCollapseButtonClicked = true;
     } else if (direction === "btt") {
+      topPanelCollapsed = true;
       panel_0.style.height = "0%";
     } else {
       // do nothing
