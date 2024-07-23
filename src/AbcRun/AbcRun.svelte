@@ -3,7 +3,7 @@
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
-  import tokenizer from "./abc.tokenizer.js";
+  import langdef from "./abc.langdef.js";
   import completionItemProvider from "./abc.completion.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
   import {
@@ -50,7 +50,10 @@
       const lineNumber = parseInt(match[1]);
       const columnNumber = parseInt(match[2]);
       const message = match[3].trim();
-      const problemText = match[6].replace(/<[^>]+>/g, "").trim();
+      const problemText = match[6]
+        .replace(/<[^>]+>/g, "")
+        .replace(/SPACE/g, " ")
+        .trim();
 
       if (!message || !problemText) {
         console.warn("not supported warning format: ", warning);
@@ -109,7 +112,7 @@
     const languageId = "abc";
     editor.registerCustomLanguage({
       id: languageId,
-      tokenizer,
+      languageDef: langdef,
       completionItemProvider,
     });
     renderAbc();

@@ -188,7 +188,7 @@ export function getMonacoKeyBindingConstant() {
 }
 
 export function registerCustomLanguage(langOpts) {
-	const { id, tokenizer, completionItemProvider } = langOpts;
+	const { id, languageDef, completionItemProvider } = langOpts;
 
 	if (!id) {
 		throw new Error("custom language 'id' is required.");
@@ -196,8 +196,8 @@ export function registerCustomLanguage(langOpts) {
 
 	monaco.languages.register({ id });
 
-	if (tokenizer) {
-		monaco.languages.setMonarchTokensProvider(id, { tokenizer });
+	if (languageDef) {
+		monaco.languages.setMonarchTokensProvider(id, languageDef);
 	}
 
 	if (completionItemProvider) {

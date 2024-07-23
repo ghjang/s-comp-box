@@ -118,7 +118,6 @@
       value = editor.getValue();
       await tick();
       dispatch("contentChange", { value });
-      console.log("contentChange");
     });
 
     const { keyMod, keyCode } = getMonacoKeyBindingConstant();
