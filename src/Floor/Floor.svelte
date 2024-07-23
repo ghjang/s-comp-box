@@ -32,9 +32,9 @@
   let showPopUp = false;
   let popUpProps = {};
 
-  let splitter;
   let panelSize = {};
   let panel_0_length = "20%";
+  let showPanelControl = { toggleOrientaionButton: false };
   let treeViewSlot = "left";
 
   $: if (floorContainer) {
@@ -121,7 +121,7 @@
       <Splitter
         orientation="horizontal"
         {panel_0_length}
-        showPanelControl="true"
+        {showPanelControl}
         on:panelSizeChanged={(e) => (panelSize = e.detail)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
@@ -146,7 +146,7 @@
       <Splitter
         orientation="horizontal"
         {panel_0_length}
-        showPanelControl="true"
+        {showPanelControl}
         on:panelSizeChanged={(e) => (panelSize = e.detail)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("left")}
       >

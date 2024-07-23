@@ -87,6 +87,10 @@
     dispatch("panelSwapButtonClicked");
   }
 
+  function handlePanelOrientationButtonClick() {
+    dispatch("panelOrientationButtonClicked");
+  }
+
   // NOTE: 'SplitterV'의 'onStyleChange' 주석 참고할 것.
   function onStyleChange(computedStyle) {
     if (
@@ -128,10 +132,19 @@
             on:mousedown|stopPropagation>▶</button
           >
         {/if}
-        <button
-          on:click={() => handlePanelSwapButtonClick()}
-          on:mousedown|stopPropagation>⇄</button
-        >
+        {#if showPanelControl.panelSwapButton !== false}
+          <button
+            on:click={() => handlePanelSwapButtonClick()}
+            on:mousedown|stopPropagation>⇄</button
+          >
+        {/if}
+        {#if showPanelControl.toggleOrientaionButton !== false}
+          <button
+            class="rotate-270"
+            on:click={() => handlePanelOrientationButtonClick()}
+            on:mousedown|stopPropagation>↺</button
+          >
+        {/if}
         {#if !leftPanelCollapsed}
           <button
             class="rotate-180"
@@ -185,6 +198,10 @@
 
         .rotate-180 {
           transform: rotate(180deg);
+        }
+
+        .rotate-270 {
+          transform: rotate(270deg);
         }
       }
     }

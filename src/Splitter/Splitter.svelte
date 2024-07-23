@@ -140,6 +140,7 @@
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -160,6 +161,7 @@
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -175,6 +177,7 @@
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <slot name="left" slot="left" />
         <svelte:component
@@ -190,6 +193,7 @@
         {panel_0_length}
         on:panelSizeChanged
         on:panelSwapButtonClicked
+        on:panelOrientationButtonClicked
       >
         <slot name="left" slot="left" />
         <slot name="right" slot="right" />
@@ -202,6 +206,7 @@
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -222,6 +227,7 @@
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -237,6 +243,7 @@
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <slot name="top" slot="top" />
         <svelte:component
@@ -252,6 +259,7 @@
         {panel_0_length}
         on:panelSizeChanged
         on:panelSwapButtonClicked
+        on:panelOrientationButtonClicked
       >
         <slot name="top" slot="top" />
         <slot name="bottom" slot="bottom" />

@@ -72,6 +72,10 @@
     dispatch("panelSwapButtonClicked");
   }
 
+  function handlePanelOrientationButtonClick() {
+    dispatch("panelOrientationButtonClicked");
+  }
+
   // NOTE: 현재의 구현 방식에서 'collapse 버튼'을 클릭해서 패널을 접는 과정에서
   //       한쪽의 패널이 화면에서 사라진후(display: none)에 다시 화면에 나타날때
   //       원래의 컨텐트 패널의 크기를 유지하지 못하는 문제가 있다.
@@ -114,21 +118,29 @@
         class="divider-grip-content panel-collapse"
         use:dragGrip={{ direction: "vertical", panel_0, panel_1 }}
       >
+        {#if !topPanelCollapsed}
+          <button
+            on:click={() => handlePanelCollapseButtonClick("btt")}
+            on:mousedown|stopPropagation>▲</button
+          >
+        {/if}
+        {#if showPanelControl.toggleOrientaionButton !== false}
+          <button
+            on:click={() => handlePanelOrientationButtonClick()}
+            on:mousedown|stopPropagation>↺</button
+          >
+        {/if}
+        {#if showPanelControl.panelSwapButton !== false}
+          <button
+            class="rotate-90"
+            on:click={() => handlePanelSwapButtonClick()}
+            on:mousedown|stopPropagation>⇄</button
+          >
+        {/if}
         {#if !bottomPanelCollapsed}
           <button
             class="rotate-180"
             on:click={() => handlePanelCollapseButtonClick("ttb")}
-            on:mousedown|stopPropagation>▲</button
-          >
-        {/if}
-        <button
-          class="rotate-90"
-          on:click={() => handlePanelSwapButtonClick()}
-          on:mousedown|stopPropagation>⇄</button
-        >
-        {#if !topPanelCollapsed}
-          <button
-            on:click={() => handlePanelCollapseButtonClick("btt")}
             on:mousedown|stopPropagation>▲</button
           >
         {/if}
