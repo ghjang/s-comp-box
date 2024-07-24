@@ -9,10 +9,10 @@ K: C
 V:1 clef="treble", nm="R.H.";
 V:2 clef="bass", nm="L.H.";
 V:1
-g2> e2 | g2> e2 | ag fe | f g2 e/2f/2 |
-g2> e2 | g2> e2 | f/2e/2f/2e/2 dB | [1 c4 :|]
-[2 c4 |]
+"C" g2> e2 | g2> e2 | "F" ag fe | "G" f g2 e/2f/2 |
+"C" g2> e2 | g2> e2 | "F" f/2e/2f/2e/2 "G" dB | [1 "C" c4 :|]
+[2 "C" c4 |]
 V:2
 C,C C,C | C,C C,C | F,,F, F,,F, | G,,G, G,,G, |
-C,C C,C | C,C C,C | F,,F, F,,F, | [1 C,C C,C :|]
+C,C C,C | C,C C,C | F,,F, G,,G, | [1 C,C C,C :|]
 [2 C,C C,2 |]
