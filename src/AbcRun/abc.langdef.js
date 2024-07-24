@@ -123,6 +123,8 @@ const langdeftest = {
         'V'  // 음성(Voice)
     ],
 
+    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
     tokenizer: {
         root: [
             [
@@ -147,6 +149,22 @@ const langdeftest = {
             [/[\/,>-]/, 'operator'],
 
             [/\|:|:\||\|/, 'delimiter'],
+
+            // strings
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+            [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+
+            // characters
+            [/'[^\\']'/, 'string'],
+            [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+            [/'/, 'string.invalid'],
+        ],
+
+        string: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
         ],
 
         whitespace: [
@@ -180,10 +198,13 @@ const langdeftest = {
         ],
 
         headerV: [
-            [/\s+/, 'white'],
             [/\w+$/, 'identifier', '@pop'],
-            [/(\w+)(\s+)(treble|bass)/, ['identifier', 'white', 'keyword']],
-            [/.*$/, 'string', '@pop'],
+            [/\w+/, 'identifier'],
+            [/=/, 'operator'],
+            [/\s+/, 'white'],
+            [/"/, 'string', '@string'],
+            [/;\s*$/, 'delimiter', '@pop'],
+            [/[,;]/, 'delimiter']
         ],
     }
 };
