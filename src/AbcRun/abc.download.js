@@ -102,7 +102,8 @@ export function downloadPdfFile(node, params) {
                 pdf.save(saveFileName);
             };
 
-            const svgData = new XMLSerializer().serializeToString(svg);
+            let svgData = new XMLSerializer().serializeToString(svg);
+            svgData = unescape(encodeURIComponent(svgData));
             img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
         } else {
             const svgClone = svg.cloneNode(true);
