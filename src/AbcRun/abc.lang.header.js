@@ -34,6 +34,10 @@ export const headerRules = {
         [/.*\n/, 'string', '@pop']
     ],
 
+    headerC: [
+        [/.*\n/, 'string', '@pop']
+    ],
+
     headerM: [
         [/\d+/, 'number'],
         [/\//, 'operator'],
