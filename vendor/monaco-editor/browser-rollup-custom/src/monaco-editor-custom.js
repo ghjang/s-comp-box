@@ -174,8 +174,56 @@ globalThis.MonacoEnvironment = {
 function addEditorDeleteLineCommand(editor, keybindings) {
 	editor.addCommand(keybindings, function () {
 		const position = editor.getPosition();
-		const range = new monaco.Range(position.lineNumber, 1, position.lineNumber + 1, 1);
+		const selection = editor.getSelection();
+		const model = editor.getModel();
+		const lastLineNumber = model.getLineCount();
+
+		let newLineNumber;
+		let newColumn;
+		let range;
+
+		if (selection.isEmpty()) {
+			// No selection, delete the current line
+			const lineNumber = position.lineNumber;
+			const column = position.column;
+
+			if (lineNumber === lastLineNumber) {
+				// If it's the last line, set the new column to 1 and delete till the end of the line
+				newLineNumber = lineNumber;
+				newColumn = 1;
+				range = new monaco.Range(lineNumber, 1, lineNumber, model.getLineMaxColumn(lineNumber));
+			} else {
+				// Otherwise, calculate the new column based on the next line's content and delete the entire line
+				newLineNumber = lineNumber;
+				const newLineContent = model.getLineContent(newLineNumber + 1) || '';
+				newColumn = Math.min(column, newLineContent.length + 1);
+				range = new monaco.Range(lineNumber, 1, lineNumber + 1, 1);
+			}
+		} else {
+			// Selection exists, delete all lines in the selection
+			const startLineNumber = selection.startLineNumber;
+			const endLineNumber = selection.endLineNumber;
+			const column = selection.startColumn;
+
+			if (endLineNumber === lastLineNumber) {
+				// If the selection ends at the last line, set the new column to 1 and delete till the end of the last line
+				newLineNumber = endLineNumber;
+				newColumn = 1;
+				range = new monaco.Range(startLineNumber, 1, endLineNumber, model.getLineMaxColumn(endLineNumber));
+			} else {
+				// Otherwise, calculate the new column based on the next line's content and delete all lines in the selection
+				newLineNumber = startLineNumber;
+				const newLineContent = model.getLineContent(endLineNumber + 1) || '';
+				newColumn = Math.min(column, newLineContent.length + 1);
+				range = new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1);
+			}
+		}
+
+		// Execute the deletion
 		editor.executeEdits('', [{ range: range, text: '', forceMoveMarkers: true }]);
+
+		// Set the new position
+		editor.setPosition({ lineNumber: newLineNumber, column: newColumn });
 	});
 }
 
