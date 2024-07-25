@@ -68,6 +68,7 @@ export const headerRules = {
     headerV: [
         [/%\{/, { token: 'delimiter.bracket', bracket: '@open' }],
         [/%\}/, { token: 'delimiter.bracket', bracket: '@close' }],
+        [/%[^\{\}]?.*\n/, 'comment', '@pop'],
         [/\w+/, 'identifier'],
         [/=/, 'operator'],
         [/[ \t]+/, 'white'],
