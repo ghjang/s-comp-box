@@ -198,6 +198,64 @@ function addEditorJoinLineCommand(editor, keybinding) {
 	});
 }
 
+function duplicateLines(editor, isUp) {
+	const selection = editor.getSelection();
+	const model = editor.getModel();
+	const position = editor.getPosition();
+	const lineNumber = position.lineNumber;
+	const column = position.column;
+
+	if (selection.isEmpty()) {
+		// No selection, duplicate current line
+		const lineContent = model.getLineContent(lineNumber);
+		const newLineNumber = isUp ? lineNumber : lineNumber + 1;
+		const range = new monaco.Range(newLineNumber, 1, newLineNumber, 1);
+		const lineCount = model.getLineCount();
+		const newLineContent = lineNumber === lineCount ? '\n' + lineContent : lineContent + '\n';
+		editor.executeEdits('', [{ range: range, text: newLineContent, forceMoveMarkers: true }]);
+		editor.setPosition({ lineNumber: newLineNumber, column: column });
+	} else {
+		// Selection exists, duplicate selected lines
+		const startLineNumber = selection.startLineNumber;
+		const endLineNumber = selection.endLineNumber;
+		const selectedText = model.getValueInRange(new monaco.Range(startLineNumber, 1, endLineNumber, model.getLineMaxColumn(endLineNumber)));
+		const newLineNumber = isUp ? startLineNumber : endLineNumber + 1;
+
+		// Check if the selected end line is the last line of the document
+		const isEndLineLastLine = endLineNumber === model.getLineCount();
+
+		// If duplicating down and the selected end line is the last line, adjust the range and text
+		if (!isUp && isEndLineLastLine) {
+			const range = new monaco.Range(newLineNumber, 1, newLineNumber, 1);
+			editor.executeEdits('', [{ range: range, text: '\n' + selectedText, forceMoveMarkers: true }]);
+		} else {
+			const range = new monaco.Range(newLineNumber, 1, newLineNumber, 1);
+			editor.executeEdits('', [{ range: range, text: selectedText + '\n', forceMoveMarkers: true }]);
+		}
+
+		// Adjust selection to the new duplicated lines
+		const lineCount = endLineNumber - startLineNumber + 1;
+		const newStartLineNumber = isUp ? startLineNumber : startLineNumber + lineCount;
+		const newEndLineNumber = isUp ? endLineNumber : endLineNumber + lineCount;
+		editor.setSelection(new monaco.Selection(
+			newStartLineNumber,
+			selection.startColumn,
+			newEndLineNumber,
+			selection.endColumn
+		));
+	}
+}
+
+
+
+function addEditorDuplicateLinesUp(editor, keybinding) {
+	editor.addCommand(keybinding, () => duplicateLines(editor, true));
+}
+
+function addEditorDuplicateLinesDown(editor, keybinding) {
+	editor.addCommand(keybinding, () => duplicateLines(editor, false));
+}
+
 
 export const CompletionItemKind = monaco.languages.CompletionItemKind;
 
@@ -210,6 +268,8 @@ export function createMonacoEditor(element, options) {
 
 	addEditorDeleteLineCommand(editor, monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK);
 	addEditorJoinLineCommand(editor, monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyJ);
+	addEditorDuplicateLinesUp(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow);
+	addEditorDuplicateLinesDown(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow);
 
 	return editor;
 }
