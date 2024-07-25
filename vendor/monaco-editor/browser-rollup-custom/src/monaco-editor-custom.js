@@ -4,7 +4,7 @@ import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
 // import 'monaco-editor/esm/vs/editor/browser/widget/codeEditorWidget.js';
 // import 'monaco-editor/esm/vs/editor/browser/widget/diffEditor/diffEditor.contribution.js';
 // import 'monaco-editor/esm/vs/editor/contrib/anchorSelect/browser/anchorSelect.js';
-// import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js';
+import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js';
 // import 'monaco-editor/esm/vs/editor/contrib/caretOperations/browser/caretOperations.js';
 // import 'monaco-editor/esm/vs/editor/contrib/caretOperations/browser/transpose.js';
 // import 'monaco-editor/esm/vs/editor/contrib/clipboard/browser/clipboard.js';
@@ -21,7 +21,7 @@ import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
 // import 'monaco-editor/esm/vs/editor/contrib/dropOrPasteInto/browser/copyPasteContribution.js';
 // import 'monaco-editor/esm/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorContribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
-// import 'monaco-editor/esm/vs/editor/contrib/folding/browser/folding.js';
+import 'monaco-editor/esm/vs/editor/contrib/folding/browser/folding.js';
 // import 'monaco-editor/esm/vs/editor/contrib/fontZoom/browser/fontZoom.js';
 // import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoError/browser/gotoError.js';
@@ -29,7 +29,7 @@ import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js';
 import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hover.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/browser/inPlaceReplace.js';
-// import 'monaco-editor/esm/vs/editor/contrib/indentation/browser/indentation.js';
+import 'monaco-editor/esm/vs/editor/contrib/indentation/browser/indentation.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inlayHints/browser/inlayHintsContribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/inlineEdit/browser/inlineEdit.contribution.js';
@@ -198,6 +198,13 @@ export function registerCustomLanguage(langOpts) {
 
 	if (languageDef) {
 		monaco.languages.setMonarchTokensProvider(id, languageDef);
+
+		monaco.languages.setLanguageConfiguration(id, {
+			brackets: languageDef.brackets || [],
+			autoClosingPairs: languageDef.autoClosingPairs || [],
+			surroundingPairs: languageDef.surroundingPairs || [],
+			onEnterRules: languageDef.onEnterRules || [],
+		});
 	}
 
 	if (completionItemProvider) {
@@ -209,22 +216,22 @@ export function registerCustomLanguage(langOpts) {
 let markerStore = {};
 
 function decodeHtmlEntities(text) {
-    const entities = {
-        '&amp;': '&',
-        '&lt;': '<',
-        '&gt;': '>',
-        '&quot;': '"',
-        '&#39;': "'",
-        '&#x2F;': '/',
-        '&#x5C;': '\\',
-        '&#x60;': '`'
-    };
-    return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => entities[entity] || entity);
+	const entities = {
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&quot;': '"',
+		'&#39;': "'",
+		'&#x2F;': '/',
+		'&#x5C;': '\\',
+		'&#x60;': '`'
+	};
+	return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => entities[entity] || entity);
 }
 
 function escapeRegExp(string) {
-    const decodedString = decodeHtmlEntities(string);
-    return decodedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $&는 일치한 전체 문자열을 의미
+	const decodedString = decodeHtmlEntities(string);
+	return decodedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $&는 일치한 전체 문자열을 의미
 }
 
 export function getMarkerStore() {
