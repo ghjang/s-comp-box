@@ -170,6 +170,35 @@ globalThis.MonacoEnvironment = {
 	}
 };
 
+
+function addEditorDeleteLineCommand(editor, keybindings) {
+	editor.addCommand(keybindings, function () {
+		const position = editor.getPosition();
+		const range = new monaco.Range(position.lineNumber, 1, position.lineNumber + 1, 1);
+		editor.executeEdits('', [{ range: range, text: '', forceMoveMarkers: true }]);
+	});
+}
+
+function addEditorJoinLineCommand(editor, keybinding) {
+	editor.addCommand(keybinding, function () {
+		const position = editor.getPosition();
+		const model = editor.getModel();
+		const lineNumber = position.lineNumber;
+		const column = position.column;
+		const lineContent = model.getLineContent(lineNumber);
+		const nextLineContent = model.getLineContent(lineNumber + 1);
+
+		if (nextLineContent !== undefined) {
+			const range = new monaco.Range(lineNumber + 1, 1, lineNumber + 2, 1);
+			const newText = lineContent + nextLineContent;
+			editor.executeEdits('', [{ range: range, text: '', forceMoveMarkers: true }]);
+			editor.executeEdits('', [{ range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1), text: newText, forceMoveMarkers: true }]);
+			editor.setPosition({ lineNumber: lineNumber, column: lineContent.length + 1 });
+		}
+	});
+}
+
+
 export const CompletionItemKind = monaco.languages.CompletionItemKind;
 
 export function setWorkerUrl(url) {
@@ -177,7 +206,12 @@ export function setWorkerUrl(url) {
 }
 
 export function createMonacoEditor(element, options) {
-	return monaco.editor.create(element, options);
+	const editor = monaco.editor.create(element, options);
+
+	addEditorDeleteLineCommand(editor, monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK);
+	addEditorJoinLineCommand(editor, monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyJ);
+
+	return editor;
 }
 
 export function getMonacoKeyBindingConstant() {
