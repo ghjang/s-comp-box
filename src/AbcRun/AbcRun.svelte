@@ -3,7 +3,7 @@
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
-  import langdef from "./abc.langdef.js";
+  import langdef from "./abc.lang.def.js";
   import completionItemProvider from "./abc.completion.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
   import {
