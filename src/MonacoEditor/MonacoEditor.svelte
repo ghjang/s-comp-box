@@ -25,6 +25,8 @@
   export let theme = "vs-dark";
   export let minimap = true;
   export let hover = false;
+  export let matchBrackets = "near";
+  export let bracketPairColorization = true;
 
   export const setCodeText = (code) => (value = code);
   export const getCodeText = () => value;
@@ -112,6 +114,10 @@
       hover,
       contextmenu: false,
       scrollBeyondLastLine: false,
+      matchBrackets,
+      bracketPairColorization: {
+        enabled: bracketPairColorization,
+      },
     });
 
     editor.getModel().onDidChangeContent(async () => {

@@ -18,7 +18,7 @@ const langdef = {
     escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
     headers,
-    
+
     tokenizer: {
         root: [
             [
@@ -37,12 +37,13 @@ const langdef = {
             { include: '@whitespace' },
 
             [/[\[\]]/, '@brackets'],
-            
+
             [/[A-Ga-gz]/, 'constant'],
 
             [/\d+/, 'number'],
 
-            [/[\/,>-]/, 'operator'],
+            // accidentals, factors and tie
+            [/[\^_=\/,>-]/, 'operator'],
 
             [/\|:|:\||\|/, 'delimiter'],
 
@@ -65,11 +66,54 @@ const langdef = {
 
         whitespace: [
             [/[ \t\r\n]+/, 'white'],
+            [/%\{/, { token: 'delimiter.bracket', bracket: '@open' }],
+            [/%\}/, { token: 'delimiter.bracket', bracket: '@close' }],
             [/%.*\n/, 'comment']
         ],
 
         ...headerRules,
-    }
+    },
+
+    brackets: [
+        ['{', '}', 'delimiter.curly'],
+        ['[', ']', 'delimiter.square'],
+        ['(', ')', 'delimiter.parenthesis'],
+        ['%{', '%}', 'delimiter.bracket']
+    ],
+
+    autoClosingPairs: [
+        { open: '{', close: '}' },
+        { open: '[', close: ']' },
+        { open: '(', close: ')' },
+        { open: '%{', close: '%}' },
+        { open: '"', close: '"' },
+        { open: "'", close: "'" }
+    ],
+
+    surroundingPairs: [
+        { open: '{', close: '}' },
+        { open: '[', close: ']' },
+        { open: '(', close: ')' },
+        { open: '%{', close: '%}' },
+        { open: '"', close: '"' },
+        { open: "'", close: "'" }
+    ],
+
+    folding: {
+        offSide: true,
+        markers: {
+            start: /%\{/,
+            end: /%\}/
+        }
+    },
+
+    onEnterRules: [
+        {
+            beforeText: /%\{\s*$/,
+            afterText: /%\}/,
+            action: { indentAction: 2 }
+        }
+    ]
 };
 
 

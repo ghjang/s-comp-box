@@ -223,6 +223,8 @@
       language="abc"
       minimap={editorMiniMap}
       hover={true}
+      matchBrackets="near"
+      bracketPairColorization={true}
       on:editorInit={handleEditorInit}
       on:contentChange={handleContentChange}
     />
