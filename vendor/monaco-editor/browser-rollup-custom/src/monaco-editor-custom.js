@@ -45,7 +45,7 @@ import 'monaco-editor/esm/vs/editor/contrib/inlineProgress/browser/inlineProgres
 // import 'monaco-editor/esm/vs/editor/contrib/rename/browser/rename.js';
 // import 'monaco-editor/esm/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.js';
 // import 'monaco-editor/esm/vs/editor/contrib/semanticTokens/browser/viewportSemanticTokens.js';
-// import 'monaco-editor/esm/vs/editor/contrib/smartSelect/browser/smartSelect.js';
+import 'monaco-editor/esm/vs/editor/contrib/smartSelect/browser/smartSelect.js';
 // import 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetController2.js';
 // import 'monaco-editor/esm/vs/editor/contrib/stickyScroll/browser/stickyScrollContribution.js';
 // import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js';
@@ -171,7 +171,7 @@ globalThis.MonacoEnvironment = {
 };
 
 
-function addEditorDeleteLineCommand(editor, keybindings) {
+function addCmdDeleteLines(editor, keybindings) {
 	editor.addCommand(keybindings, function () {
 		const position = editor.getPosition();
 		const selection = editor.getSelection();
@@ -227,7 +227,7 @@ function addEditorDeleteLineCommand(editor, keybindings) {
 	});
 }
 
-function addEditorJoinLineCommand(editor, keybinding) {
+function addCmdJoinLine(editor, keybinding) {
 	editor.addCommand(keybinding, function () {
 		const position = editor.getPosition();
 		const model = editor.getModel();
@@ -245,6 +245,7 @@ function addEditorJoinLineCommand(editor, keybinding) {
 		}
 	});
 }
+
 
 function duplicateLines(editor, isUp) {
 	const selection = editor.getSelection();
@@ -294,14 +295,111 @@ function duplicateLines(editor, isUp) {
 	}
 }
 
-
-
-function addEditorDuplicateLinesUp(editor, keybinding) {
+function addCmdDuplicateLinesUp(editor, keybinding) {
 	editor.addCommand(keybinding, () => duplicateLines(editor, true));
 }
 
-function addEditorDuplicateLinesDown(editor, keybinding) {
+function addCmdDuplicateLinesDown(editor, keybinding) {
 	editor.addCommand(keybinding, () => duplicateLines(editor, false));
+}
+
+
+function moveLines(editor, direction) {
+	const selection = editor.getSelection();
+	const model = editor.getModel();
+	const lastLineNumber = model.getLineCount();
+
+	if (selection.isEmpty()) {
+		// No selection, move the current line
+		const position = editor.getPosition();
+		const lineNumber = position.lineNumber;
+		const column = position.column;
+
+		if ((direction === 'up' && lineNumber <= 1)
+			|| (direction === 'down' && lineNumber >= lastLineNumber)) {
+			return;
+		}
+
+		const targetLineNumber = direction === 'up' ? lineNumber - 1 : lineNumber + 1;
+		let lineContent = model.getLineContent(lineNumber) + model.getEOL();
+		let targetLineContent = model.getLineContent(targetLineNumber) + model.getEOL();
+
+		if (direction === 'down' && targetLineNumber === lastLineNumber) {
+			lineContent = model.getEOL() + lineContent.trimRight();
+		}
+
+		const targetLineWithEOL =
+			(targetLineNumber < lastLineNumber && lineNumber !== lastLineNumber)
+				? targetLineContent : targetLineContent.trimRight();
+
+		// Swap lines
+		editor.executeEdits('', [
+			{ range: new monaco.Range(lineNumber, 1, lineNumber + 1, 1), text: targetLineWithEOL, forceMoveMarkers: true },
+			{ range: new monaco.Range(targetLineNumber, 1, targetLineNumber + 1, 1), text: lineContent, forceMoveMarkers: true }
+		]);
+
+		// Move cursor to the new position
+		editor.setPosition({ lineNumber: targetLineNumber, column: column });
+	} else {
+		// Selection exists, move selected lines
+		const startLineNumber = selection.startLineNumber;
+		const endLineNumber = selection.endLineNumber;
+
+		if ((direction === 'up' && startLineNumber <= 1)
+			|| (direction === 'down' && endLineNumber >= lastLineNumber)) {
+			return;
+		}
+
+		const targetLineNumber = direction === 'up' ? startLineNumber - 1 : endLineNumber + 1;
+
+		const selectedText = model.getValueInRange(new monaco.Range(startLineNumber, 1, endLineNumber, model.getLineMaxColumn(endLineNumber)));
+		const targetText = model.getValueInRange(new monaco.Range(targetLineNumber, 1, targetLineNumber, model.getLineMaxColumn(targetLineNumber)));
+
+		const newSelectedText =
+			(direction === 'down' && targetLineNumber === lastLineNumber)
+				? selectedText : selectedText + model.getEOL();
+		const newTargetText =
+			(endLineNumber === lastLineNumber && targetLineNumber < lastLineNumber)
+				? targetText : targetText + model.getEOL();
+
+		// Ensure no overlapping ranges by applying edits in reverse order
+		if (direction === 'up') {
+			editor.executeEdits('', [
+				{ range: new monaco.Range(targetLineNumber, 1, targetLineNumber + 1, 1), text: newSelectedText, forceMoveMarkers: true },
+				{ range: new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1), text: newTargetText, forceMoveMarkers: true }
+			]);
+		} else {
+			editor.executeEdits('', [
+				{ range: new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1), text: newTargetText, forceMoveMarkers: true },
+				{ range: new monaco.Range(targetLineNumber, 1, targetLineNumber + 1, 1), text: newSelectedText, forceMoveMarkers: true }
+			]);
+		}
+
+		const newStartLineNumber = direction === 'up' ? startLineNumber - 1 : startLineNumber + 1;
+		const newEndLineNumber = direction === 'up' ? endLineNumber - 1 : endLineNumber + 1;
+		editor.setSelection(new monaco.Selection(newStartLineNumber, selection.startColumn, newEndLineNumber, selection.endColumn));
+	}
+}
+
+function addCmdMoveLinesUp(editor, keybinding) {
+	editor.addCommand(keybinding, () => moveLines(editor, 'up'));
+}
+
+function addCmdMoveLinesDown(editor, keybinding) {
+	editor.addCommand(keybinding, () => moveLines(editor, 'down'));
+}
+
+
+function addCmdExpandSelection(editor, keybinding) {
+	editor.addCommand(keybinding, () => {
+		editor.trigger('keyboard', 'editor.action.smartSelect.expand');
+	});
+}
+
+function addCmdShrinkSelection(editor, keybinding) {
+    editor.addCommand(keybinding, () => {
+        editor.trigger('keyboard', 'editor.action.smartSelect.shrink');
+    });
 }
 
 
@@ -314,10 +412,14 @@ export function setWorkerUrl(url) {
 export function createMonacoEditor(element, options) {
 	const editor = monaco.editor.create(element, options);
 
-	addEditorDeleteLineCommand(editor, monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK);
-	addEditorJoinLineCommand(editor, monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyJ);
-	addEditorDuplicateLinesUp(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow);
-	addEditorDuplicateLinesDown(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow);
+	addCmdDeleteLines(editor, monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK);
+	addCmdJoinLine(editor, monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyJ);
+	addCmdDuplicateLinesUp(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow);
+	addCmdDuplicateLinesDown(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow);
+	addCmdMoveLinesUp(editor, monaco.KeyMod.Alt | monaco.KeyCode.UpArrow);
+	addCmdMoveLinesDown(editor, monaco.KeyMod.Alt | monaco.KeyCode.DownArrow);
+	addCmdExpandSelection(editor, monaco.KeyMod.WinCtrl | monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.RightArrow);
+	addCmdShrinkSelection(editor, monaco.KeyMod.WinCtrl | monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.LeftArrow);
 
 	return editor;
 }
