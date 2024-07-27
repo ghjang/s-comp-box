@@ -23,11 +23,10 @@ export function loadClassFromModule(modulePath, className) {
     return new Promise((resolve, reject) => {
         import(modulePath)
             .then((module) => {
-                let Class = module[className];
+                // NOTE: 'module.default.name' 값은 '번들링 최적화'시에 원래의 이름이 아닌 변경된 (짧게 축소된) 이름이 나올 수 있어서
+                //       'className'과 일치하지 않을 수 있다.
 
-                if (!Class && module.default && module.default.name === className) {
-                    Class = module.default;
-                }
+                const Class = module[className] || module.default;
 
                 if (Class && typeof Class === 'function' && Class.prototype) {
                     resolve(Class);
