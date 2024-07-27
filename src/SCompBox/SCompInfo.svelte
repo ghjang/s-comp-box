@@ -16,6 +16,7 @@
       {
         component: {
           componentClass: Splitter,
+          componentClassName: "Splitter",
           customElementName: "s-splitter",
           description: "Horizontal Splitter",
           props: {
@@ -38,6 +39,7 @@
       {
         component: {
           componentClass: Splitter,
+          componentClassName: "Splitter",
           customElementName: "s-splitter",
           description: "Vertical Splitter",
           props: {
@@ -60,6 +62,7 @@
       {
         component: {
           componentClass: Tab,
+          componentClassName: "Tab",
           description: "Tab",
           props: {
             selectedTabIndex: 0,

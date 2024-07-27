@@ -72,20 +72,23 @@
         const comp = item.component;
         let props = comp.props || {};
 
-        const constructorName = comp.componentClass
-          ? comp.componentClass.name
-          : null;
-        if (constructorName) {
-          // 설정에서 직접 '컴포넌트 클래스'를 지정한 경우
+        if (comp.componentClass) {
+          // 설정에서 직접 '컴포넌트 이름 문자열'이 아닌
+          // '컴포넌트 클래스'를 직접 지정한 경우
+
+          // NOTE: 'comp.componentClass.name'은 사용할 수 없다.
+          //       릴리즈 빌드의 '번들링 최적화' 과정에서 '클래스 이름이 축소 변경'될 수 있기 때문이다.
+          //       해서 명시적으로 'componentClassName'을 추가적으로 설정하도록 한다.
+          const orgCompName = comp.componentClassName;
 
           // 사용자 설정이 존재할 경우에 사용자 설정으로 오버라이드
-          if (compProps[constructorName]) {
-            props = { ...props, ...compProps[constructorName] };
+          if (compProps[orgCompName]) {
+            props = { ...props, ...compProps[orgCompName] };
           }
 
           // 'normal'로 번들링된 컴포넌트
           if (compJsBundleBasePath) {
-            const scriptPath = `${compJsBundleBasePath}/${constructorName}.js`;
+            const scriptPath = `${compJsBundleBasePath}/${orgCompName}.js`;
             await loadScript(scriptPath);
           }
         } else if (comp.name) {
