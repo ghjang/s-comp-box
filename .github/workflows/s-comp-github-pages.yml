@@ -5,8 +5,8 @@ on:
   push:
     branches: ["main"]
     paths:
-      - 'src/**'
-      - 'test/**'
+      - "src/**"
+      - "test/**"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,10 +37,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
-        run: npm ci 
+        run: npm ci
 
       - name: Bundle Monaco Editor
         run: npm run bundle-monaco-editor
@@ -96,6 +96,9 @@ jobs:
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" \
             -e "s|customElementConfigBasePath: '/s-comp/scripts/default'|customElementConfigBasePath: '/s-comp/config'|g" \
             -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" {} \;
+
+      - name: Update GitHub Pages's index.html
+        run: |
           cp pages/docroot/test/SCompBox/SCompBox.js pages/docroot/
           cp pages/docroot/test/SCompBox/SCompBox.html pages/docroot/
           mv pages/docroot/SCompBox.html pages/docroot/index.html
@@ -108,7 +111,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload GitHub Pages document root contents
-          path: 'pages/docroot'
+          path: "pages/docroot"
 
       - name: Deploy to GitHub Pages
         id: deployment
