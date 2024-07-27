@@ -10,6 +10,9 @@ const sCompBox = new SCompBox({
         customCompJsBundleBasePath: '/build/dev/custom',
 
         compProps: {
+            AbcRun: {
+                editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist"
+            },
             Marquee: {
                 text: 'Hello, Marquee!'
             },

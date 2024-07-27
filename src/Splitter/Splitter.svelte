@@ -14,7 +14,7 @@
 
   export let orientation = "horizontal";
   export let showPanelControl = false;
-  
+
   export let panel_0_length = "50%";
 
   export let component_0 = { component: null, props: {} };
@@ -55,6 +55,8 @@
     component_1 = { ...temp };
   };
 
+  export const getPanelSize = () => panelSize;
+
   let panelSize = {};
 
   let this_component_0;
@@ -94,6 +96,16 @@
     });
   }
 
+  // TODO: 'panelSizeChange' 이벤트 발생 횟수 최적화
+  //
+  // 'panelSizeChange' 이벤트가 발생하는 경우:
+  //   - '스플릿터 그립'을 드래깅해서 패널 크기를 변경할 때
+  //   - '브라우저 윈도'의 크기를 변경할 때
+  //   - '브라우저의 개발자 도구'를 열거나 닫을 때
+  //   - ...
+  //
+  // 'debounce' 처리를 하고는 있으나,
+  // '처리 방식 자체'에 개선 가능한 부분이 있는지 점검할 것.
   function handlePanelSizeChange(event) {
     panelSize = { panelSize: event.detail };
 
@@ -127,6 +139,8 @@
         {showPanelControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
+        on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -146,6 +160,8 @@
         {showPanelControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
+        on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -160,6 +176,8 @@
         {showPanelControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
+        on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <slot name="left" slot="left" />
         <svelte:component
@@ -170,7 +188,13 @@
         />
       </SplitterH>
     {:else}
-      <SplitterH {showPanelControl} {panel_0_length} on:panelSizeChanged>
+      <SplitterH
+        {showPanelControl}
+        {panel_0_length}
+        on:panelSizeChanged
+        on:panelSwapButtonClicked
+        on:panelOrientationButtonClicked
+      >
         <slot name="left" slot="left" />
         <slot name="right" slot="right" />
       </SplitterH>
@@ -181,6 +205,8 @@
         {showPanelControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
+        on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -200,6 +226,8 @@
         {showPanelControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
+        on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <svelte:component
           this={component_0.component}
@@ -214,6 +242,8 @@
         {showPanelControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
+        on:panelSwapButtonClicked={swapPanel}
+        on:panelOrientationButtonClicked={toggleOrientation}
       >
         <slot name="top" slot="top" />
         <svelte:component
@@ -224,7 +254,13 @@
         />
       </SplitterV>
     {:else}
-      <SplitterV {showPanelControl} {panel_0_length} on:panelSizeChanged>
+      <SplitterV
+        {showPanelControl}
+        {panel_0_length}
+        on:panelSizeChanged
+        on:panelSwapButtonClicked
+        on:panelOrientationButtonClicked
+      >
         <slot name="top" slot="top" />
         <slot name="bottom" slot="bottom" />
       </SplitterV>

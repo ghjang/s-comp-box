@@ -4,7 +4,7 @@ import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
 // import 'monaco-editor/esm/vs/editor/browser/widget/codeEditorWidget.js';
 // import 'monaco-editor/esm/vs/editor/browser/widget/diffEditor/diffEditor.contribution.js';
 // import 'monaco-editor/esm/vs/editor/contrib/anchorSelect/browser/anchorSelect.js';
-// import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js';
+import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js';
 // import 'monaco-editor/esm/vs/editor/contrib/caretOperations/browser/caretOperations.js';
 // import 'monaco-editor/esm/vs/editor/contrib/caretOperations/browser/transpose.js';
 // import 'monaco-editor/esm/vs/editor/contrib/clipboard/browser/clipboard.js';
@@ -21,15 +21,15 @@ import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
 // import 'monaco-editor/esm/vs/editor/contrib/dropOrPasteInto/browser/copyPasteContribution.js';
 // import 'monaco-editor/esm/vs/editor/contrib/dropOrPasteInto/browser/dropIntoEditorContribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
-// import 'monaco-editor/esm/vs/editor/contrib/folding/browser/folding.js';
+import 'monaco-editor/esm/vs/editor/contrib/folding/browser/folding.js';
 // import 'monaco-editor/esm/vs/editor/contrib/fontZoom/browser/fontZoom.js';
 // import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoError/browser/gotoError.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/goToCommands.js';
 // import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js';
-// import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hover.js';
+import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hover.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inPlaceReplace/browser/inPlaceReplace.js';
-// import 'monaco-editor/esm/vs/editor/contrib/indentation/browser/indentation.js';
+import 'monaco-editor/esm/vs/editor/contrib/indentation/browser/indentation.js';
 // import 'monaco-editor/esm/vs/editor/contrib/inlayHints/browser/inlayHintsContribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/inlineCompletions/browser/inlineCompletions.contribution.js';
 import 'monaco-editor/esm/vs/editor/contrib/inlineEdit/browser/inlineEdit.contribution.js';
@@ -45,7 +45,7 @@ import 'monaco-editor/esm/vs/editor/contrib/inlineProgress/browser/inlineProgres
 // import 'monaco-editor/esm/vs/editor/contrib/rename/browser/rename.js';
 // import 'monaco-editor/esm/vs/editor/contrib/semanticTokens/browser/documentSemanticTokens.js';
 // import 'monaco-editor/esm/vs/editor/contrib/semanticTokens/browser/viewportSemanticTokens.js';
-// import 'monaco-editor/esm/vs/editor/contrib/smartSelect/browser/smartSelect.js';
+import 'monaco-editor/esm/vs/editor/contrib/smartSelect/browser/smartSelect.js';
 // import 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetController2.js';
 // import 'monaco-editor/esm/vs/editor/contrib/stickyScroll/browser/stickyScrollContribution.js';
 // import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js';
@@ -170,12 +170,262 @@ globalThis.MonacoEnvironment = {
 	}
 };
 
+
+function addCmdDeleteLines(editor, keybindings) {
+	editor.addCommand(keybindings, function () {
+		const position = editor.getPosition();
+		const selection = editor.getSelection();
+		const model = editor.getModel();
+		const lastLineNumber = model.getLineCount();
+
+		let newLineNumber;
+		let newColumn;
+		let range;
+
+		if (selection.isEmpty()) {
+			// No selection, delete the current line
+			const lineNumber = position.lineNumber;
+			const column = position.column;
+
+			if (lineNumber === lastLineNumber) {
+				// If it's the last line, set the new column to 1 and delete till the end of the line
+				newLineNumber = lineNumber;
+				newColumn = 1;
+				range = new monaco.Range(lineNumber, 1, lineNumber, model.getLineMaxColumn(lineNumber));
+			} else {
+				// Otherwise, calculate the new column based on the next line's content and delete the entire line
+				newLineNumber = lineNumber;
+				const newLineContent = model.getLineContent(newLineNumber + 1) || '';
+				newColumn = Math.min(column, newLineContent.length + 1);
+				range = new monaco.Range(lineNumber, 1, lineNumber + 1, 1);
+			}
+		} else {
+			// Selection exists, delete all lines in the selection
+			const startLineNumber = selection.startLineNumber;
+			const endLineNumber = selection.endLineNumber;
+			const column = selection.startColumn;
+
+			if (endLineNumber === lastLineNumber) {
+				// If the selection ends at the last line, set the new column to 1 and delete till the end of the last line
+				newLineNumber = endLineNumber;
+				newColumn = 1;
+				range = new monaco.Range(startLineNumber, 1, endLineNumber, model.getLineMaxColumn(endLineNumber));
+			} else {
+				// Otherwise, calculate the new column based on the next line's content and delete all lines in the selection
+				newLineNumber = startLineNumber;
+				const newLineContent = model.getLineContent(endLineNumber + 1) || '';
+				newColumn = Math.min(column, newLineContent.length + 1);
+				range = new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1);
+			}
+		}
+
+		// Execute the deletion
+		editor.executeEdits('', [{ range: range, text: '', forceMoveMarkers: true }]);
+
+		// Set the new position
+		editor.setPosition({ lineNumber: newLineNumber, column: newColumn });
+	});
+}
+
+function addCmdJoinLine(editor, keybinding) {
+	editor.addCommand(keybinding, function () {
+		const position = editor.getPosition();
+		const model = editor.getModel();
+		const lineNumber = position.lineNumber;
+		const column = position.column;
+		const lineContent = model.getLineContent(lineNumber);
+		const nextLineContent = model.getLineContent(lineNumber + 1);
+
+		if (nextLineContent !== undefined) {
+			const range = new monaco.Range(lineNumber + 1, 1, lineNumber + 2, 1);
+			const newText = lineContent + nextLineContent;
+			editor.executeEdits('', [{ range: range, text: '', forceMoveMarkers: true }]);
+			editor.executeEdits('', [{ range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1), text: newText, forceMoveMarkers: true }]);
+			editor.setPosition({ lineNumber: lineNumber, column: lineContent.length + 1 });
+		}
+	});
+}
+
+
+function duplicateLines(editor, isUp) {
+	const selection = editor.getSelection();
+	const model = editor.getModel();
+	const position = editor.getPosition();
+	const lineNumber = position.lineNumber;
+	const column = position.column;
+
+	if (selection.isEmpty()) {
+		// No selection, duplicate current line
+		const lineContent = model.getLineContent(lineNumber);
+		const newLineNumber = isUp ? lineNumber : lineNumber + 1;
+		const range = new monaco.Range(newLineNumber, 1, newLineNumber, 1);
+		const lineCount = model.getLineCount();
+		const newLineContent = lineNumber === lineCount ? '\n' + lineContent : lineContent + '\n';
+		editor.executeEdits('', [{ range: range, text: newLineContent, forceMoveMarkers: true }]);
+		editor.setPosition({ lineNumber: newLineNumber, column: column });
+	} else {
+		// Selection exists, duplicate selected lines
+		const startLineNumber = selection.startLineNumber;
+		const endLineNumber = selection.endLineNumber;
+		const selectedText = model.getValueInRange(new monaco.Range(startLineNumber, 1, endLineNumber, model.getLineMaxColumn(endLineNumber)));
+		const newLineNumber = isUp ? startLineNumber : endLineNumber + 1;
+
+		// Check if the selected end line is the last line of the document
+		const isEndLineLastLine = endLineNumber === model.getLineCount();
+
+		// If duplicating down and the selected end line is the last line, adjust the range and text
+		if (!isUp && isEndLineLastLine) {
+			const range = new monaco.Range(newLineNumber, 1, newLineNumber, 1);
+			editor.executeEdits('', [{ range: range, text: '\n' + selectedText, forceMoveMarkers: true }]);
+		} else {
+			const range = new monaco.Range(newLineNumber, 1, newLineNumber, 1);
+			editor.executeEdits('', [{ range: range, text: selectedText + '\n', forceMoveMarkers: true }]);
+		}
+
+		// Adjust selection to the new duplicated lines
+		const lineCount = endLineNumber - startLineNumber + 1;
+		const newStartLineNumber = isUp ? startLineNumber : startLineNumber + lineCount;
+		const newEndLineNumber = isUp ? endLineNumber : endLineNumber + lineCount;
+		editor.setSelection(new monaco.Selection(
+			newStartLineNumber,
+			selection.startColumn,
+			newEndLineNumber,
+			selection.endColumn
+		));
+	}
+}
+
+function addCmdDuplicateLinesUp(editor, keybinding) {
+	editor.addCommand(keybinding, () => duplicateLines(editor, true));
+}
+
+function addCmdDuplicateLinesDown(editor, keybinding) {
+	editor.addCommand(keybinding, () => duplicateLines(editor, false));
+}
+
+
+function moveLines(editor, direction) {
+	const selection = editor.getSelection();
+	const model = editor.getModel();
+	const lastLineNumber = model.getLineCount();
+
+	if (selection.isEmpty()) {
+		// No selection, move the current line
+		const position = editor.getPosition();
+		const lineNumber = position.lineNumber;
+		const column = position.column;
+
+		if ((direction === 'up' && lineNumber <= 1)
+			|| (direction === 'down' && lineNumber >= lastLineNumber)) {
+			return;
+		}
+
+		const targetLineNumber = direction === 'up' ? lineNumber - 1 : lineNumber + 1;
+		let lineContent = model.getLineContent(lineNumber) + model.getEOL();
+		let targetLineContent = model.getLineContent(targetLineNumber) + model.getEOL();
+
+		if (direction === 'down' && targetLineNumber === lastLineNumber) {
+			lineContent = model.getEOL() + lineContent.trimRight();
+		}
+
+		const targetLineWithEOL =
+			(targetLineNumber < lastLineNumber && lineNumber !== lastLineNumber)
+				? targetLineContent : targetLineContent.trimRight();
+
+		// Swap lines
+		editor.executeEdits('', [
+			{ range: new monaco.Range(lineNumber, 1, lineNumber + 1, 1), text: targetLineWithEOL, forceMoveMarkers: true },
+			{ range: new monaco.Range(targetLineNumber, 1, targetLineNumber + 1, 1), text: lineContent, forceMoveMarkers: true }
+		]);
+
+		// Move cursor to the new position
+		editor.setPosition({ lineNumber: targetLineNumber, column: column });
+	} else {
+		// Selection exists, move selected lines
+		const startLineNumber = selection.startLineNumber;
+		const endLineNumber = selection.endLineNumber;
+
+		if ((direction === 'up' && startLineNumber <= 1)
+			|| (direction === 'down' && endLineNumber >= lastLineNumber)) {
+			return;
+		}
+
+		const targetLineNumber = direction === 'up' ? startLineNumber - 1 : endLineNumber + 1;
+
+		const selectedText = model.getValueInRange(new monaco.Range(startLineNumber, 1, endLineNumber, model.getLineMaxColumn(endLineNumber)));
+		const targetText = model.getValueInRange(new monaco.Range(targetLineNumber, 1, targetLineNumber, model.getLineMaxColumn(targetLineNumber)));
+
+		const newSelectedText =
+			(direction === 'down' && targetLineNumber === lastLineNumber)
+				? selectedText : selectedText + model.getEOL();
+		const newTargetText =
+			(endLineNumber === lastLineNumber && targetLineNumber < lastLineNumber)
+				? targetText : targetText + model.getEOL();
+
+		// Ensure no overlapping ranges by applying edits in reverse order
+		if (direction === 'up') {
+			editor.executeEdits('', [
+				{ range: new monaco.Range(targetLineNumber, 1, targetLineNumber + 1, 1), text: newSelectedText, forceMoveMarkers: true },
+				{ range: new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1), text: newTargetText, forceMoveMarkers: true }
+			]);
+		} else {
+			editor.executeEdits('', [
+				{ range: new monaco.Range(startLineNumber, 1, endLineNumber + 1, 1), text: newTargetText, forceMoveMarkers: true },
+				{ range: new monaco.Range(targetLineNumber, 1, targetLineNumber + 1, 1), text: newSelectedText, forceMoveMarkers: true }
+			]);
+		}
+
+		const newStartLineNumber = direction === 'up' ? startLineNumber - 1 : startLineNumber + 1;
+		const newEndLineNumber = direction === 'up' ? endLineNumber - 1 : endLineNumber + 1;
+		editor.setSelection(new monaco.Selection(newStartLineNumber, selection.startColumn, newEndLineNumber, selection.endColumn));
+	}
+}
+
+function addCmdMoveLinesUp(editor, keybinding) {
+	editor.addCommand(keybinding, () => moveLines(editor, 'up'));
+}
+
+function addCmdMoveLinesDown(editor, keybinding) {
+	editor.addCommand(keybinding, () => moveLines(editor, 'down'));
+}
+
+
+function addCmdExpandSelection(editor, keybinding) {
+	editor.addCommand(keybinding, () => {
+		editor.trigger('keyboard', 'editor.action.smartSelect.expand');
+	});
+}
+
+function addCmdShrinkSelection(editor, keybinding) {
+	editor.addCommand(keybinding, () => {
+		editor.trigger('keyboard', 'editor.action.smartSelect.shrink');
+	});
+}
+
+
+export const CompletionItemKind = monaco.languages.CompletionItemKind;
+
 export function setWorkerUrl(url) {
 	workerUrl = new URL(url, import.meta.url);
 }
 
 export function createMonacoEditor(element, options) {
-	return monaco.editor.create(element, options);
+	const editor = monaco.editor.create(element, options);
+
+	addCmdDeleteLines(editor, monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK);
+	addCmdJoinLine(editor, monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyJ);
+	addCmdDuplicateLinesUp(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow);
+	addCmdDuplicateLinesDown(editor, monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow);
+	addCmdMoveLinesUp(editor, monaco.KeyMod.Alt | monaco.KeyCode.UpArrow);
+	addCmdMoveLinesDown(editor, monaco.KeyMod.Alt | monaco.KeyCode.DownArrow);
+	addCmdExpandSelection(editor, monaco.KeyMod.WinCtrl | monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.RightArrow);
+	addCmdShrinkSelection(editor, monaco.KeyMod.WinCtrl | monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.LeftArrow);
+
+	return editor;
+}
+
+export function createRange(startLineNumber, startColumn, endLineNumber, endColumn) {
+	return new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn);
 }
 
 export function getMonacoKeyBindingConstant() {
@@ -186,9 +436,105 @@ export function getMonacoKeyBindingConstant() {
 }
 
 export function registerCustomLanguage(langOpts) {
-	const { id, tokenizer } = langOpts;
+	const { id, languageDef, completionItemProvider } = langOpts;
+
+	if (!id) {
+		throw new Error("custom language 'id' is required.");
+	}
 
 	monaco.languages.register({ id });
 
-	monaco.languages.setMonarchTokensProvider(id, { tokenizer });
+	if (languageDef) {
+		monaco.languages.setMonarchTokensProvider(id, languageDef);
+
+		monaco.languages.setLanguageConfiguration(id, {
+			brackets: languageDef.brackets || [],
+			autoClosingPairs: languageDef.autoClosingPairs || [],
+			surroundingPairs: languageDef.surroundingPairs || [],
+			onEnterRules: languageDef.onEnterRules || [],
+		});
+	}
+
+	if (completionItemProvider) {
+		monaco.languages.registerCompletionItemProvider(id, completionItemProvider);
+	}
+}
+
+
+let markerStore = {};
+
+function decodeHtmlEntities(text) {
+	const entities = {
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&quot;': '"',
+		'&#39;': "'",
+		'&#x2F;': '/',
+		'&#x5C;': '\\',
+		'&#x60;': '`'
+	};
+	return text.replace(/&[a-zA-Z0-9#]+;/g, (entity) => entities[entity] || entity);
+}
+
+function escapeRegExp(string) {
+	const decodedString = decodeHtmlEntities(string);
+	return decodedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $&는 일치한 전체 문자열을 의미
+}
+
+export function getMarkerStore() {
+	return markerStore;
+}
+
+export function setWarnings(editor, warnings) {
+	const model = editor.getModel();
+	const text = model.getValue();
+	const markers = [];
+
+	warnings.forEach((warning, index) => {
+		const problemText = escapeRegExp(warning.problemText);
+		const regex = new RegExp(problemText, 'g');
+		let match;
+		while ((match = regex.exec(text)) !== null) {
+			const start = model.getPositionAt(match.index);
+			const end = model.getPositionAt(match.index + match[0].length);
+			const lineNumber = warning.lineNumber;
+			const columnNumber = warning.columnNumber;
+			const lineNumColNum = lineNumber && columnNumber && `${lineNumber}:${columnNumber}`;
+			const markerId = lineNumColNum || `warning-${index}-${match.index}`;
+
+			const marker = {
+				startLineNumber: start.lineNumber,
+				startColumn: columnNumber || start.column,
+				endLineNumber: end.lineNumber,
+				endColumn: columnNumber ? columnNumber + 1 : end.column,
+				message: warning.message,
+				severity: monaco.MarkerSeverity.Warning,
+				id: markerId
+			};
+
+			markers.push(marker);
+			markerStore[markerId] = marker;
+		}
+	});
+
+	monaco.editor.setModelMarkers(model, 'owner', markers);
+
+	return markerStore;
+}
+
+export function clearWarnings(editor) {
+	const model = editor.getModel();
+	monaco.editor.setModelMarkers(model, 'owner', []);
+	markerStore = {}; // Clear the marker store
+}
+
+export function clearSpecificWarning(editor, markerId) {
+	const model = editor.getModel();
+	const markers = monaco.editor.getModelMarkers({ owner: 'owner' });
+
+	const updatedMarkers = markers.filter(marker => marker.id !== markerId);
+	monaco.editor.setModelMarkers(model, 'owner', updatedMarkers);
+
+	delete markerStore[markerId];
 }

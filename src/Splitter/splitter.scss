@@ -34,9 +34,13 @@ $background-color: lightgray;
         align-items: center;
 
         button {
-          display: block;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           margin: 0;
           padding: 0;
+          width: 12px;
+          height: 12px;
           font-size: 0.01em;
           user-select: none;
         }

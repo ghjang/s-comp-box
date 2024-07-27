@@ -13,6 +13,8 @@
     "bundle-mathjax": "cd vendor/mathjax && sh bundle.sh dist",
     "predev": "rimraf build/dev",
     "dev": "rollup -c -w",
+    "predev4096": "rimraf build/dev",
+    "dev4096": "node --max-old-space-size=4096 node_modules/rollup/dist/bin/rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild": "rimraf build/dist",
     "build": "rollup -c",
@@ -49,15 +51,17 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "abcjs": "^6.4.1",
+    "abcjs": "^6.3.0",
     "autoprefixer": "^10.4.19",
     "js-yaml": "^4.1.0",
+    "jspdf": "^2.5.1",
     "lodash-es": "^4.17.21",
     "mathjax": "^3.2.2",
     "mathjax-full": "^3.2.2",
     "monaco-editor": "^0.47.0",
     "pdfjs-dist": "^4.3.136",
     "pyodide": "^0.26.1",
-    "sass": "^1.76.0"
+    "sass": "^1.76.0",
+    "svg2pdf.js": "^2.2.4"
   }
 }

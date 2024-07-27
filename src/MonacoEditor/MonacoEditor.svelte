@@ -4,9 +4,12 @@
   import { onDestroy, createEventDispatcher, tick } from "svelte";
   import {
     createMonacoEditor,
+    createRange,
     getMonacoKeyBindingConstant,
     setWorkerUrl,
     registerCustomLanguage as register,
+    setWarnings,
+    clearWarnings,
   } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
   const dispatch = createEventDispatcher();
@@ -21,10 +24,19 @@
   export let value = "";
   export let language = "python";
   export let theme = "vs-dark";
+  export let minimap = true;
+  export let hover = false;
+  export let matchBrackets = "near";
+  export let bracketPairColorization = true;
+  export let autoFindInSelection = "multiline";
+  export let autoFindMatches = false;
 
   export const setCodeText = (code) => (value = code);
   export const getCodeText = () => value;
   export const registerCustomLanguage = register;
+  export const setEditorWarnings = (warnings) =>
+    editor && setWarnings(editor, warnings);
+  export const clearEditorWarnings = () => editor && clearWarnings(editor);
 
   let editorContainer;
   let editor;
@@ -99,8 +111,19 @@
       value,
       language,
       theme,
+      minimap: {
+        enabled: minimap,
+      },
+      hover,
       contextmenu: false,
       scrollBeyondLastLine: false,
+      matchBrackets,
+      bracketPairColorization: {
+        enabled: bracketPairColorization,
+      },
+      find: {
+        autoFindInSelection,
+      },
     });
 
     editor.getModel().onDidChangeContent(async () => {
@@ -108,6 +131,51 @@
       await tick();
       dispatch("contentChange", { value });
     });
+
+    if (autoFindMatches) {
+      let currentDecorations = [];
+
+      editor.onDidChangeCursorSelection((e) => {
+        const selection = editor.getSelection();
+        const selectedText = editor.getModel().getValueInRange(selection);
+
+        if (selectedText && selectedText.trim() !== "") {
+          const matches = editor.getModel().findMatches(
+            selectedText,
+            true, // searchOnlyEditableRange
+            false, // isRegex
+            true, // matchCase
+            null, // wordSeparators
+            true // captureMatches
+          );
+
+          // 현재 선택된 영역의 범위
+          const selectionRange = createRange(
+            selection.startLineNumber,
+            selection.startColumn,
+            selection.endLineNumber,
+            selection.endColumn
+          );
+
+          // 현재 선택된 영역을 제외한 매칭 결과
+          const decorations = matches
+            .filter((match) => !selectionRange.equalsRange(match.range))
+            .map((match) => ({
+              range: match.range,
+              options: {
+                className: "s-comp-monaco-editor-selection-match",
+              },
+            }));
+
+          currentDecorations = editor.deltaDecorations(
+            currentDecorations,
+            decorations
+          );
+        } else {
+          currentDecorations = editor.deltaDecorations(currentDecorations, []);
+        }
+      });
+    }
 
     const { keyMod, keyCode } = getMonacoKeyBindingConstant();
     editor.addAction({
@@ -132,7 +200,10 @@
     }
   }
 
-  $: editorContainer && initMonacoEditor(editorContainer);
+  $: if (editorContainer) {
+    initMonacoEditor(editorContainer);
+    dispatch("editorInit");
+  }
 </script>
 
 <div
@@ -145,3 +216,11 @@
     <slot />
   </div>
 </div>
+
+<style>
+  /* 'outline'은 'border'와 다르게 요소의 크기를 변경하지 않는다. */
+  :global(.s-comp-monaco-editor-selection-match) {
+    background-color: rgba(128, 128, 128, 0.2); /* 회색 계열의 옅은 배경색 */
+    outline: 1px solid rgba(255, 255, 0, 0.3); /* 얇은 노란색 옅은 보더 */
+  }
+</style>

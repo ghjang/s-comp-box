@@ -2,6 +2,7 @@
   import debounce from "lodash-es/debounce";
   import { createEventDispatcher } from "svelte";
   import { resizeObserver } from "./resizeObserver.js";
+  import { styleObserver } from "./styleObserver.js";
   import { dragGrip } from "./dragGrip.js";
 
   const dispatch = createEventDispatcher();
@@ -15,6 +16,7 @@
   let rightPanelCollapsed = false; // '>' 버튼을 눌러서 '오른쪽 패널'이 접혀있는지 여부
   let ltrPanelCollapseButtonClicked = false; // '>' 버튼이 눌렸었는지 여부
   let resetLtrPanelCollapseButtonClicked = null;
+  let lastNonZeroPanel0Width = panel_0_length;
   let splitterPanelLength = "auto";
 
   $: if (showPanelControl) {
@@ -26,6 +28,10 @@
   } else {
     resetLtrPanelCollapseButtonClicked = null;
     splitterPanelLength = "2px";
+  }
+
+  $: if (panel_0_length !== "0%" && panel_0_length !== "0px") {
+    lastNonZeroPanel0Width = panel_0_length;
   }
 
   function onPanelSizeChanged(sizeInfo) {
@@ -67,12 +73,36 @@
   // NOTE: 패널의 크기값 설정시 'onPanelSizeChanged' 이벤트가 자동으로 트리거 된다.
   function handlePanelCollapseButtonClick(direction = "rtl") {
     if (direction === "rtl") {
+      leftPanelCollapsed = true;
       panel_0.style.width = "0%";
     } else if (direction === "ltr") {
       rightPanelCollapsed = true; // 'rightPanelCollapsed' 클래스 추가
       ltrPanelCollapseButtonClicked = true;
     } else {
       // do nothing
+    }
+  }
+
+  function handlePanelSwapButtonClick() {
+    dispatch("panelSwapButtonClicked");
+  }
+
+  function handlePanelOrientationButtonClick() {
+    dispatch("panelOrientationButtonClicked");
+  }
+
+  // NOTE: 'SplitterV'의 'onStyleChange' 주석 참고할 것.
+  function onStyleChange(computedStyle) {
+    if (
+      computedStyle.display !== "none" &&
+      !leftPanelCollapsed &&
+      !rightPanelCollapsed &&
+      (panel_0.style.width === "0%" ||
+        panel_0.style.width === "0px" ||
+        panel_1.style.width === "0%" ||
+        panel_1.style.width === "0px")
+    ) {
+      panel_0.style.width = lastNonZeroPanel0Width;
     }
   }
 
@@ -86,6 +116,7 @@
     class:ltrPanelCollapseButtonClicked
     style:width={panel_0_length}
     use:resizeObserver={{ panel_1, onPanelSizeChanged }}
+    use:styleObserver={onStyleChange}
   >
     <slot name="left"></slot>
   </div>
@@ -101,10 +132,24 @@
             on:mousedown|stopPropagation>▶</button
           >
         {/if}
+        {#if showPanelControl.panelSwapButton !== false}
+          <button
+            on:click={() => handlePanelSwapButtonClick()}
+            on:mousedown|stopPropagation>⇄</button
+          >
+        {/if}
+        {#if showPanelControl.toggleOrientaionButton !== false}
+          <button
+            class="rotate-270"
+            on:click={() => handlePanelOrientationButtonClick()}
+            on:mousedown|stopPropagation>↺</button
+          >
+        {/if}
         {#if !leftPanelCollapsed}
           <button
+            class="rotate-180"
             on:click={() => handlePanelCollapseButtonClick("rtl")}
-            on:mousedown|stopPropagation>◀</button
+            on:mousedown|stopPropagation>▶</button
           >
         {/if}
       </div>
@@ -149,6 +194,14 @@
           flex-direction: column;
           min-width: 1px;
           cursor: ew-resize;
+        }
+
+        .rotate-180 {
+          transform: rotate(180deg);
+        }
+
+        .rotate-270 {
+          transform: rotate(270deg);
         }
       }
     }

@@ -6,6 +6,7 @@ import postcss from 'rollup-plugin-postcss';
 //import styles from 'rollup-plugin-styles';
 //import { string } from 'rollup-plugin-string';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import { execSync } from 'child_process';
@@ -94,6 +95,7 @@ function createConfig(targetComponentFilePaths, customElement = false) {
                 browser: true,
                 dedupe: ['svelte']
             }),
+            commonjs(), // NOTE: 'rollup'은 기좀적으로 'ESM'을 사용함. 'CommonJS' 모듈일 경우에 'ESM'으로 변환해 빌드 호환성을 높인다.
             typescript({
                 sourceMap: !production,
                 inlineSources: !production

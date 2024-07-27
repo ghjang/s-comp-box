@@ -5,13 +5,19 @@ const abcRun = new AbcRun({
     target: document.getElementById('container'),
     props: {
         editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist",
+        /*
         abcText:
             `X: 1
 T: Simple Tune
 M: 4/4
 L: 1/4
 K: C
-C D E F | G A B c | c B A G | F E D C |`
+C D E F | G A B c | c B A G | F E D C |`,
+        */
+        autoSave: true,
+        showPlayControl: true,
+        enableMidiFileDownload: true,
+        enablePdfFileDownload: true
     }
 });
 

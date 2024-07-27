@@ -32,6 +32,11 @@
   let showPopUp = false;
   let popUpProps = {};
 
+  let panelSize = {};
+  let panel_0_length = "20%";
+  let showPanelControl = { toggleOrientaionButton: false };
+  let treeViewSlot = "left";
+
   $: if (floorContainer) {
     const ancestorFloorContainer =
       floorContainer.parentElement.closest(".floor-container");
@@ -96,6 +101,13 @@
   function handleComponentTreeChanged(event) {
     componentTreeData = event.detail.componentTreeData;
   }
+
+  function handlePanelSwapButtonClick(slot) {
+    treeViewSlot = slot;
+    if (panelSize.panel_0) {
+      panel_0_length = `${panelSize.panel_0.width}px`;
+    }
+  }
 </script>
 
 <div
@@ -105,28 +117,57 @@
   data-floor-id={floorId}
 >
   {#if designMode}
-    <Splitter
-      orientation="horizontal"
-      panel_0_length="20%"
-      showPanelControl="true"
-    >
-      <TreeView slot="left" data={componentTreeData} />
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        slot="right"
-        class="floor-box {pattern}"
-        on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+    {#if treeViewSlot === "left"}
+      <Splitter
+        orientation="horizontal"
+        {panel_0_length}
+        {showPanelControl}
+        on:panelSizeChanged={(e) => (panelSize = e.detail)}
+        on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
-        <FloorChild
-          {childComponentInfo}
-          {floorLevel}
-          {floorId}
-          {ancestorFloorId}
-          on:componentTreeChanged={handleComponentTreeChanged}
-        />
-        <slot />
-      </div>
-    </Splitter>
+        <TreeView slot="left" data={componentTreeData} />
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          slot="right"
+          class="floor-box {pattern}"
+          on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+        >
+          <FloorChild
+            {childComponentInfo}
+            {floorLevel}
+            {floorId}
+            {ancestorFloorId}
+            on:componentTreeChanged={handleComponentTreeChanged}
+          />
+          <slot />
+        </div>
+      </Splitter>
+    {:else if treeViewSlot === "right"}
+      <Splitter
+        orientation="horizontal"
+        {panel_0_length}
+        {showPanelControl}
+        on:panelSizeChanged={(e) => (panelSize = e.detail)}
+        on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("left")}
+      >
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          slot="left"
+          class="floor-box {pattern}"
+          on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+        >
+          <FloorChild
+            {childComponentInfo}
+            {floorLevel}
+            {floorId}
+            {ancestorFloorId}
+            on:componentTreeChanged={handleComponentTreeChanged}
+          />
+          <slot />
+        </div>
+        <TreeView slot="right" data={componentTreeData} />
+      </Splitter>
+    {/if}
   {:else}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
