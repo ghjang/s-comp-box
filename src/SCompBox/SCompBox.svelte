@@ -36,7 +36,7 @@
         //       이 빈응형 블럭은 초기에 '빈 배열'인 상태에서 실행되기 때문에
         //       현재 구현에서 명시적으로 'length'를 설정해주지 않아도 문제 없다.
         //menuItems.length = 0;
-        
+
         // NOTE: 'push' 메소드 호출은 '객체의 변경'으로 취급되지 않아 이 반응형 블럭을
         //       재트리거하지 않는다. 결과적으로 '무한 루프'에 빠지지 않는다.
         //
@@ -75,22 +75,26 @@
         const constructorName = comp.componentClass
           ? comp.componentClass.name
           : null;
-        if (constructorName && compProps[constructorName]) {
+        if (constructorName) {
           // 설정에서 직접 '컴포넌트 클래스'를 지정한 경우
 
           // 사용자 설정이 존재할 경우에 사용자 설정으로 오버라이드
-          props = { ...props, ...compProps[constructorName] };
+          if (compProps[constructorName]) {
+            props = { ...props, ...compProps[constructorName] };
+          }
 
           // 'normal'로 번들링된 컴포넌트
           if (compJsBundleBasePath) {
             const scriptPath = `${compJsBundleBasePath}/${constructorName}.js`;
             await loadScript(scriptPath);
           }
-        } else if (comp.name && compProps[comp.name]) {
+        } else if (comp.name) {
           // '컴포넌트 문자열 이름'으로 설정한 경우
 
           // 사용자 설정이 존재할 경우에 사용자 설정으로 오버라이드
-          props = { ...props, ...compProps[comp.name] };
+          if (compProps[comp.name]) {
+            props = { ...props, ...compProps[comp.name] };
+          }
 
           // 'custom'으로 번들링된 컴포넌트
           if (customCompJsBundleBasePath) {

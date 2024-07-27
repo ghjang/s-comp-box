@@ -4,6 +4,7 @@
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
   import FloorChild from "./FloorChild.svelte";
+  import { findClosestAncestor } from "../common/util.dom.js";
 
   export let menuItems = [];
   export let childComponentInfo = null;
@@ -38,8 +39,10 @@
   let treeViewSlot = "left";
 
   $: if (floorContainer) {
-    const ancestorFloorContainer =
-      floorContainer.parentElement.closest(".floor-container");
+    const ancestorFloorContainer = findClosestAncestor(
+      floorContainer,
+      "floor-container"
+    );
 
     // NOTE: '자식 컴포넌트'가 먼저 바인딩된다는 것을 기억할 것.
     //       아래 'floorLevel'에 대입된 값이 생성된 자식에게 나중에 전달되는

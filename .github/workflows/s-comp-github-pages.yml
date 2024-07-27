@@ -96,6 +96,10 @@ jobs:
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" \
             -e "s|customElementConfigBasePath: '/s-comp/scripts/default'|customElementConfigBasePath: '/s-comp/config'|g" \
             -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" {} \;
+          cp pages/docroot/test/SCompBox/SCompBox.js pages/docroot/
+          cp pages/docroot/test/SCompBox/SCompBox.html pages/docroot/
+          mv pages/docroot/SCompBox.html pages/docroot/index.html
+          sed -i 's|<title>.*</title>|<title>s-comp GitHub Pages</title>|' pages/docroot/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
