@@ -1,4 +1,12 @@
-export function loadScript(scriptPath, isModule = true) {
+export function fileExists(filePath) {
+    return new Promise((resolve, reject) => {
+        fetch(filePath, { method: 'HEAD' })
+            .then(response => resolve(response.status !== 404))
+            .catch(() => resolve(false));
+    });
+}
+
+export function loadScript(scriptPath, ignoreIfNotFound = false, isModule = true) {
     return new Promise((resolve, reject) => {
         const existingScript = document.head.querySelector(`script[src="${scriptPath}"]`);
         if (existingScript) {
@@ -6,16 +14,36 @@ export function loadScript(scriptPath, isModule = true) {
             return;
         }
 
-        const scriptElem = document.createElement("script");
-        if (isModule) {
-            scriptElem.type = "module";
-        }
-        scriptElem.src = scriptPath;
+        fetch(scriptPath, { method: 'HEAD' })
+            .then(response => {
+                if (response.status === 404) {
+                    if (ignoreIfNotFound) {
+                        console.warn(`Script not found: ${scriptPath}`);
+                        resolve();
+                    } else {
+                        throw new Error(`Script not found: ${scriptPath}`);
+                    }
+                } else {
+                    const scriptElem = document.createElement("script");
+                    if (isModule) {
+                        scriptElem.type = "module";
+                    }
+                    scriptElem.src = scriptPath;
 
-        scriptElem.onload = () => resolve();
-        scriptElem.onerror = () => reject(new Error(`Failed to load script: ${scriptPath}`));
+                    scriptElem.onload = () => resolve();
+                    scriptElem.onerror = () => reject(new Error(`Failed to load script: ${scriptPath}`));
 
-        document.head.appendChild(scriptElem);
+                    document.head.appendChild(scriptElem);
+                }
+            })
+            .catch(error => {
+                if (ignoreIfNotFound) {
+                    console.warn(error.message);
+                    resolve();
+                } else {
+                    reject(error);
+                }
+            });
     });
 }
 

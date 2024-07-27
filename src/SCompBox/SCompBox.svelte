@@ -1,7 +1,11 @@
 <svelte:options customElement="s-comp-box" />
 
 <script>
-  import { loadScript, loadClassFromModule } from "../common/util.js";
+  import {
+    fileExists,
+    loadScript,
+    loadClassFromModule,
+  } from "../common/util.js";
   import SCompInfo from "./SCompInfo.svelte";
   import Floor from "../Floor/Floor.svelte";
 
@@ -102,22 +106,30 @@
           // 'custom'으로 번들링된 컴포넌트
           if (customCompJsBundleBasePath) {
             let scriptPath = `${customCompJsBundleBasePath}/${comp.name}.custom.js`;
-            try {
-              await loadScript(scriptPath);
-            } catch (error) {
-              console.warn(
-                `failed to load the custom component script: ${scriptPath}, error: `,
-                error
-              );
+            let foundFile = await fileExists(scriptPath);
 
+            if (foundFile) {
+              try {
+                await loadScript(scriptPath);
+              } catch (error) {
+                console.warn(
+                  `failed to load the custom component script: ${scriptPath}, error: `,
+                  error
+                );
+              }
+            } else {
               // 'custom'으로 번들링된 컴포넌트가 없을 경우 'normal'로 번들링된 컴포넌트 시도
               if (compJsBundleBasePath) {
                 scriptPath = `${compJsBundleBasePath}/${comp.name}.js`;
-                await loadScript(scriptPath);
-                comp.componentClass = await loadClassFromModule(
-                  scriptPath,
-                  comp.name
-                );
+                foundFile = await fileExists(scriptPath);
+
+                if (foundFile) {
+                  await loadScript(scriptPath);
+                  comp.componentClass = await loadClassFromModule(
+                    scriptPath,
+                    comp.name
+                  );
+                }
               }
             }
           }
