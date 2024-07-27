@@ -225,6 +225,7 @@
       hover={true}
       matchBrackets="near"
       bracketPairColorization={true}
+      autoFindMatches={true}
       on:editorInit={handleEditorInit}
       on:contentChange={handleContentChange}
     />

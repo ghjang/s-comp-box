@@ -397,9 +397,9 @@ function addCmdExpandSelection(editor, keybinding) {
 }
 
 function addCmdShrinkSelection(editor, keybinding) {
-    editor.addCommand(keybinding, () => {
-        editor.trigger('keyboard', 'editor.action.smartSelect.shrink');
-    });
+	editor.addCommand(keybinding, () => {
+		editor.trigger('keyboard', 'editor.action.smartSelect.shrink');
+	});
 }
 
 
@@ -422,6 +422,10 @@ export function createMonacoEditor(element, options) {
 	addCmdShrinkSelection(editor, monaco.KeyMod.WinCtrl | monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.LeftArrow);
 
 	return editor;
+}
+
+export function createRange(startLineNumber, startColumn, endLineNumber, endColumn) {
+	return new monaco.Range(startLineNumber, startColumn, endLineNumber, endColumn);
 }
 
 export function getMonacoKeyBindingConstant() {
