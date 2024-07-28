@@ -18,6 +18,7 @@
   let menuItems = [];
 
   let sCompInfo;
+  let floor;
 
   $: if (sCompInfo) {
     // NOTE; 아래 비동기 코드에서 채워질 'menuItems' 배열 참조를 넘긴다.
@@ -57,6 +58,8 @@
         //
         //       일단 학습 목적의 코드이므로 이 방법을 적용하지 않고 주석내용으로 기록한다.
         menuItems.push(..._menuItems);
+
+        floor.$set({ menuItems });
       })
       .catch((error) => {
         console.error("Failed to load custom elements info: ", error);
@@ -169,4 +172,4 @@
 
 <SCompInfo bind:this={sCompInfo} {customElementConfigBasePath} />
 
-<Floor {menuItems} designMode={true} />
+<Floor bind:this={floor} {menuItems} designMode={true} />
