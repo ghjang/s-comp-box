@@ -3,11 +3,15 @@ import { svg2pdf } from 'svg2pdf.js';
 
 
 export function downloadMidiFile(node, params) {
-    let { abcjs, visualObj } = params;
+    let { abcjs, visualObj, abcjsEditor } = params;
 
     const handleClick = () => {
         if (!abcjs) {
             throw new Error("abcjs is not defined");
+        }
+
+        if (!visualObj) {
+            visualObj = abcjsEditor?.tunes;
         }
 
         if (!visualObj || visualObj.length === 0) {
@@ -37,7 +41,7 @@ export function downloadMidiFile(node, params) {
 
     return {
         update(newParams) {
-            ({ abcjs, visualObj } = newParams);
+            ({ abcjs, visualObj, abcjsEditor } = newParams);
         },
 
         destroy() {
@@ -47,7 +51,7 @@ export function downloadMidiFile(node, params) {
 }
 
 export function downloadPdfFile(node, params) {
-    let { abcjs, visualObj, scaleFactor, rasterize, saveFileName } = params;
+    let { abcjs, visualObj, abcjsEditor, scaleFactor, rasterize, saveFileName } = params;
 
     scaleFactor = scaleFactor || 2; // PDF내에 저장되는 이미지의 해상도 조정을 위한 배율
     rasterize = rasterize === undefined ? true : rasterize;
@@ -56,6 +60,10 @@ export function downloadPdfFile(node, params) {
     const handleClick = () => {
         if (!abcjs) {
             throw new Error("abcjs is not defined");
+        }
+
+        if (!visualObj) {
+            visualObj = abcjsEditor?.tunes;
         }
 
         if (!visualObj || visualObj.length === 0) {
@@ -146,7 +154,7 @@ export function downloadPdfFile(node, params) {
 
     return {
         update(newParams) {
-            ({ abcjs, visualObj, scaleFactor, rasterize, saveFileName } = newParams);
+            ({ abcjs, visualObj, abcjsEditor, scaleFactor, rasterize, saveFileName } = newParams);
             scaleFactor = scaleFactor || 2;
             rasterize = rasterize === undefined ? true : rasterize;
             saveFileName = saveFileName || "sheet-music.pdf";

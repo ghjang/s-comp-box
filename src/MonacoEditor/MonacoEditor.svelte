@@ -31,8 +31,6 @@
   export let autoFindInSelection = "multiline";
   export let autoFindMatches = false;
 
-  export const setCodeText = (code) => (value = code);
-  export const getCodeText = () => value;
   export const registerCustomLanguage = register;
   export const setEditorWarnings = (warnings) =>
     editor && setWarnings(editor, warnings);
@@ -62,6 +60,10 @@
     }
   }
 
+  export function getText() {
+    return editor ? editor.getValue() : "";
+  }
+
   export function setText(text, formatDocument = false) {
     if (editor) {
       editor.setValue(text);
@@ -76,6 +78,34 @@
         editor.getAction("editor.action.formatDocument").run();
       }
     }
+  }
+
+  export function getSelection() {
+    return editor ? editor.getSelection() : null;
+  }
+
+  export function setSelection(range) {
+    if (
+      range &&
+      typeof range.startLineNumber === "number" &&
+      typeof range.startColumn === "number" &&
+      typeof range.endLineNumber === "number" &&
+      typeof range.endColumn === "number"
+    ) {
+      const r = createRange(
+        range.startLineNumber,
+        range.startColumn,
+        range.endLineNumber,
+        range.endColumn
+      );
+      editor.setSelection(r);
+    } else {
+      throw new Error("Invalid selection object");
+    }
+  }
+
+  export function getModel() {
+    return editor ? editor.getModel() : null;
   }
 
   onDestroy(() => {
@@ -135,11 +165,19 @@
     if (autoFindMatches) {
       let currentDecorations = [];
 
+      editor.onDidChangeCursorPosition((e) => {
+        dispatch("cursorPositionChange", { position: e.position });
+      });
+
       editor.onDidChangeCursorSelection((e) => {
         const selection = editor.getSelection();
         const selectedText = editor.getModel().getValueInRange(selection);
 
-        if (selectedText && selectedText.trim() !== "") {
+        if (
+          editor.hasTextFocus() &&
+          selectedText &&
+          selectedText.trim() !== ""
+        ) {
           const matches = editor.getModel().findMatches(
             selectedText,
             true, // searchOnlyEditableRange

@@ -6,6 +6,7 @@
   import langdef from "./abc.lang.def.js";
   import completionItemProvider from "./abc.completion.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
+  import EditAreaAdaptor from "./abc.editarea.adaptor.js";
   import {
     createLocalStorageDebouncedSaver,
     loadFromLocalStorage,
@@ -22,7 +23,9 @@
   export let enableMidiFileDownload = false;
   export let enablePdfFileDownload = false;
 
-  let visualObj = null;
+  let editAreaAdaptor = null;
+  let abcjsEditor = null;
+  let timerId = null;
 
   // FIXME: '오류 메시지 문자열 패턴' 분석 방식을 제거하고 '파서 API'로 가능하면 대체할 것.
   //
@@ -85,21 +88,36 @@
   }
 
   function renderAbc() {
-    visualObj = abcjs.renderAbc("note-staff", abcText, {
-      add_classes: true,
-    });
-
-    editor.clearEditorWarnings();
-
-    const abcjsWarnings = visualObj[0].warnings;
-    if (abcjsWarnings) {
-      console.log("before extractWarnings", abcjsWarnings);
-      const warnings = extractWarnings(abcjsWarnings);
-      console.log("after extractWarnings", warnings);
-      editor.setEditorWarnings(warnings);
+    if (!abcjsEditor) {
+      abcjsEditor = new abcjs.Editor(editAreaAdaptor, {
+        canvas_id: "note-staff",
+        add_classes: true,
+      });
     }
 
+    abcjsEditor.fireChanged();
+    editor.clearEditorWarnings();
     needToInitSynth = true;
+
+    // NOTE: 'abcjs'의 'abc_editor.js'의 'fireChanged' 메소드에서 가정하고 있는
+    //       처리시간이 '300ms'이다. 이 시간을 고려해서 경고 메시지를 좀더 늦게 확인하도록 함.
+    const timeOutVal = 350;
+
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+
+    timerId = setTimeout(() => {
+      const abcjsWarnings = abcjsEditor.warnings;
+      if (abcjsWarnings) {
+        console.log("before extractWarnings", abcjsWarnings);
+        const warnings = extractWarnings(abcjsWarnings);
+        console.log("after extractWarnings", warnings);
+        editor.setEditorWarnings(warnings);
+      } else {
+        console.log("no warnings");
+      }
+    }, timeOutVal);
   }
 
   const synth = new abcjs.synth.CreateSynth();
@@ -115,6 +133,7 @@
       languageDef: langdef,
       completionItemProvider,
     });
+    editAreaAdaptor = new EditAreaAdaptor(editor);
     renderAbc();
   }
 
@@ -149,6 +168,10 @@
     }
   }
 
+  function handleCursorPositionChange() {
+    abcjsEditor?.fireSelectionChanged();
+  }
+
   async function handlePlayButtonClick() {
     if (synth.isRunning) {
       synth.stop();
@@ -156,7 +179,7 @@
     }
 
     if (needToInitSynth) {
-      await synth.init({ visualObj: visualObj[0] });
+      await synth.init({ visualObj: abcjsEditor.tunes[0] });
       await synth.prime();
       synth.onEnded = () => {
         // NOTE: 'onEnded'가 호출된 후에도 여전히 'synth.isRunning'이 'true'일 수 있음.
@@ -199,12 +222,12 @@
         <div id="note-staff"></div>
         <div class="control-box">
           {#if abcText && !isPlaying && enableMidiFileDownload}
-            <button use:downloadMidiFile={{ abcjs, visualObj }}
+            <button use:downloadMidiFile={{ abcjs, abcjsEditor }}
               >Download MIDI</button
             >
           {/if}
           {#if abcText && !isPlaying && enablePdfFileDownload}
-            <button use:downloadPdfFile={{ abcjs, visualObj }}
+            <button use:downloadPdfFile={{ abcjs, abcjsEditor }}
               >Download PDF</button
             >
           {/if}
@@ -228,6 +251,7 @@
       autoFindMatches={true}
       on:editorInit={handleEditorInit}
       on:contentChange={handleContentChange}
+      on:cursorPositionChange={handleCursorPositionChange}
     />
   </Splitter>
 </div>
