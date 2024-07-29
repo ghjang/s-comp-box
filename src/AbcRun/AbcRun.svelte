@@ -88,9 +88,12 @@
   }
 
   function renderAbc() {
+    const noteStaffId = crypto.randomUUID();
+    noteStaff.id = noteStaffId;
+
     if (!abcjsEditor) {
       abcjsEditor = new abcjs.Editor(editAreaAdaptor, {
-        canvas_id: "note-staff",
+        canvas_id: noteStaffId,
         add_classes: true,
       });
     }
@@ -124,6 +127,7 @@
   let needToInitSynth = true;
   let isPlaying = false;
 
+  let noteStaff;
   let editor;
 
   $: if (editor) {
@@ -219,7 +223,7 @@
   <Splitter orientation="vertical" on:panelSizeChanged={handlePanelSizeChange}>
     <div class="note-box" slot="top">
       <div class="note-item-group">
-        <div id="note-staff"></div>
+        <div bind:this={noteStaff} class="note-staff"></div>
         <div class="control-box">
           {#if abcText && !isPlaying && enableMidiFileDownload}
             <button use:downloadMidiFile={{ abcjs, abcjsEditor }}
@@ -280,7 +284,7 @@
         height: 100%;
         border: none;
 
-        #note-staff {
+        .note-staff {
           width: min-content;
           height: 100%;
           overflow: scroll !important;
