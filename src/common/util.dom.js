@@ -7,10 +7,10 @@ export function findClosest(element, className) {
         return element;
     }
     if (element.parentElement) {
-        return findClosest(element.parentElement);
+        return findClosest(element.parentElement, className);
     }
     if (element.getRootNode && element.getRootNode().host) {
-        return findClosest(element.getRootNode().host);
+        return findClosest(element.getRootNode().host, className);
     }
     return null;
 }
