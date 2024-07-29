@@ -101,6 +101,19 @@
     updateNodeSelectRect(lastNodeId);
   }
 
+  export function removeNodeAtSelectRect(rootUlElem) {
+    const nodeId = $context.lastSelectRectNodeId;
+    const nodeElem = rootUlElem.querySelector(
+      `div.node-content[data-node-id="${nodeId}"]`
+    );
+    if (nodeElem) {
+      const nodeLiElem = nodeElem.closest("li");
+      if (nodeLiElem) {
+        dispatch("treeNodeRemove", { id: nodeId });
+      }
+    }
+  }
+
   function updateNodeSelectRect(nodeId) {
     $context.lastSelectRectNodeId = nodeId ?? $context.lastSelectRectNodeId;
   }

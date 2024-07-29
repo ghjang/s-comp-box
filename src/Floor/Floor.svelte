@@ -12,7 +12,7 @@
   export let defaultActionHandler = null;
   export let designMode = false;
   export let floorLevel = -1;
-  export const floorId = crypto.randomUUID();
+  export let floorId = crypto.randomUUID();
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -55,6 +55,7 @@
       ancestorFloorId = ancestorFloorContainer.dataset.floorId;
     } else {
       floorLevel = 0;
+      floorId = "floor-root";
     }
   }
 
@@ -113,6 +114,11 @@
     floorChild.highlight(selectedNode.id);
   }
 
+  function handleTreeNodeRemove(event) {
+    const floorId = event.detail.id;
+    floorChild.removeComponent(floorId);
+  }
+
   function handleHighlightFloor(event) {
     if (floorLevel <= 0) {
       return;
@@ -149,6 +155,7 @@
           slot="left"
           data={componentTreeData}
           on:treeNodeSelected={handleTreeNodeSelected}
+          on:treeNodeRemove={handleTreeNodeRemove}
         />
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
@@ -158,6 +165,7 @@
         >
           <FloorChild
             bind:this={floorChild}
+            {designMode}
             {childComponentInfo}
             {floorLevel}
             {floorId}
@@ -184,6 +192,7 @@
         >
           <FloorChild
             bind:this={floorChild}
+            {designMode}
             {childComponentInfo}
             {floorLevel}
             {floorId}
@@ -197,6 +206,7 @@
           slot="right"
           data={componentTreeData}
           on:treeNodeSelected={handleTreeNodeSelected}
+          on:treeNodeRemove={handleTreeNodeRemove}
         />
       </Splitter>
     {/if}

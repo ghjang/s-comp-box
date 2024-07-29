@@ -1,6 +1,7 @@
 <svelte:options customElement="s-comp-box" />
 
 <script>
+  import { onMount, onDestroy } from "svelte";
   import {
     fileExists,
     loadScript,
@@ -16,6 +17,7 @@
   export let customCompJsBundleBasePath;
 
   let menuItems = [];
+  let designMode = true;
   let isMenuItemsLoaded = false;
 
   let sCompInfo;
@@ -169,12 +171,26 @@
 
     return _menuItems;
   }
+
+  function handleKeyDown(event) {
+    if (event.ctrlKey && event.metaKey && event.shiftKey && event.key === "D") {
+      event.preventDefault();
+      designMode = !designMode;
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener("keydown", handleKeyDown);
+  });
+  onDestroy(() => {
+    document.removeEventListener("keydown", handleKeyDown);
+  });
 </script>
 
 <SCompInfo bind:this={sCompInfo} {customElementConfigBasePath} />
 
 {#if isMenuItemsLoaded}
-  <Floor {menuItems} designMode={true} />
+  <Floor {menuItems} {designMode} />
 {:else}
   <div>Loading...</div>
 {/if}

@@ -13,6 +13,7 @@
   export let floorId = null;
   export let ancestorFloorId = null;
   export let childComponentInfo = null;
+  export let designMode = false;
 
   const contextName = "floor-context";
   let context;
@@ -42,7 +43,15 @@
   export function highlight(targetFloorId) {
     context.update((value) => {
       value.updateReason = "highlightFloor";
-      value.highlightFloorId = targetFloorId;
+      value.targetFloorId = targetFloorId;
+      return value;
+    });
+  }
+
+  export function removeComponent(targetFloorId) {
+    context.update((value) => {
+      value.updateReason = "componentRemove";
+      value.targetFloorId = targetFloorId;
       return value;
     });
   }
@@ -53,7 +62,7 @@
       context = writable({
         maxLevel: 0,
         updateReason: null,
-        highlightFloorId: null,
+        targetFloorId: null,
         componentTreeData: [
           {
             id: floorId,
@@ -104,15 +113,58 @@
     if (context.updateReason === "componentTreeChange") {
       if (floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
+        removeInvalidNode(context.componentTreeData);
         dispatch("componentTreeChanged", {
           componentTreeData: context.componentTreeData,
         });
       } else {
         // do nothing
       }
-    } else if (context.updateReason === "highlightFloor") {
-      if (context.highlightFloorId) {
-        dispatch("highlightFloor", { floorId: context.highlightFloorId });
+    } else if (
+      context.updateReason === "highlightFloor" &&
+      context.targetFloorId
+    ) {
+      dispatch("highlightFloor", { floorId: context.targetFloorId });
+    } else if (
+      context.updateReason === "componentRemove" &&
+      context.targetFloorId &&
+      context.targetFloorId === floorId
+    ) {
+      childComponentInfo = null;
+    }
+  }
+
+  function removeInvalidNode(treeRootData) {
+    const floorRootElem = document.querySelector(
+      "div.floor-container[data-floor-id='floor-root'][data-floor-level='0']"
+    );
+
+    if (!floorRootElem) {
+      throw new Error("Root floor not found.");
+    }
+
+    // NOTE: '루트 노드'는 '1개'만 존재하는 것으로 가정했다.
+    if (treeRootData.length !== 1) {
+      return;
+    }
+
+    removeInvalidNodeArrayElement(floorRootElem, treeRootData[0].children);
+
+    function removeInvalidNodeArrayElement(parentElem, treeData) {
+      for (let i = 0; i < treeData.length; i++) {
+        const node = treeData[i];
+        const floorElem = parentElem.querySelector(
+          `[data-floor-id="${node.id}"]`
+        );
+
+        if (!floorElem) {
+          treeData.splice(i, 1);
+          i--;
+        } else {
+          if (node.children.length > 0) {
+            removeInvalidNodeArrayElement(floorElem, node.children);
+          }
+        }
       }
     }
   }
@@ -120,6 +172,15 @@
   function updateChildComponentTreeData() {
     context.update((value) => {
       value.updateReason = "componentTreeChange";
+      if (floorLevel === 0 && value.componentTreeData.length === 0) {
+        value.componentTreeData = [
+          {
+            id: "floor-root",
+            open: true,
+            children: [],
+          },
+        ];
+      }
       const treeData = value.componentTreeData;
       updateNodeById(treeData, floorId);
       return value;
@@ -146,6 +207,14 @@
 
           node.name = compName;
           node.children = [];
+
+          if (compName === "Splitter") {
+            childComponentInfo.props = {
+              ...childComponentInfo.props,
+              showPanelControl: designMode,
+            };
+          }
+
           return true;
         }
         if (node.children.length > 0) {
@@ -162,8 +231,12 @@
   function clearChildComponentTreeData() {
     context?.update((value) => {
       value.updateReason = "componentTreeChange";
-      const treeData = value.componentTreeData;
-      resetNodeById(treeData, floorId);
+      if (floorLevel === 0) {
+        value.componentTreeData = [];
+      } else {
+        const treeData = value.componentTreeData;
+        resetNodeById(treeData, floorId);
+      }
       return value;
     });
 

@@ -37,6 +37,9 @@ export function _handleKeyUp(event, treeContainer, tree) {
         case "Escape":
             treeContainer?.blur();
             break;
+        case "Delete":
+            tree?.removeNodeAtSelectRect(rootUlElem);
+            break;
         default:
             break;
     }

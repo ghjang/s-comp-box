@@ -13,7 +13,7 @@
   export let openIcon = "▼";
   export let closeIcon = "►";
 
-  export const customEvents = ["treeNodeSelected"];
+  export const customEvents = ["treeNodeSelected", "treeNodeRemove"];
 
   let treeContainer;
   let tree;
@@ -33,6 +33,11 @@
     treeContainer.focus();
 
     dispatch("treeNodeSelected", event.detail);
+  }
+
+  function handleTreeNodeRemove(event) {
+    tree.updateNodeSelected(null);
+    dispatch("treeNodeRemove", event.detail);
   }
 
   // '노드명' 좌측의 '버튼'을 클릭했을 때 처리
@@ -59,6 +64,7 @@
     {closeIcon}
     {showSelectRect}
     on:treeNodeSelected={handleTreeNodeSelected}
+    on:treeNodeRemove={handleTreeNodeRemove}
     on:treeNodeButtonClicked={handleTreeNodeButtonClicked}
   />
 </div>
