@@ -1,5 +1,10 @@
 <script>
-  import { getContext, setContext, createEventDispatcher } from "svelte";
+  import {
+    getContext,
+    setContext,
+    createEventDispatcher,
+    onDestroy,
+  } from "svelte";
   import { writable } from "svelte/store";
 
   const dispatch = createEventDispatcher();
@@ -11,9 +16,24 @@
 
   const contextName = "floor-context";
   let context;
+  let unsubscribe;
 
   $: floorLevel >= 0 && (context = initContext(contextName));
-  $: context && updateFloorState($context);
+
+  // NOTE: 아래 '$context' 문법을 사용해 스토어 '자동 구독'을 한 경우에
+  //       '최상위 Floor'에 'Splitter' 같은 '컨테이너' 성격의
+  //       컴포넌트가 아닌 'Marquee'와 같은 일반 컴포넌트를 추가시
+  //       'context.update'가 분명 호출되었음에도 이 '반응형 블럭'이
+  //       트리거 되지 않은 문제가 있었음. 디버깅을 통해서 확인 결과
+  //       다른 곳에 변경은 없는 상태에서 자동 구독이 아닌 'context.subscribe'를
+  //       이용한 '수동 구독'의 경우에 정상적으로 동작하는 것을 확인했음.
+  //$: context && updateFloorState($context);
+
+  $: if (context) {
+    unsubscribe = context.subscribe((value) => {
+      updateFloorState(value);
+    });
+  }
 
   $: childComponentInfo
     ? updateChildComponentTreeData()
@@ -145,6 +165,10 @@
       return false;
     }
   }
+
+  onDestroy(() => {
+    unsubscribe?.();
+  });
 </script>
 
 {#if childComponentInfo}
