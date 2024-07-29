@@ -90,9 +90,22 @@
     function updateNodeById(tree, id) {
       for (const node of tree) {
         if (node.id === id) {
-          const compName = childComponentInfo.componentClass
-            ? childComponentInfo.componentClass.name
-            : childComponentInfo.customElementName;
+          let compName;
+
+          if (typeof childComponentInfo.componentClass === "function") {
+            // NOTE: '릴리즈 번들링 최적화'시에 '컴포넌트 클래스'를 사용하는 경우에
+            //       '클래스 이름'이 '축소 변경'될 수 있어 '원래의 클래스 이름'을
+            //       클래스 생성자 함수로부터 얻을 수가 없어 명시적으로 지정된
+            //       '컴포넌트 클래스 이름'을 사용한다.
+            compName = childComponentInfo.componentClassName;
+          } else {
+            compName = childComponentInfo.customElementName;
+          }
+
+          if (!compName) {
+            throw new Error("Component name is required.");
+          }
+
           node.name = compName;
           node.children = [];
           return true;

@@ -157,6 +157,7 @@
             handler: () => {
               return {
                 componentClass: comp.componentClass,
+                componentClassName: comp.componentClassName,
                 customElementName: comp.customElementName,
                 props,
               };

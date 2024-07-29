@@ -2,6 +2,7 @@
     {
         "component": {
             "name": "AbcRun",
+            "componentClassName": "AbcRun",
             "description": "AbcRun",
             "props": {
                 "editorResourcePath": "resources/monaco-editor",
