@@ -39,11 +39,21 @@
     ? updateChildComponentTreeData()
     : clearChildComponentTreeData();
 
+  export function highlight(targetFloorId) {
+    context.update((value) => {
+      value.updateReason = "highlightFloor";
+      value.highlightFloorId = targetFloorId;
+      return value;
+    });
+  }
+
   function initContext(ctxName) {
     let context;
     if (floorLevel === 0) {
       context = writable({
         maxLevel: 0,
+        updateReason: null,
+        highlightFloorId: null,
         componentTreeData: [
           {
             id: floorId,
@@ -57,6 +67,7 @@
     } else {
       context = getContext(ctxName);
       context.update((value) => {
+        value.updateReason = "componentTreeChange";
         if (floorLevel > value.maxLevel) {
           value.maxLevel = floorLevel;
         }
@@ -90,18 +101,25 @@
   }
 
   function updateFloorState(context) {
-    if (floorLevel === 0) {
-      // NOTE: 'root floor'에서만 업데이트해주면 된다.
-      dispatch("componentTreeChanged", {
-        componentTreeData: context.componentTreeData,
-      });
-    } else {
-      // do nothing
+    if (context.updateReason === "componentTreeChange") {
+      if (floorLevel === 0) {
+        // NOTE: 'root floor'에서만 업데이트해주면 된다.
+        dispatch("componentTreeChanged", {
+          componentTreeData: context.componentTreeData,
+        });
+      } else {
+        // do nothing
+      }
+    } else if (context.updateReason === "highlightFloor") {
+      if (context.highlightFloorId) {
+        dispatch("highlightFloor", { floorId: context.highlightFloorId });
+      }
     }
   }
 
   function updateChildComponentTreeData() {
     context.update((value) => {
+      value.updateReason = "componentTreeChange";
       const treeData = value.componentTreeData;
       updateNodeById(treeData, floorId);
       return value;
@@ -143,6 +161,7 @@
 
   function clearChildComponentTreeData() {
     context?.update((value) => {
+      value.updateReason = "componentTreeChange";
       const treeData = value.componentTreeData;
       resetNodeById(treeData, floorId);
       return value;

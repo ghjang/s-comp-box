@@ -26,6 +26,7 @@
 
   let contextMenu;
   let floorContainer;
+  let floorChild;
   let ancestorFloorId;
 
   let componentTreeData = [];
@@ -37,6 +38,8 @@
   let panel_0_length = "20%";
   let showPanelControl = { toggleOrientaionButton: false };
   let treeViewSlot = "left";
+
+  let highlighted = false;
 
   $: if (floorContainer) {
     const ancestorFloorContainer = findClosestAncestor(
@@ -105,6 +108,19 @@
     componentTreeData = event.detail.componentTreeData;
   }
 
+  function handleTreeNodeSelected(event) {
+    const selectedNode = event.detail;
+    floorChild.highlight(selectedNode.id);
+  }
+
+  function handleHighlightFloor(event) {
+    if (floorLevel <= 0) {
+      return;
+    }
+
+    highlighted = floorId === event.detail.floorId;
+  }
+
   function handlePanelSwapButtonClick(slot) {
     treeViewSlot = slot;
     if (panelSize.panel_0) {
@@ -116,6 +132,7 @@
 <div
   bind:this={floorContainer}
   class="floor-container"
+  class:highlighted
   data-floor-level={floorLevel}
   data-floor-id={floorId}
 >
@@ -128,7 +145,11 @@
         on:panelSizeChanged={(e) => (panelSize = e.detail)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
-        <TreeView slot="left" data={componentTreeData} />
+        <TreeView
+          slot="left"
+          data={componentTreeData}
+          on:treeNodeSelected={handleTreeNodeSelected}
+        />
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           slot="right"
@@ -136,11 +157,13 @@
           on:contextmenu={(e) => contextMenu.showContextMenu(e)}
         >
           <FloorChild
+            bind:this={floorChild}
             {childComponentInfo}
             {floorLevel}
             {floorId}
             {ancestorFloorId}
             on:componentTreeChanged={handleComponentTreeChanged}
+            on:highlightFloor={handleHighlightFloor}
           />
           <slot />
         </div>
@@ -160,15 +183,21 @@
           on:contextmenu={(e) => contextMenu.showContextMenu(e)}
         >
           <FloorChild
+            bind:this={floorChild}
             {childComponentInfo}
             {floorLevel}
             {floorId}
             {ancestorFloorId}
             on:componentTreeChanged={handleComponentTreeChanged}
+            on:highlightFloor={handleHighlightFloor}
           />
           <slot />
         </div>
-        <TreeView slot="right" data={componentTreeData} />
+        <TreeView
+          slot="right"
+          data={componentTreeData}
+          on:treeNodeSelected={handleTreeNodeSelected}
+        />
       </Splitter>
     {/if}
   {:else}
@@ -182,6 +211,7 @@
         {floorLevel}
         {floorId}
         {ancestorFloorId}
+        on:highlightFloor={handleHighlightFloor}
       />
       <slot />
     </div>
@@ -202,12 +232,41 @@
   @import "./pattern.scss";
   @import "./color.scss";
 
+  @keyframes highlight-blink {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
   .floor-container {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     border: none;
+
+    &.highlighted {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 3px solid lightcoral;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0;
+        animation: highlight-blink 1s ease-in-out 2;
+      }
+    }
 
     .floor-box {
       margin: 0;
