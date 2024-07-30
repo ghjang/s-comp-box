@@ -59,6 +59,14 @@
     }
   }
 
+  function handleContextMenu(e) {
+    if (!designMode) {
+      return;
+    }
+
+    contextMenu?.showContextMenu(e);
+  }
+
   function handleMenuItemClicked(event) {
     if (event.detail.link) {
       const url = event.detail.link.url;
@@ -161,7 +169,7 @@
         <div
           slot="right"
           class="floor-box {pattern}"
-          on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+          on:contextmenu={handleContextMenu}
         >
           <FloorChild
             bind:this={floorChild}
@@ -188,7 +196,7 @@
         <div
           slot="left"
           class="floor-box {pattern}"
-          on:contextmenu={(e) => contextMenu.showContextMenu(e)}
+          on:contextmenu={handleContextMenu}
         >
           <FloorChild
             bind:this={floorChild}
@@ -212,10 +220,7 @@
     {/if}
   {:else}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="floor-box {pattern}"
-      on:contextmenu={(e) => contextMenu.showContextMenu(e)}
-    >
+    <div class="floor-box {pattern}" on:contextmenu={handleContextMenu}>
       <FloorChild
         {childComponentInfo}
         {floorLevel}
@@ -228,11 +233,13 @@
   {/if}
 </div>
 
-<ContextMenuMediator
-  {menuItems}
-  bind:this={contextMenu}
-  on:menuItemClicked={handleMenuItemClicked}
-/>
+{#if designMode}
+  <ContextMenuMediator
+    {menuItems}
+    bind:this={contextMenu}
+    on:menuItemClicked={handleMenuItemClicked}
+  />
+{/if}
 
 {#if showPopUp}
   <PopUp {...popUpProps} on:buttonClicked={(e) => (showPopUp = false)} />
