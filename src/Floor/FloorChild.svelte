@@ -5,7 +5,12 @@
     createEventDispatcher,
     onDestroy,
   } from "svelte";
-  import { writable } from "svelte/store";
+  import { writable, get } from "svelte/store";
+  import {
+    getFloor,
+    saveFloor,
+    removeUnserializableProperties as cleanProps,
+  } from "./persistency.js";
 
   const dispatch = createEventDispatcher();
 
@@ -36,9 +41,40 @@
     });
   }
 
-  $: childComponentInfo
-    ? updateChildComponentTreeData()
-    : clearChildComponentTreeData();
+  $: if (childComponentInfo) {
+    updateChildComponentTreeData();
+
+    // 유효한 컴포넌트 정보를 로컬 스토리지에 저장?
+
+    console.log(
+      `floorLevel: ${floorLevel}, floorId: ${floorId}`,
+      "\nchildComponentInfo:",
+      childComponentInfo,
+      "\ncontext:",
+      get(context)
+    );
+
+    const cleanedChildComponentInfo = cleanProps(childComponentInfo);
+    saveFloor({
+      floorId,
+      ancestorFloorId,
+      floorLevel,
+      childComponentInfo: cleanedChildComponentInfo,
+    });
+  } else {
+    clearChildComponentTreeData();
+
+    // 초기에 빈 상태로 로딩될 경우에도 여기에 도달?
+    // 로컬 스토리지에서 저장된 컴포넌트 정보가 있는지를 확인해서 로딩?
+
+    if (floorLevel >= 0) {
+      console.log(
+        `childComponentInfo is null. floorLevel: ${floorLevel}, floorId: ${floorId}`,
+        "\ncontext:",
+        get(context)
+      );
+    }
+  }
 
   export function highlight(targetFloorId) {
     context.update((value) => {
@@ -59,6 +95,8 @@
   function initContext(ctxName) {
     let context;
     if (floorLevel === 0) {
+      // 로컬 스토리지에 저장된 것이 있는지 확인후 로딩 처리?
+
       context = writable({
         maxLevel: 0,
         updateReason: null,
@@ -110,7 +148,10 @@
   }
 
   function updateFloorState(context) {
-    if (context.updateReason === "componentTreeChange") {
+    const updateReason = context.updateReason;
+    context.updateReason = null;
+
+    if (updateReason === "componentTreeChange") {
       if (floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
         removeInvalidNode(context.componentTreeData);
@@ -120,16 +161,14 @@
       } else {
         // do nothing
       }
-    } else if (
-      context.updateReason === "highlightFloor" &&
-      context.targetFloorId
-    ) {
+    } else if (updateReason === "highlightFloor" && context.targetFloorId) {
       dispatch("highlightFloor", { floorId: context.targetFloorId });
     } else if (
-      context.updateReason === "componentRemove" &&
+      updateReason === "componentRemove" &&
       context.targetFloorId &&
       context.targetFloorId === floorId
     ) {
+      console.log(`unknown update reason: ${updateReason}`);
       childComponentInfo = null;
     }
   }

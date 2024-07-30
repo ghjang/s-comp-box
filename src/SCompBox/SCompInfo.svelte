@@ -23,12 +23,14 @@
             orientation: "horizontal",
             component_0: {
               component: Floor,
+              componentClassName: "Floor",
               props: {
                 menuItems,
               },
             },
             component_1: {
               component: Floor,
+              componentClassName: "Floor",
               props: {
                 menuItems,
               },
@@ -46,12 +48,14 @@
             orientation: "vertical",
             component_0: {
               component: Floor,
+              componentClassName: "Floor",
               props: {
                 menuItems,
               },
             },
             component_1: {
               component: Floor,
+              componentClassName: "Floor",
               props: {
                 menuItems,
               },
@@ -71,6 +75,7 @@
               {
                 label: "Tab 1",
                 component: Floor,
+                componentClassName: "Floor",
                 props: {
                   menuItems,
                 },
@@ -106,6 +111,7 @@
             customElementName: "s-marquee",
             description: "Marquee",
             componentClass: Marquee,
+            componentClassName: "Marquee",
             props: {},
           }
        */

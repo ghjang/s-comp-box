@@ -17,8 +17,16 @@
 
   export let panel_0_length = "50%";
 
-  export let component_0 = { component: null, props: {} };
-  export let component_1 = { component: null, props: {} };
+  export let component_0 = {
+    component: null,
+    componentClassName: null,
+    props: {},
+  };
+  export let component_1 = {
+    component: null,
+    componentClassName: null,
+    props: {},
+  };
 
   export let customEvents = [];
 
@@ -41,13 +49,13 @@
   };
 
   export const clearPanel = () => {
-    component_0 = { component: null, props: {} };
-    component_1 = { component: null, props: {} };
+    component_0 = { component: null, componentClassName: null, props: {} };
+    component_1 = { component: null, componentClassName: null, props: {} };
   };
   export const clearPanel_0 = () =>
-    (component_0 = { component: null, props: {} });
+    (component_0 = { component: null, componentClassName: null, props: {} });
   export const clearPanel_1 = () =>
-    (component_1 = { component: null, props: {} });
+    (component_1 = { component: null, componentClassName: null, props: {} });
 
   export const swapPanel = () => {
     const temp = component_0;

@@ -11,6 +11,7 @@
   export let pattern = "honeycomb";
   export let defaultActionHandler = null;
   export let designMode = false;
+  
   export let floorLevel = -1;
   export let floorId = crypto.randomUUID();
 
