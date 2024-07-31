@@ -28,24 +28,30 @@
     props: {},
   };
 
-  export let customEvents = [];
+  export let customEvents = ["splitterOrientationChanged"];
 
   export const toggleOrientation = () => {
     if (orientation === "horizontal") {
       orientation = "vertical";
-      const sizeInfo = panelSize.panelSize;
-      const prevTotalWidth = sizeInfo.panel_1.right - sizeInfo.panel_0.left;
-      const prevPanel0WidthPercent =
-        (sizeInfo.panel_0.width / prevTotalWidth) * 100;
-      panel_0_length = `${prevPanel0WidthPercent}%`;
+      if (panelSize.panelSize) {
+        const sizeInfo = panelSize.panelSize;
+        const prevTotalWidth = sizeInfo.panel_1.right - sizeInfo.panel_0.left;
+        const prevPanel0WidthPercent =
+          (sizeInfo.panel_0.width / prevTotalWidth) * 100;
+        panel_0_length = `${prevPanel0WidthPercent}%`;
+      }
     } else if (orientation === "vertical") {
       orientation = "horizontal";
-      const sizeInfo = panelSize.panelSize;
-      const prevTotalHeight = sizeInfo.panel_1.bottom - sizeInfo.panel_0.top;
-      const prevPanel0HeightPercent =
-        (sizeInfo.panel_0.height / prevTotalHeight) * 100;
-      panel_0_length = `${prevPanel0HeightPercent}%`;
+      if (panelSize.panelSize) {
+        const sizeInfo = panelSize.panelSize;
+        const prevTotalHeight = sizeInfo.panel_1.bottom - sizeInfo.panel_0.top;
+        const prevPanel0HeightPercent =
+          (sizeInfo.panel_0.height / prevTotalHeight) * 100;
+        panel_0_length = `${prevPanel0HeightPercent}%`;
+      }
     }
+
+    dispatch("splitterOrientationChanged", { orientation });
   };
 
   export const clearPanel = () => {
@@ -87,20 +93,41 @@
     customEvents = [...new Set(combinedCustomEvents)];
 
     component.customEvents.forEach((eventName) => {
-      component.$on(eventName, (event) => {
-        const bubble = event.detail.bubble || {};
-        bubble.chain = bubble.chain || [];
+      if (eventName === "queryContainerInfo") {
+        component.$on(eventName, (event) => {
+          const callback = event.detail.infoCallback;
+          if (typeof callback === "function") {
+            if (component === this_component_0) {
+              callback({
+                containerName: "Splitter",
+                component_0,
+              });
+            } else if (component === this_component_1) {
+              callback({
+                containerName: "Splitter",
+                component_1,
+              });
+            }
+          } else {
+            console.error(`Invalid callback function for event '${eventName}'`);
+          }
+        });
+      } else {
+        component.$on(eventName, (event) => {
+          const bubble = event.detail.bubble || {};
+          bubble.chain = bubble.chain || [];
 
-        bubble.chain.push(component);
-        bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
-        bubble.detail = {
-          componentName: "Splitter",
-          component_0: this_component_0,
-          component_1: this_component_1,
-        };
+          bubble.chain.push(component);
+          bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
+          bubble.detail = {
+            componentName: "Splitter",
+            component_0: this_component_0,
+            component_1: this_component_1,
+          };
 
-        dispatch(eventName, { bubble });
-      });
+          dispatch(eventName, { bubble });
+        });
+      }
     });
   }
 

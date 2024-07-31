@@ -1,15 +1,21 @@
 const dbName = 'SCompBox';
+const dbVersion = 1;
 
-
-// IndexedDB 데이터베이스 열기 및 객체 저장소 생성
 const openDatabase = () => {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 1);
+        const request = indexedDB.open(dbName, dbVersion);
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
+            let objectStore;
             if (!db.objectStoreNames.contains('floors')) {
-                db.createObjectStore('floors', { keyPath: 'floorId' });
+                objectStore = db.createObjectStore('floors', { keyPath: 'floorId' });
+            } else {
+                objectStore = request.transaction.objectStore('floors');
+            }
+
+            if (!objectStore.indexNames.contains('ancestorFloorId')) {
+                objectStore.createIndex('ancestorFloorId', 'ancestorFloorId', { unique: false });
             }
         };
 
@@ -24,7 +30,25 @@ const openDatabase = () => {
 };
 
 
-export const getFloor = async (floorId) => {
+export const getFloorRecordCount = async () => {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction('floors', 'readonly');
+        const objectStore = transaction.objectStore('floors');
+        const countRequest = objectStore.count();
+
+        countRequest.onsuccess = () => {
+            resolve(countRequest.result);
+        };
+
+        countRequest.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+};
+
+
+export const loadFloor = async (floorId) => {
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['floors']);
@@ -32,7 +56,8 @@ export const getFloor = async (floorId) => {
         const request = objectStore.get(floorId);
 
         request.onsuccess = (event) => {
-            resolve(event.target.result);
+            const result = event.target.result ?? null;
+            resolve(result);
         };
 
         request.onerror = (event) => {
@@ -82,9 +107,79 @@ export const saveFloor = async (floor, overwrite = true) => {
     });
 };
 
+export const loadDescendentFloor = async (ancestorFloorId) => {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['floors'], 'readonly');
+        const objectStore = transaction.objectStore('floors');
+        const index = objectStore.index('ancestorFloorId');
+        const request = index.getAll(ancestorFloorId);
+
+        request.onsuccess = (event) => {
+            resolve(event.target.result);
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+};
+
+
+export const removeFloor = async (floorId) => {
+    const db = await openDatabase();
+    const transaction = db.transaction('floors', 'readwrite');
+    const objectStore = transaction.objectStore('floors');
+
+    const deleteDescendents = async (ancestorFloorId) => {
+        return new Promise((resolve, reject) => {
+            const index = objectStore.index('ancestorFloorId');
+            const request = index.getAll(ancestorFloorId);
+
+            request.onsuccess = async (event) => {
+                const descendents = event.target.result;
+                for (const descendent of descendents) {
+                    await deleteDescendents(descendent.floorId);
+                    objectStore.delete(descendent.floorId);
+                }
+                resolve();
+            };
+
+            request.onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
+    };
+
+    // Check if the floorId exists
+    const floorRequest = objectStore.get(floorId);
+    const floorExists = await new Promise((resolve, reject) => {
+        floorRequest.onsuccess = (event) => {
+            resolve(!!event.target.result);
+        };
+        floorRequest.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+
+    if (floorExists) {
+        await deleteDescendents(floorId);
+        objectStore.delete(floorId);
+    }
+
+    return new Promise((resolve, reject) => {
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+};
 
 // 함수가 설정된 속성을 제거하는 함수
-export const removeUnserializableProperties = (obj, printLog = true, keyPath = []) => {
+export const removeUnserializableProperties = (obj, printLog = false, keyPath = []) => {
     if (obj === null || typeof obj !== 'object') {
         return obj;
     }
@@ -105,13 +200,71 @@ export const removeUnserializableProperties = (obj, printLog = true, keyPath = [
                     console.log(`removing function with key: '${keyPathStr}' and function name: '${value.name}'`);
                 }
 
-                plainObject[key] = `removed function: ${value.name}`;
+                plainObject[key] = `removed: ${value.name}`;
             } else {
                 plainObject[key] = removeUnserializableProperties(value, printLog, keyPath.concat(key));
             }
         }
     }
     return plainObject;
+};
+
+
+export const restoreUnserializableProperties = async (obj, scriptBase, printLog = false, keyPath = []) => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    if (Array.isArray(obj)) {
+        return Promise.all(obj.map((item, index) => {
+            return restoreUnserializableProperties(item, scriptBase, printLog, keyPath.concat(`[${index}]`));
+        }));
+    }
+
+    const restoredObject = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            const value = obj[key];
+            if (typeof value === 'string' && value.startsWith('removed: ')) {
+                const className = value.replace('removed: ', '');
+                const keyPathStr = keyPath.concat(key).join('.').replace(/\.\[/g, '[');
+
+                if (printLog) {
+                    console.log(`restoring function with key: '${keyPathStr}' and class name: '${className}'`);
+                }
+
+                const module = await import(`${scriptBase}/${className}.js`);
+                restoredObject[key] = module[className] || module.default;
+            } else {
+                restoredObject[key] = await restoreUnserializableProperties(value, scriptBase, printLog, keyPath.concat(key));
+            }
+        }
+    }
+    return restoredObject;
+};
+
+
+export const updateMenuItemsInProps = (obj, floorMenuItems) => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(item => updateMenuItemsInProps(item, floorMenuItems));
+    }
+
+    const updatedObject = { ...obj };
+    for (const key in updatedObject) {
+        if (updatedObject.hasOwnProperty(key)) {
+            const value = updatedObject[key];
+            if (key === 'props' && typeof value === 'object' && value.menuItems) {
+                updatedObject[key] = { ...value, menuItems: floorMenuItems };
+            } else {
+                updatedObject[key] = updateMenuItemsInProps(value, floorMenuItems);
+            }
+        }
+    }
+    return updatedObject;
 };
 
 
@@ -158,5 +311,3 @@ export const replaceClassInstancesWithNames = (obj) => {
     }
     return plainObject;
 };
-
-

@@ -1,19 +1,26 @@
 <script>
+  import { tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
   import FloorChild from "./FloorChild.svelte";
   import { findClosestAncestor } from "../common/util.dom.js";
+  import {
+    restoreUnserializableProperties as restoreComponentClass,
+    updateMenuItemsInProps,
+  } from "./persistency.js";
 
   export let menuItems = [];
   export let childComponentInfo = null;
   export let pattern = "honeycomb";
   export let defaultActionHandler = null;
   export let designMode = false;
-  
+
   export let floorLevel = -1;
   export let floorId = crypto.randomUUID();
+
+  export const customEvents = ["queryContainerInfo"];
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -60,7 +67,10 @@
     }
   }
 
-  function handleContextMenu(e) {
+  async function handleContextMenu(e) {
+    designMode = floorChild?.getContextDesignMode() || designMode;
+    await tick();
+
     if (!designMode) {
       return;
     }
@@ -116,6 +126,7 @@
 
   function handleComponentTreeChanged(event) {
     componentTreeData = event.detail.componentTreeData;
+    console.log("handleComponentTreeChanged", componentTreeData);
   }
 
   function handleTreeNodeSelected(event) {
@@ -142,6 +153,17 @@
       panel_0_length = `${panelSize.panel_0.width}px`;
     }
   }
+
+  function handleLoadFloorChildComponent(event) {
+    console.log("loadFloorChildComponent", event.detail);
+    restoreComponentClass(
+      event.detail.childComponentInfo,
+      "/build/dev/default"
+    ).then((restoredInfo) => {
+      floorId = event.detail.orgFloorId;
+      childComponentInfo = updateMenuItemsInProps(restoredInfo, menuItems);
+    });
+  }
 </script>
 
 <div
@@ -151,7 +173,7 @@
   data-floor-level={floorLevel}
   data-floor-id={floorId}
 >
-  {#if designMode}
+  {#if floorLevel === 0 && designMode}
     {#if treeViewSlot === "left"}
       <Splitter
         orientation="horizontal"
@@ -175,10 +197,11 @@
           <FloorChild
             bind:this={floorChild}
             {designMode}
-            {childComponentInfo}
             {floorLevel}
             {floorId}
             {ancestorFloorId}
+            {childComponentInfo}
+            {menuItems}
             on:componentTreeChanged={handleComponentTreeChanged}
             on:highlightFloor={handleHighlightFloor}
           />
@@ -202,10 +225,11 @@
           <FloorChild
             bind:this={floorChild}
             {designMode}
-            {childComponentInfo}
             {floorLevel}
             {floorId}
             {ancestorFloorId}
+            {childComponentInfo}
+            {menuItems}
             on:componentTreeChanged={handleComponentTreeChanged}
             on:highlightFloor={handleHighlightFloor}
           />
@@ -223,11 +247,15 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="floor-box {pattern}" on:contextmenu={handleContextMenu}>
       <FloorChild
-        {childComponentInfo}
+        bind:this={floorChild}
         {floorLevel}
         {floorId}
         {ancestorFloorId}
+        {childComponentInfo}
+        {menuItems}
         on:highlightFloor={handleHighlightFloor}
+        on:loadFloorChildComponent={handleLoadFloorChildComponent}
+        on:queryContainerInfo
       />
       <slot />
     </div>

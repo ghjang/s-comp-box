@@ -7,9 +7,14 @@
   } from "svelte";
   import { writable, get } from "svelte/store";
   import {
-    getFloor,
+    getFloorRecordCount,
+    loadFloor,
+    loadDescendentFloor,
     saveFloor,
+    removeFloor,
     removeUnserializableProperties as cleanProps,
+    restoreUnserializableProperties as restoreComponentClass,
+    updateMenuItemsInProps,
   } from "./persistency.js";
 
   const dispatch = createEventDispatcher();
@@ -18,6 +23,7 @@
   export let floorId = null;
   export let ancestorFloorId = null;
   export let childComponentInfo = null;
+  export let menuItems = [];
   export let designMode = false;
 
   const contextName = "floor-context";
@@ -43,37 +49,110 @@
 
   $: if (childComponentInfo) {
     updateChildComponentTreeData();
-
-    // 유효한 컴포넌트 정보를 로컬 스토리지에 저장?
-
     console.log(
-      `floorLevel: ${floorLevel}, floorId: ${floorId}`,
-      "\nchildComponentInfo:",
-      childComponentInfo,
-      "\ncontext:",
-      get(context)
+      `childComponentInfo was set: level: ${floorLevel}, id: ${floorId}`,
+      childComponentInfo
     );
 
-    const cleanedChildComponentInfo = cleanProps(childComponentInfo);
-    saveFloor({
-      floorId,
-      ancestorFloorId,
-      floorLevel,
-      childComponentInfo: cleanedChildComponentInfo,
-    });
+    const cleanedData = cleanProps(childComponentInfo);
+
+    if (floorLevel === 0) {
+      saveFloor({
+        floorId,
+        ancestorFloorId,
+        childComponentInfo: cleanedData,
+        nonFloorParentInfo: null,
+      });
+    } else {
+      dispatch("queryContainerInfo", {
+        infoCallback: (containerInfo) => {
+          console.log(`queryContainerInfo, id: ${floorId},`, containerInfo);
+          const cleanedInfo = cleanProps(containerInfo);
+          saveFloor({
+            floorId,
+            ancestorFloorId,
+            childComponentInfo: cleanedData,
+            nonFloorParentInfo: cleanedInfo,
+          });
+        },
+      });
+    }
   } else {
     clearChildComponentTreeData();
 
-    // 초기에 빈 상태로 로딩될 경우에도 여기에 도달?
-    // 로컬 스토리지에서 저장된 컴포넌트 정보가 있는지를 확인해서 로딩?
+    if (floorLevel === 0) {
+      console.log("initial root floor is loaded.");
 
-    if (floorLevel >= 0) {
+      getFloorRecordCount()
+        .then((count) => {
+          context.update((value) => {
+            value.updateReason = "updateTotalFloorCount";
+            value.totalFloorCount = count;
+            return value;
+          });
+          return loadFloor(floorId);
+        })
+        .then((floorData) => {
+          if (floorData) {
+            restoreComponentClass(floorData, "/build/dev/default").then(
+              (restoredData) => {
+                const restoredChildInfo = updateMenuItemsInProps(
+                  restoredData.childComponentInfo,
+                  menuItems
+                );
+                childComponentInfo = restoredChildInfo;
+              }
+            );
+          }
+        });
+    } else if (floorLevel > 0) {
       console.log(
-        `childComponentInfo is null. floorLevel: ${floorLevel}, floorId: ${floorId}`,
-        "\ncontext:",
-        get(context)
+        `initial floor is loaded, level: ${floorLevel}, floorId: ${floorId}`
       );
+
+      dispatch("queryContainerInfo", {
+        infoCallback: (containerInfo) => {
+          console.log(`queryContainerInfo, id: ${floorId},`, containerInfo);
+          const containerName = containerInfo.containerName;
+          if (containerName === "Splitter") {
+            loadDescendentFloor(ancestorFloorId).then((floors) => {
+              const floorData = floors.find((floor) => {
+                const nonFloorParentInfo = floor.nonFloorParentInfo;
+                if (nonFloorParentInfo.containerName !== containerName) {
+                  return false;
+                }
+                const hasComponent_0 =
+                  nonFloorParentInfo.component_0 && containerInfo.component_0;
+                const hasComponent_1 =
+                  nonFloorParentInfo.component_1 && containerInfo.component_1;
+                return hasComponent_0 || hasComponent_1;
+              });
+
+              if (floorData) {
+                context.update((value) => {
+                  value.updateReason = "updateChildComponentId";
+                  const newInvalidFloorId = floorId;
+                  const orgFloodId = floorData.floorId;
+                  value.replaceIdMap.set(newInvalidFloorId, orgFloodId);
+                  return value;
+                });
+                dispatch("loadFloorChildComponent", {
+                  orgFloorId: floorData.floorId,
+                  childComponentInfo: floorData.childComponentInfo,
+                  isInContextDesignMode: getContextDesignMode(),
+                });
+              } else {
+                console.log(`floor data not found: ${containerName}`);
+              }
+            });
+          }
+        },
+      });
     }
+  }
+
+  export function getContextDesignMode() {
+    return get(context).designMode;
   }
 
   export function highlight(targetFloorId) {
@@ -100,7 +179,11 @@
       context = writable({
         maxLevel: 0,
         updateReason: null,
+        designMode,
         targetFloorId: null,
+        totalFloorCount: 0,
+        replaceIdMap: new Map(),
+        childComponentInfo: null,
         componentTreeData: [
           {
             id: floorId,
@@ -120,12 +203,18 @@
         }
         const treeData = value.componentTreeData;
         addNodeById(treeData, ancestorFloorId);
+        console.log(
+          `after addNodeById, ancestorFloorId: ${ancestorFloorId}, floorId: ${floorId}`
+        );
         return value;
       });
 
       function addNodeById(tree, id) {
         for (const node of tree) {
           if (node.id === id) {
+            console.log(
+              `addNodeById, ancestorFloorId: ${id}, floorId: ${floorId}`
+            );
             node.children.push({
               id: floorId,
               name: null,
@@ -148,37 +237,60 @@
   }
 
   function updateFloorState(context) {
-    const updateReason = context.updateReason;
-    context.updateReason = null;
-
-    if (updateReason === "componentTreeChange") {
+    if (context.updateReason === "componentTreeChange") {
+      console.log(`componentTreeChange, ${floorId}`);
       if (floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
-        removeInvalidNode(context.componentTreeData);
+        removeInvalidNode(context.componentTreeData, context.replaceIdMap);
         dispatch("componentTreeChanged", {
           componentTreeData: context.componentTreeData,
         });
       } else {
         // do nothing
       }
-    } else if (updateReason === "highlightFloor" && context.targetFloorId) {
+    } else if (
+      context.updateReason === "highlightFloor" &&
+      context.targetFloorId
+    ) {
       dispatch("highlightFloor", { floorId: context.targetFloorId });
     } else if (
-      updateReason === "componentRemove" &&
+      context.updateReason === "componentRemove" &&
       context.targetFloorId &&
       context.targetFloorId === floorId
     ) {
-      console.log(`unknown update reason: ${updateReason}`);
+      removeFloor(floorId);
       childComponentInfo = null;
+      console.log(`component removed: ${floorId}`);
+    } else if (context.updateReason === "loadFloorChildComponent") {
+      console.log(
+        `loaded floor child component: ${context.targetFloorId}, floorId: ${floorId}`
+      );
+    } else if (context.updateReason === "updateChildComponentId") {
+      console.log(`updateChildComponentId, ${floorId}`, context.replaceIdMap);
+      let newInvalidFloorId = null;
+      let orgFloodId = null;
+      if (context.replaceIdMap.has(floorId)) {
+        newInvalidFloorId = floorId;
+        orgFloodId = context.replaceIdMap.get(newInvalidFloorId);
+        replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloodId);
+      }
+    } else if (context.updateReason === "updateTotalFloorCount") {
+      console.log(`updateTotalFloorCount: ${context.totalFloorCount}`);
+    } else {
+      /*
+      console.log(
+        `unhandled update reason: ${context.updateReason}, floorId: ${floorId}, targetFloorId: ${context.targetFloorId}`
+      );
+      */
     }
   }
 
-  function removeInvalidNode(treeRootData) {
+  function removeInvalidNode(treeRootData, excludeIdMap) {
     const floorRootElem = document.querySelector(
       "div.floor-container[data-floor-id='floor-root'][data-floor-level='0']"
     );
 
-    if (!floorRootElem) {
+    if (!floorRootElem && treeRootData.length !== 0) {
       throw new Error("Root floor not found.");
     }
 
@@ -186,6 +298,10 @@
     if (treeRootData.length !== 1) {
       return;
     }
+
+    const keySet = new Set(excludeIdMap?.keys());
+    const valueSet = new Set(excludeIdMap?.values());
+    const excludeIds = new Set([...keySet, ...valueSet]);
 
     removeInvalidNodeArrayElement(floorRootElem, treeRootData[0].children);
 
@@ -196,7 +312,8 @@
           `[data-floor-id="${node.id}"]`
         );
 
-        if (!floorElem) {
+        if (!floorElem && !excludeIds.has(node.id)) {
+          console.log(`remove invalid node: ${node.id}`);
           treeData.splice(i, 1);
           i--;
         } else {
@@ -208,6 +325,28 @@
     }
   }
 
+  function replaceNodeId(treeData, oldId, newId) {
+    for (let i = 0; i < treeData.length; ++i) {
+      const node = treeData[i];
+      if (node.id === oldId) {
+        // NOTE: 'Splitter'의 'orientation'을 변경하면 treeData가 2개가 아니라 '3개'로 되는 경우가 있는 것을 확인함.
+        //       2개의 'Floor'중에 1개가 클리어 안되고 있는게 아닌지 모르겟음. 일단 아래의 임시 코드로 처리하면 되긴 함.
+        const _newId = treeData.find((node) => node.id === newId);
+        if (_newId) {
+          treeData.splice(i, 1);
+          --i;
+        } else {
+          node.id = newId;
+        }
+        console.log(`replaceNodeId: ${oldId} -> ${newId}`);
+      }
+      if (node.children.length > 0) {
+        replaceNodeId(node.children, oldId, newId);
+      }
+    }
+  }
+
+  // NOTE: 'SCompBox'의 '디자인 모드'에서 좌측의 '컴포넌트 트리' 표시를 위한 데이터를 업데이트한다.
   function updateChildComponentTreeData() {
     context.update((value) => {
       value.updateReason = "componentTreeChange";
@@ -250,7 +389,7 @@
           if (compName === "Splitter") {
             childComponentInfo.props = {
               ...childComponentInfo.props,
-              showPanelControl: designMode,
+              showPanelControl: getContextDesignMode(),
             };
           }
 
