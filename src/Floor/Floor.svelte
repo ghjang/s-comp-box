@@ -1,4 +1,5 @@
 <script>
+  import { tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
@@ -11,9 +12,11 @@
   export let pattern = "honeycomb";
   export let defaultActionHandler = null;
   export let designMode = false;
-  
+
   export let floorLevel = -1;
   export let floorId = crypto.randomUUID();
+
+  export const customEvents = ["queryContainerInfo"];
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -60,7 +63,10 @@
     }
   }
 
-  function handleContextMenu(e) {
+  async function handleContextMenu(e) {
+    designMode = floorChild?.getContextDesignMode() || designMode;
+    await tick();
+
     if (!designMode) {
       return;
     }
@@ -151,7 +157,7 @@
   data-floor-level={floorLevel}
   data-floor-id={floorId}
 >
-  {#if designMode}
+  {#if floorLevel === 0 && designMode}
     {#if treeViewSlot === "left"}
       <Splitter
         orientation="horizontal"
@@ -223,11 +229,13 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="floor-box {pattern}" on:contextmenu={handleContextMenu}>
       <FloorChild
+        bind:this={floorChild}
         {childComponentInfo}
         {floorLevel}
         {floorId}
         {ancestorFloorId}
         on:highlightFloor={handleHighlightFloor}
+        on:queryContainerInfo
       />
       <slot />
     </div>

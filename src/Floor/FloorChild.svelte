@@ -7,9 +7,11 @@
   } from "svelte";
   import { writable, get } from "svelte/store";
   import {
-    getFloor,
+    loadFloor,
+    loadDescendentFloor,
     saveFloor,
     removeUnserializableProperties as cleanProps,
+    restoreUnserializableProperties as restoreComponentClass,
   } from "./persistency.js";
 
   const dispatch = createEventDispatcher();
@@ -43,37 +45,16 @@
 
   $: if (childComponentInfo) {
     updateChildComponentTreeData();
-
-    // 유효한 컴포넌트 정보를 로컬 스토리지에 저장?
-
-    console.log(
-      `floorLevel: ${floorLevel}, floorId: ${floorId}`,
-      "\nchildComponentInfo:",
-      childComponentInfo,
-      "\ncontext:",
-      get(context)
-    );
-
-    const cleanedChildComponentInfo = cleanProps(childComponentInfo);
-    saveFloor({
-      floorId,
-      ancestorFloorId,
-      floorLevel,
-      childComponentInfo: cleanedChildComponentInfo,
-    });
   } else {
     clearChildComponentTreeData();
 
-    // 초기에 빈 상태로 로딩될 경우에도 여기에 도달?
-    // 로컬 스토리지에서 저장된 컴포넌트 정보가 있는지를 확인해서 로딩?
-
-    if (floorLevel >= 0) {
-      console.log(
-        `childComponentInfo is null. floorLevel: ${floorLevel}, floorId: ${floorId}`,
-        "\ncontext:",
-        get(context)
-      );
+    if (floorLevel === 0) {
+    } else if (floorLevel > 0) {
     }
+  }
+
+  export function getContextDesignMode() {
+    return get(context).designMode;
   }
 
   export function highlight(targetFloorId) {
@@ -100,7 +81,9 @@
       context = writable({
         maxLevel: 0,
         updateReason: null,
+        designMode,
         targetFloorId: null,
+        childComponentInfo: null,
         componentTreeData: [
           {
             id: floorId,
@@ -148,10 +131,7 @@
   }
 
   function updateFloorState(context) {
-    const updateReason = context.updateReason;
-    context.updateReason = null;
-
-    if (updateReason === "componentTreeChange") {
+    if (context.updateReason === "componentTreeChange") {
       if (floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
         removeInvalidNode(context.componentTreeData);
@@ -161,15 +141,28 @@
       } else {
         // do nothing
       }
-    } else if (updateReason === "highlightFloor" && context.targetFloorId) {
+    } else if (
+      context.updateReason === "highlightFloor" &&
+      context.targetFloorId
+    ) {
       dispatch("highlightFloor", { floorId: context.targetFloorId });
     } else if (
-      updateReason === "componentRemove" &&
+      context.updateReason === "componentRemove" &&
       context.targetFloorId &&
       context.targetFloorId === floorId
     ) {
-      console.log(`unknown update reason: ${updateReason}`);
       childComponentInfo = null;
+      console.log(`component removed: ${floorId}`);
+    } else if (context.updateReason === "loadFloorChildComponent") {
+      console.log(
+        `loaded floor child component: ${context.targetFloorId}, floorId: ${floorId}`
+      );
+    } else {
+      /*
+      console.log(
+        `unhandled update reason: ${context.updateReason}, floorId: ${floorId}, targetFloorId: ${context.targetFloorId}`
+      );
+      */
     }
   }
 
@@ -178,7 +171,7 @@
       "div.floor-container[data-floor-id='floor-root'][data-floor-level='0']"
     );
 
-    if (!floorRootElem) {
+    if (!floorRootElem && treeRootData.length !== 0) {
       throw new Error("Root floor not found.");
     }
 
