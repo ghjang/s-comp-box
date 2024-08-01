@@ -6,9 +6,9 @@
 
 <script>
   import { createEventDispatcher } from "svelte";
-
   import SplitterH from "./SplitterH.svelte";
   import SplitterV from "./SplitterV.svelte";
+  import { CustomEventsRegister, combineCustomEvents } from "../common/customEvents.js";
 
   const dispatch = createEventDispatcher();
 
@@ -75,60 +75,63 @@
 
   let this_component_0;
   let this_component_1;
+  let customEventsRegister_0;
+  let customEventsRegister_1;
 
-  $: registerCustomEventHandler(this_component_0);
-  $: registerCustomEventHandler(this_component_1);
-
-  function registerCustomEventHandler(component) {
-    if (!component || !component.customEvents) {
-      return;
-    }
-
-    if (!Array.isArray(component.customEvents)) {
-      return;
-    }
-
-    // NOTE: 'Splitter'의 자식 컴포넌트로 'Splitter'가 포함되는 경우를 처리하기 위함.
-    const combinedCustomEvents = [...customEvents, ...component.customEvents];
-    customEvents = [...new Set(combinedCustomEvents)];
-
-    component.customEvents.forEach((eventName) => {
-      if (eventName === "queryContainerInfo") {
-        component.$on(eventName, (event) => {
-          const callback = event.detail.infoCallback;
-          if (typeof callback === "function") {
-            if (component === this_component_0) {
-              callback({
-                containerName: "Splitter",
-                component_0,
-              });
-            } else if (component === this_component_1) {
-              callback({
-                containerName: "Splitter",
-                component_1,
-              });
-            }
-          } else {
-            console.error(`Invalid callback function for event '${eventName}'`);
-          }
-        });
-      } else {
-        component.$on(eventName, (event) => {
-          const bubble = event.detail.bubble || {};
-          bubble.chain = bubble.chain || [];
-
-          bubble.chain.push(component);
-          bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
-          bubble.detail = {
-            componentName: "Splitter",
-            component_0: this_component_0,
-            component_1: this_component_1,
-          };
-
-          dispatch(eventName, { bubble });
+  $: if (this_component_0) {
+    customEventsRegister_0 = new CustomEventsRegister(
+      dispatch,
+      this_component_0,
+      () => { // event의 'detail' 속성에 설정할 값
+        return {
+          componentName: "Splitter",
+          component_0: this_component_0,
+          component_1: this_component_1,
+        };
+      },
+      (_, callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+        callback({
+          containerName: "Splitter",
+          component_0,
         });
       }
-    });
+    );
+
+    customEvents = combineCustomEvents(
+      customEventsRegister_0.customEvents,
+      customEvents
+    );
+  } else {
+    customEventsRegister_0?.unregister();
+    customEventsRegister_0 = null;
+  }
+
+  $: if (this_component_1) {
+    customEventsRegister_1 = new CustomEventsRegister(
+      dispatch,
+      this_component_1,
+      () => { // event의 'detail' 속성에 설정할 값
+        return {
+          componentName: "Splitter",
+          component_0: this_component_0,
+          component_1: this_component_1,
+        };
+      },
+      (_, callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+        callback({
+          containerName: "Splitter",
+          component_1,
+        });
+      }
+    );
+
+    customEvents = combineCustomEvents(
+      customEventsRegister_1.customEvents,
+      customEvents
+    );
+  } else {
+    customEventsRegister_1?.unregister();
+    customEventsRegister_1 = null;
   }
 
   // TODO: 'panelSizeChange' 이벤트 발생 횟수 최적화
