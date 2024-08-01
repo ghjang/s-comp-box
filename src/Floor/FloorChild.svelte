@@ -6,6 +6,7 @@
     onDestroy,
   } from "svelte";
   import { writable, get } from "svelte/store";
+  import { CustomEventsRegister } from "../common/customEvents.js";
   import {
     getFloorRecordCount,
     loadFloor,
@@ -29,6 +30,9 @@
   const contextName = "floor-context";
   let context;
   let unsubscribe;
+
+  let childComponent;
+  let childCustomEventsRegister;
 
   $: floorLevel >= 0 && (context = initContext(contextName));
 
@@ -149,6 +153,28 @@
         },
       });
     }
+  }
+
+  $: if (childComponent) {
+    childCustomEventsRegister = new CustomEventsRegister(
+      dispatch,
+      childComponent,
+      (eventName, bubble) => {
+        console.log(`FloorChild, eventName: ${eventName}`);
+        if (eventName === "splitterOrientationChanged") {
+          const ctx = get(context);
+          ctx.replaceIdMap.clear();
+
+          const detail = bubble.forwardingDetail;
+          console.log(`splitterOrientationChanged, detail:`, detail);
+          childComponentInfo.props.orientation = detail.orientation;
+          childComponentInfo = { ...childComponentInfo };
+        }
+      }
+    );
+  } else {
+    childCustomEventsRegister?.unregister();
+    childCustomEventsRegister = null;
   }
 
   export function getContextDesignMode() {
@@ -329,15 +355,7 @@
     for (let i = 0; i < treeData.length; ++i) {
       const node = treeData[i];
       if (node.id === oldId) {
-        // NOTE: 'Splitter'의 'orientation'을 변경하면 treeData가 2개가 아니라 '3개'로 되는 경우가 있는 것을 확인함.
-        //       2개의 'Floor'중에 1개가 클리어 안되고 있는게 아닌지 모르겟음. 일단 아래의 임시 코드로 처리하면 되긴 함.
-        const _newId = treeData.find((node) => node.id === newId);
-        if (_newId) {
-          treeData.splice(i, 1);
-          --i;
-        } else {
-          node.id = newId;
-        }
+        node.id = newId;
         console.log(`replaceNodeId: ${oldId} -> ${newId}`);
       }
       if (node.children.length > 0) {
@@ -445,11 +463,13 @@
   {#if childComponentInfo.componentClass}
     <svelte:component
       this={childComponentInfo.componentClass}
+      bind:this={childComponent}
       {...childComponentInfo.props}
     />
   {:else if childComponentInfo.customElementName}
     <svelte:element
       this={childComponentInfo.customElementName}
+      bind:this={childComponent}
       {...childComponentInfo.props}
     />
   {/if}

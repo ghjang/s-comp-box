@@ -35,7 +35,7 @@ export class CustomEventsRegister {
                 const unregister = component.$on(eventName, (event) => {
                     const callback = event.detail.infoCallback;
                     if (typeof callback === "function") {
-                        queryContainerInfoHandler?.(component, callback);
+                        queryContainerInfoHandler?.(callback, component);
                     } else {
                         throw new Error("queryContainerInfo event must have a 'infoCallback' function in the detail object.");
                     }
@@ -48,7 +48,7 @@ export class CustomEventsRegister {
 
                     bubble.chain.push(component);
                     bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
-                    bubble.detail = detailHandler?.(component, bubble);
+                    bubble.detail = detailHandler?.(eventName, bubble, component);
 
                     dispatch(eventName, { bubble });
                 });

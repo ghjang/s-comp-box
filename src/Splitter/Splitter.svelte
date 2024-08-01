@@ -89,7 +89,7 @@
           component_1: this_component_1,
         };
       },
-      (_, callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+      (callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
         callback({
           containerName: "Splitter",
           component_0,
@@ -117,7 +117,7 @@
           component_1: this_component_1,
         };
       },
-      (_, callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+      (callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
         callback({
           containerName: "Splitter",
           component_1,
