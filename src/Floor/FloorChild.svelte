@@ -8,6 +8,13 @@
   import { writable, get } from "svelte/store";
   import { CustomEventsRegister } from "../common/customEvents.js";
   import {
+    addNodeById,
+    resetNodeById,
+    updateNodeById,
+    replaceNodeId,
+    removeInvalidNode,
+  } from "./context.js";
+  import {
     getFloorRecordCount,
     loadFloor,
     loadDescendentFloor,
@@ -29,7 +36,7 @@
 
   const contextName = "floor-context";
   let context;
-  let unsubscribe;
+  let contextUnsubscribe;
 
   let childComponent;
   let childCustomEventsRegister;
@@ -46,7 +53,7 @@
   //$: context && updateFloorState($context);
 
   $: if (context) {
-    unsubscribe = context.subscribe((value) => {
+    contextUnsubscribe = context.subscribe((value) => {
       updateFloorState(value);
     });
   }
@@ -228,36 +235,12 @@
           value.maxLevel = floorLevel;
         }
         const treeData = value.componentTreeData;
-        addNodeById(treeData, ancestorFloorId);
+        addNodeById(treeData, ancestorFloorId, floorId);
         console.log(
           `after addNodeById, ancestorFloorId: ${ancestorFloorId}, floorId: ${floorId}`
         );
         return value;
       });
-
-      function addNodeById(tree, id) {
-        for (const node of tree) {
-          if (node.id === id) {
-            console.log(
-              `addNodeById, ancestorFloorId: ${id}, floorId: ${floorId}`
-            );
-            node.children.push({
-              id: floorId,
-              name: null,
-              open: true,
-              children: [],
-            });
-            return true;
-          }
-          if (node.children.length > 0) {
-            const found = addNodeById(node.children, id);
-            if (found) {
-              return true;
-            }
-          }
-        }
-        return false;
-      }
     }
     return context;
   }
@@ -311,59 +294,6 @@
     }
   }
 
-  function removeInvalidNode(treeRootData, excludeIdMap) {
-    const floorRootElem = document.querySelector(
-      "div.floor-container[data-floor-id='floor-root'][data-floor-level='0']"
-    );
-
-    if (!floorRootElem && treeRootData.length !== 0) {
-      throw new Error("Root floor not found.");
-    }
-
-    // NOTE: '루트 노드'는 '1개'만 존재하는 것으로 가정했다.
-    if (treeRootData.length !== 1) {
-      return;
-    }
-
-    const keySet = new Set(excludeIdMap?.keys());
-    const valueSet = new Set(excludeIdMap?.values());
-    const excludeIds = new Set([...keySet, ...valueSet]);
-
-    removeInvalidNodeArrayElement(floorRootElem, treeRootData[0].children);
-
-    function removeInvalidNodeArrayElement(parentElem, treeData) {
-      for (let i = 0; i < treeData.length; i++) {
-        const node = treeData[i];
-        const floorElem = parentElem.querySelector(
-          `[data-floor-id="${node.id}"]`
-        );
-
-        if (!floorElem && !excludeIds.has(node.id)) {
-          console.log(`remove invalid node: ${node.id}`);
-          treeData.splice(i, 1);
-          i--;
-        } else {
-          if (node.children.length > 0) {
-            removeInvalidNodeArrayElement(floorElem, node.children);
-          }
-        }
-      }
-    }
-  }
-
-  function replaceNodeId(treeData, oldId, newId) {
-    for (let i = 0; i < treeData.length; ++i) {
-      const node = treeData[i];
-      if (node.id === oldId) {
-        node.id = newId;
-        console.log(`replaceNodeId: ${oldId} -> ${newId}`);
-      }
-      if (node.children.length > 0) {
-        replaceNodeId(node.children, oldId, newId);
-      }
-    }
-  }
-
   // NOTE: 'SCompBox'의 '디자인 모드'에서 좌측의 '컴포넌트 트리' 표시를 위한 데이터를 업데이트한다.
   function updateChildComponentTreeData() {
     context.update((value) => {
@@ -378,50 +308,14 @@
         ];
       }
       const treeData = value.componentTreeData;
-      updateNodeById(treeData, floorId);
+      updateNodeById(
+        treeData,
+        floorId,
+        childComponentInfo,
+        getContextDesignMode()
+      );
       return value;
     });
-
-    function updateNodeById(tree, id) {
-      for (const node of tree) {
-        if (node.id === id) {
-          let compName;
-
-          if (typeof childComponentInfo.componentClass === "function") {
-            // NOTE: '릴리즈 번들링 최적화'시에 '컴포넌트 클래스'를 사용하는 경우에
-            //       '클래스 이름'이 '축소 변경'될 수 있어 '원래의 클래스 이름'을
-            //       클래스 생성자 함수로부터 얻을 수가 없어 명시적으로 지정된
-            //       '컴포넌트 클래스 이름'을 사용한다.
-            compName = childComponentInfo.componentClassName;
-          } else {
-            compName = childComponentInfo.customElementName;
-          }
-
-          if (!compName) {
-            throw new Error("Component name is required.");
-          }
-
-          node.name = compName;
-          node.children = [];
-
-          if (compName === "Splitter") {
-            childComponentInfo.props = {
-              ...childComponentInfo.props,
-              showPanelControl: getContextDesignMode(),
-            };
-          }
-
-          return true;
-        }
-        if (node.children.length > 0) {
-          const found = updateNodeById(node.children, id);
-          if (found) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
   }
 
   function clearChildComponentTreeData() {
@@ -435,27 +329,10 @@
       }
       return value;
     });
-
-    function resetNodeById(tree, id) {
-      for (const node of tree) {
-        if (node.id === id) {
-          node.name = null;
-          node.children = [];
-          return true;
-        }
-        if (node.children.length > 0) {
-          const found = resetNodeById(node.children, id);
-          if (found) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
   }
 
   onDestroy(() => {
-    unsubscribe?.();
+    contextUnsubscribe?.();
   });
 </script>
 
