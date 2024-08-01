@@ -85,6 +85,33 @@ export function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
 }
 
 
+// 'id'에 해당하는 'tree' 노드를 찾아서 '자식 노드'를 'swap'한다.
+// 해당 'id' 노드의 '자식 노드'는 2개인 것으로 가정한다.
+// NOTE: Splitter 컴포넌트를 위한 'swap'이다.
+export function swapChildrenById(tree, id) {
+    for (const node of tree) {
+        if (node.id === id) {
+            if (node.children.length !== 2) {
+                throw new Error(`Invalid children count: ${node.children.length}`);
+            }
+
+            const temp = node.children[0];
+            node.children[0] = node.children[1];
+            node.children[1] = temp;
+
+            return true;
+        }
+        if (node.children.length > 0) {
+            const found = swapChildrenById(node.children, id);
+            if (found) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
 // 'tree' 전체를 순회하면서 'oldId'를 'newId'로 변경한다.
 export function replaceNodeId(tree, oldId, newId) {
     for (let i = 0; i < tree.length; ++i) {

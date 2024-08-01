@@ -20,6 +20,7 @@
     loadDescendentFloor,
     saveFloor,
     removeFloor,
+    swapFloorData,
     removeUnserializableProperties as cleanProps,
     restoreUnserializableProperties as restoreComponentClass,
     updateMenuItemsInProps,
@@ -59,6 +60,144 @@
   }
 
   $: if (childComponentInfo) {
+    setChildComponentInfo();
+  } else {
+    clearChildComponentTreeData();
+  }
+
+  $: if (floorLevel >= 0) {
+    loadChildComponentInfo();
+  }
+
+  $: if (childComponent) {
+    registerCustomEvents();
+  } else {
+    childCustomEventsRegister?.unregister();
+    childCustomEventsRegister = null;
+  }
+
+  export function getContextDesignMode() {
+    return get(context).designMode;
+  }
+
+  export function getChildComponentInfo() {
+    return {
+      floorId,
+      childComponentInfo,
+    };
+  }
+
+  export function highlight(targetFloorId) {
+    context.update((value) => {
+      value.updateReason = "highlightFloor";
+      value.targetFloorId = targetFloorId;
+      return value;
+    });
+  }
+
+  export function removeComponent(targetFloorId) {
+    context?.update((value) => {
+      value.updateReason = "componentRemove";
+      value.targetFloorId = targetFloorId;
+      return value;
+    });
+  }
+
+  function initContext(ctxName) {
+    let context;
+    if (floorLevel === 0) {
+      // 로컬 스토리지에 저장된 것이 있는지 확인후 로딩 처리?
+
+      context = writable({
+        maxLevel: 0,
+        updateReason: null,
+        designMode,
+        targetFloorId: null,
+        totalFloorCount: 0,
+        replaceIdMap: new Map(),
+        childComponentInfo: null,
+        componentTreeData: [
+          {
+            id: floorId,
+            name: null,
+            open: true,
+            children: [],
+          },
+        ],
+      });
+      setContext(ctxName, context);
+    } else {
+      context = getContext(ctxName);
+      context.update((value) => {
+        value.updateReason = "componentTreeChange";
+        if (floorLevel > value.maxLevel) {
+          value.maxLevel = floorLevel;
+        }
+        const treeData = value.componentTreeData;
+        addNodeById(treeData, ancestorFloorId, floorId);
+        console.log(
+          `after addNodeById, ancestorFloorId: ${ancestorFloorId}, floorId: ${floorId}`
+        );
+        return value;
+      });
+    }
+    return context;
+  }
+
+  function registerCustomEvents() {
+    childCustomEventsRegister = new CustomEventsRegister(
+      dispatch,
+      childComponent,
+      (eventName, bubble) => {
+        console.log(`FloorChild, eventName: ${eventName}`);
+        if (eventName === "splitterOrientationChanged") {
+          const ctx = get(context);
+          ctx.replaceIdMap.clear();
+
+          const detail = bubble.forwardingDetail;
+          console.log(`splitterOrientationChanged, detail:`, detail);
+          childComponentInfo.props.orientation = detail.orientation;
+          childComponentInfo = { ...childComponentInfo };
+        } else if (eventName === "splitterPanelSwapped") {
+          const ctx = get(context);
+          ctx.replaceIdMap.clear();
+
+          const detail = bubble.forwardingDetail;
+          console.log(`splitterPanelSwapped, detail:`, detail);
+          const componentInstance_0 =
+            detail.component_0.after.componentInstance;
+          const componentInstance_1 =
+            detail.component_1.after.componentInstance;
+          const componentInfo_0 =
+            componentInstance_0.getCurrentChildComponentInfo();
+          const componentInfo_1 =
+            componentInstance_1.getCurrentChildComponentInfo();
+
+          console.log(
+            `splitterPanelSwapped, childComponentInfo_0:`,
+            componentInfo_0
+          );
+          console.log(
+            `splitterPanelSwapped, childComponentInfo_1:`,
+            componentInfo_1
+          );
+
+          const id_0 = componentInstance_0.getFloorId();
+          const id_1 = componentInstance_1.getFloorId();
+          swapFloorData(id_0, id_1, cleanProps(childComponentInfo));
+          childComponentInfo = null;
+          loadChildComponentInfo();
+        } else if (eventName === "updateDescendentFloorId") {
+          console.log(
+            `updateDescendentFloorId, floorId: ${floorId}, bubble:`,
+            bubble
+          );
+        }
+      }
+    );
+  }
+
+  function setChildComponentInfo() {
     updateChildComponentTreeData();
     console.log(
       `childComponentInfo was set: level: ${floorLevel}, id: ${floorId}`,
@@ -88,9 +227,9 @@
         },
       });
     }
-  } else {
-    clearChildComponentTreeData();
+  }
 
+  function loadChildComponentInfo() {
     if (floorLevel === 0) {
       console.log("initial root floor is loaded.");
 
@@ -160,89 +299,6 @@
         },
       });
     }
-  }
-
-  $: if (childComponent) {
-    childCustomEventsRegister = new CustomEventsRegister(
-      dispatch,
-      childComponent,
-      (eventName, bubble) => {
-        console.log(`FloorChild, eventName: ${eventName}`);
-        if (eventName === "splitterOrientationChanged") {
-          const ctx = get(context);
-          ctx.replaceIdMap.clear();
-
-          const detail = bubble.forwardingDetail;
-          console.log(`splitterOrientationChanged, detail:`, detail);
-          childComponentInfo.props.orientation = detail.orientation;
-          childComponentInfo = { ...childComponentInfo };
-        }
-      }
-    );
-  } else {
-    childCustomEventsRegister?.unregister();
-    childCustomEventsRegister = null;
-  }
-
-  export function getContextDesignMode() {
-    return get(context).designMode;
-  }
-
-  export function highlight(targetFloorId) {
-    context.update((value) => {
-      value.updateReason = "highlightFloor";
-      value.targetFloorId = targetFloorId;
-      return value;
-    });
-  }
-
-  export function removeComponent(targetFloorId) {
-    context.update((value) => {
-      value.updateReason = "componentRemove";
-      value.targetFloorId = targetFloorId;
-      return value;
-    });
-  }
-
-  function initContext(ctxName) {
-    let context;
-    if (floorLevel === 0) {
-      // 로컬 스토리지에 저장된 것이 있는지 확인후 로딩 처리?
-
-      context = writable({
-        maxLevel: 0,
-        updateReason: null,
-        designMode,
-        targetFloorId: null,
-        totalFloorCount: 0,
-        replaceIdMap: new Map(),
-        childComponentInfo: null,
-        componentTreeData: [
-          {
-            id: floorId,
-            name: null,
-            open: true,
-            children: [],
-          },
-        ],
-      });
-      setContext(ctxName, context);
-    } else {
-      context = getContext(ctxName);
-      context.update((value) => {
-        value.updateReason = "componentTreeChange";
-        if (floorLevel > value.maxLevel) {
-          value.maxLevel = floorLevel;
-        }
-        const treeData = value.componentTreeData;
-        addNodeById(treeData, ancestorFloorId, floorId);
-        console.log(
-          `after addNodeById, ancestorFloorId: ${ancestorFloorId}, floorId: ${floorId}`
-        );
-        return value;
-      });
-    }
-    return context;
   }
 
   function updateFloorState(context) {

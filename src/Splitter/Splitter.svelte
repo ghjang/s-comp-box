@@ -8,7 +8,10 @@
   import { createEventDispatcher } from "svelte";
   import SplitterH from "./SplitterH.svelte";
   import SplitterV from "./SplitterV.svelte";
-  import { CustomEventsRegister, combineCustomEvents } from "../common/customEvents.js";
+  import {
+    CustomEventsRegister,
+    combineCustomEvents,
+  } from "../common/customEvents.js";
 
   const dispatch = createEventDispatcher();
 
@@ -28,7 +31,10 @@
     props: {},
   };
 
-  export let customEvents = ["splitterOrientationChanged"];
+  export let customEvents = [
+    "splitterOrientationChanged",
+    "splitterPanelSwapped",
+  ];
 
   export const toggleOrientation = () => {
     if (orientation === "horizontal") {
@@ -67,6 +73,29 @@
     const temp = component_0;
     component_0 = { ...component_1 };
     component_1 = { ...temp };
+
+    dispatch("splitterPanelSwapped", { 
+      component_0 : {
+        before: {
+          componentInfo: component_1,
+          componentInstance: this_component_1
+        },
+        after: {
+          componentInfo: component_0,
+          componentInstance: this_component_0
+        }
+      },
+      component_1 : {
+        before: {
+          componentInfo: component_0,
+          componentInstance: this_component_0
+        },
+        after: {
+          componentInfo: component_1,
+          componentInstance: this_component_1
+        }
+      }
+    });
   };
 
   export const getPanelSize = () => panelSize;
@@ -82,14 +111,16 @@
     customEventsRegister_0 = new CustomEventsRegister(
       dispatch,
       this_component_0,
-      () => { // event의 'detail' 속성에 설정할 값
+      () => {
+        // event의 'detail' 속성에 설정할 값
         return {
           componentName: "Splitter",
           component_0: this_component_0,
           component_1: this_component_1,
         };
       },
-      (callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+      (callback) => {
+        // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
         callback({
           containerName: "Splitter",
           component_0,
@@ -110,14 +141,16 @@
     customEventsRegister_1 = new CustomEventsRegister(
       dispatch,
       this_component_1,
-      () => { // event의 'detail' 속성에 설정할 값
+      () => {
+        // event의 'detail' 속성에 설정할 값
         return {
           componentName: "Splitter",
           component_0: this_component_0,
           component_1: this_component_1,
         };
       },
-      (callback) => { // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+      (callback) => {
+        // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
         callback({
           containerName: "Splitter",
           component_1,

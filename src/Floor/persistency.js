@@ -178,6 +178,115 @@ export const removeFloor = async (floorId) => {
     });
 };
 
+
+export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
+    const db = await openDatabase();
+    const transaction = db.transaction('floors', 'readwrite');
+    const store = transaction.objectStore('floors');
+
+    const request1 = store.get(floorId_0);
+    const request2 = store.get(floorId_1);
+
+    return new Promise((resolve, reject) => {
+        request1.onsuccess = (event) => {
+            const floorData_0 = event.target.result;
+            request2.onsuccess = (event) => {
+                const floorData_1 = event.target.result;
+
+                if (floorData_0 && floorData_1) {
+                    // Swap the fields except the keys
+                    const temp = { ...floorData_0 };
+                    Object.keys(floorData_0).forEach(key => {
+                        if (key !== 'floorId' && key !== 'nonFloorParentInfo') {
+                            floorData_0[key] = floorData_1[key];
+                            floorData_1[key] = temp[key];
+                        }
+                    });
+
+                    store.put(floorData_0);
+                    store.put(floorData_1);
+
+                    {
+                        // Update ancestorFloorId for all entries with ancestorFloorId = floorId_0
+                        const index = store.index('ancestorFloorId');
+                        const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_0));
+                        ancestorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                const data = cursor.value;
+                                data.ancestorFloorId = floorId_1;
+                                cursor.update(data);
+                                cursor.continue();
+                            }
+                        };
+                    }
+
+                    {
+                        // Update ancestorFloorId for all entries with ancestorFloorId = floorId_1
+                        const index = store.index('ancestorFloorId');
+                        const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_1));
+                        ancestorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                const data = cursor.value;
+                                data.ancestorFloorId = floorId_0;
+                                cursor.update(data);
+                                cursor.continue();
+                            }
+                        };
+                    }
+                } else if (floorData_0) {
+                    floorData_0.floorId = floorId_1;
+                    delete floorData_0.nonFloorParentInfo.component_0;
+                    floorData_0.nonFloorParentInfo.component_1 = splitterInfo.props.component_1;
+                    store.delete(floorId_0);
+                    store.put(floorData_0);
+
+                    // Update ancestorFloorId for all entries with ancestorFloorId = floorId_0
+                    const index = store.index('ancestorFloorId');
+                    const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_0));
+                    ancestorRequest.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            const data = cursor.value;
+                            data.ancestorFloorId = floorId_1;
+                            cursor.update(data);
+                            cursor.continue();
+                        }
+                    };
+                } else if (floorData_1) {
+                    floorData_1.floorId = floorId_0;
+                    delete floorData_1.nonFloorParentInfo.component_1;
+                    floorData_1.nonFloorParentInfo.component_0 = splitterInfo.props.component_0;
+                    store.delete(floorId_1);
+                    store.put(floorData_1);
+
+                    // Update ancestorFloorId for all entries with ancestorFloorId = floorId_1
+                    const index = store.index('ancestorFloorId');
+                    const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_1));
+                    ancestorRequest.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            const data = cursor.value;
+                            data.ancestorFloorId = floorId_0;
+                            cursor.update(data);
+                            cursor.continue();
+                        }
+                    };
+                }
+
+                transaction.oncomplete = () => resolve();
+                transaction.onerror = (event) => reject(event.target.error);
+            };
+
+            request2.onerror = (event) => reject(event.target.error);
+        };
+
+        request1.onerror = (event) => reject(event.target.error);
+    });
+};
+
+
 // 함수가 설정된 속성을 제거하는 함수
 export const removeUnserializableProperties = (obj, printLog = false, keyPath = []) => {
     if (obj === null || typeof obj !== 'object') {
@@ -265,49 +374,4 @@ export const updateMenuItemsInProps = (obj, floorMenuItems) => {
         }
     }
     return updatedObject;
-};
-
-
-// NOTE: IndexDB에 직접 저장할 수 없는 '클래스, 함수'등을 속성으로 가지는 객체를 저장할 때 사용
-export const classToPlainObject = (obj) => {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
-    }
-
-    if (Array.isArray(obj)) {
-        return obj.map(classToPlainObject);
-    }
-
-    const plainObject = {};
-    for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            plainObject[key] = classToPlainObject(obj[key]);
-        }
-    }
-    return plainObject;
-};
-
-
-// 클래스 인스턴스를 문자열 이름으로 변환하는 함수
-export const replaceClassInstancesWithNames = (obj) => {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
-    }
-
-    if (Array.isArray(obj)) {
-        return obj.map(replaceClassInstancesWithNames);
-    }
-
-    const plainObject = {};
-    for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            const value = obj[key];
-            if (typeof value === 'object' && value.constructor && value.constructor.name) {
-                plainObject[key] = value.constructor.name;
-            } else {
-                plainObject[key] = replaceClassInstancesWithNames(value);
-            }
-        }
-    }
-    return plainObject;
 };

@@ -1,5 +1,5 @@
 <script>
-  import { tick } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
@@ -11,6 +11,8 @@
     updateMenuItemsInProps,
   } from "./persistency.js";
 
+  const dispatch = createEventDispatcher();
+
   export let menuItems = [];
   export let childComponentInfo = null;
   export let pattern = "honeycomb";
@@ -20,7 +22,9 @@
   export let floorLevel = -1;
   export let floorId = crypto.randomUUID();
 
-  export const customEvents = ["queryContainerInfo"];
+  export const customEvents = ["queryContainerInfo", "updateDescendentFloorId"];
+
+  export const getFloorId = () => floorId;
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -31,6 +35,9 @@
   ];
 
   export const setFloorPattern = (newPattern) => (pattern = newPattern);
+
+  export const getCurrentChildComponentInfo = () =>
+    floorChild?.getChildComponentInfo();
 
   let contextMenu;
   let floorContainer;
@@ -49,6 +56,8 @@
 
   let highlighted = false;
 
+  $: childComponentInfo && fireUpdateDescendentFloorIdEvent();
+
   $: if (floorContainer) {
     const ancestorFloorContainer = findClosestAncestor(
       floorContainer,
@@ -65,6 +74,14 @@
       floorLevel = 0;
       floorId = "floor-root";
     }
+  }
+
+  function fireUpdateDescendentFloorIdEvent() {
+    console.log("fireUpdateDescendentFloorIdEvent", floorId);
+    dispatch("updateDescendentFloorId", {
+      descendentFloorId: floorId,
+      childComponentInfo,
+    });
   }
 
   async function handleContextMenu(e) {
