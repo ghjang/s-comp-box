@@ -1,3 +1,5 @@
+import { update } from "lodash-es";
+
 const dbName = 'SCompBox';
 const dbVersion = 1;
 
@@ -190,7 +192,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
     return new Promise((resolve, reject) => {
         request1.onsuccess = (event) => {
             const floorData_0 = event.target.result;
-            request2.onsuccess = (event) => {
+            request2.onsuccess = async (event) => {
                 const floorData_1 = event.target.result;
 
                 if (floorData_0 && floorData_1) {
@@ -206,35 +208,8 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
                     store.put(floorData_0);
                     store.put(floorData_1);
 
-                    {
-                        // Update ancestorFloorId for all entries with ancestorFloorId = floorId_0
-                        const index = store.index('ancestorFloorId');
-                        const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_0));
-                        ancestorRequest.onsuccess = (event) => {
-                            const cursor = event.target.result;
-                            if (cursor) {
-                                const data = cursor.value;
-                                data.ancestorFloorId = floorId_1;
-                                cursor.update(data);
-                                cursor.continue();
-                            }
-                        };
-                    }
-
-                    {
-                        // Update ancestorFloorId for all entries with ancestorFloorId = floorId_1
-                        const index = store.index('ancestorFloorId');
-                        const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_1));
-                        ancestorRequest.onsuccess = (event) => {
-                            const cursor = event.target.result;
-                            if (cursor) {
-                                const data = cursor.value;
-                                data.ancestorFloorId = floorId_0;
-                                cursor.update(data);
-                                cursor.continue();
-                            }
-                        };
-                    }
+                    await updateAncestorFloorId(store, floorId_0, floorId_1);
+                    await updateAncestorFloorId(store, floorId_1, floorId_0);
                 } else if (floorData_0) {
                     floorData_0.floorId = floorId_1;
                     delete floorData_0.nonFloorParentInfo.component_0;
@@ -242,18 +217,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
                     store.delete(floorId_0);
                     store.put(floorData_0);
 
-                    // Update ancestorFloorId for all entries with ancestorFloorId = floorId_0
-                    const index = store.index('ancestorFloorId');
-                    const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_0));
-                    ancestorRequest.onsuccess = (event) => {
-                        const cursor = event.target.result;
-                        if (cursor) {
-                            const data = cursor.value;
-                            data.ancestorFloorId = floorId_1;
-                            cursor.update(data);
-                            cursor.continue();
-                        }
-                    };
+                    await updateAncestorFloorId(store, floorId_0, floorId_1);
                 } else if (floorData_1) {
                     floorData_1.floorId = floorId_0;
                     delete floorData_1.nonFloorParentInfo.component_1;
@@ -261,18 +225,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
                     store.delete(floorId_1);
                     store.put(floorData_1);
 
-                    // Update ancestorFloorId for all entries with ancestorFloorId = floorId_1
-                    const index = store.index('ancestorFloorId');
-                    const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_1));
-                    ancestorRequest.onsuccess = (event) => {
-                        const cursor = event.target.result;
-                        if (cursor) {
-                            const data = cursor.value;
-                            data.ancestorFloorId = floorId_0;
-                            cursor.update(data);
-                            cursor.continue();
-                        }
-                    };
+                    await updateAncestorFloorId(store, floorId_1, floorId_0);
                 }
 
                 transaction.oncomplete = () => resolve();
@@ -284,6 +237,27 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
 
         request1.onerror = (event) => reject(event.target.error);
     });
+
+    function updateAncestorFloorId(store, floorId_0, floorId_1) {
+        return new Promise((resolve, reject) => {
+            const index = store.index('ancestorFloorId');
+            const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_0));
+            ancestorRequest.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const data = cursor.value;
+                    data.ancestorFloorId = floorId_1;
+                    cursor.update(data);
+                    cursor.continue();
+                } else {
+                    resolve();
+                }
+            };
+            ancestorRequest.onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
+    };
 };
 
 
