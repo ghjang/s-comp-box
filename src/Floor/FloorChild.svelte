@@ -187,11 +187,8 @@
           swapFloorData(id_0, id_1, cleanProps(childComponentInfo));
           childComponentInfo = null;
           loadChildComponentInfo();
-        } else if (eventName === "updateDescendentFloorId") {
-          console.log(
-            `updateDescendentFloorId, floorId: ${floorId}, bubble:`,
-            bubble
-          );
+        } else {
+          console.log(`unhandled event: ${eventName}`);
         }
       }
     );
@@ -229,32 +226,29 @@
     }
   }
 
-  function loadChildComponentInfo() {
+  async function loadChildComponentInfo() {
     if (floorLevel === 0) {
       console.log("initial root floor is loaded.");
 
-      getFloorRecordCount()
-        .then((count) => {
-          context.update((value) => {
-            value.updateReason = "updateTotalFloorCount";
-            value.totalFloorCount = count;
-            return value;
-          });
-          return loadFloor(floorId);
-        })
-        .then((floorData) => {
-          if (floorData) {
-            restoreComponentClass(floorData, "/build/dev/default").then(
-              (restoredData) => {
-                const restoredChildInfo = updateMenuItemsInProps(
-                  restoredData.childComponentInfo,
-                  menuItems
-                );
-                childComponentInfo = restoredChildInfo;
-              }
+      const count = await getFloorRecordCount();
+      context.update((value) => {
+        value.updateReason = "updateTotalFloorCount";
+        value.totalFloorCount = count;
+        return value;
+      });
+
+      const floorData = await loadFloor(floorId);
+      if (floorData) {
+        restoreComponentClass(floorData, "/build/dev/default").then(
+          (restoredData) => {
+            const restoredChildInfo = updateMenuItemsInProps(
+              restoredData.childComponentInfo,
+              menuItems
             );
+            childComponentInfo = restoredChildInfo;
           }
-        });
+        );
+      }
     } else if (floorLevel > 0) {
       console.log(
         `initial floor is loaded, level: ${floorLevel}, floorId: ${floorId}`
@@ -263,41 +257,69 @@
       dispatch("queryContainerInfo", {
         infoCallback: (containerInfo) => {
           console.log(`queryContainerInfo, id: ${floorId},`, containerInfo);
-          const containerName = containerInfo.containerName;
-          if (containerName === "Splitter") {
-            loadDescendentFloor(ancestorFloorId).then((floors) => {
-              const floorData = floors.find((floor) => {
-                const nonFloorParentInfo = floor.nonFloorParentInfo;
-                if (nonFloorParentInfo.containerName !== containerName) {
-                  return false;
-                }
-                const hasComponent_0 =
-                  nonFloorParentInfo.component_0 && containerInfo.component_0;
-                const hasComponent_1 =
-                  nonFloorParentInfo.component_1 && containerInfo.component_1;
-                return hasComponent_0 || hasComponent_1;
-              });
-
-              if (floorData) {
-                context.update((value) => {
-                  value.updateReason = "updateChildComponentId";
-                  const newInvalidFloorId = floorId;
-                  const orgFloodId = floorData.floorId;
-                  value.replaceIdMap.set(newInvalidFloorId, orgFloodId);
-                  return value;
-                });
-                dispatch("loadFloorChildComponent", {
-                  orgFloorId: floorData.floorId,
-                  childComponentInfo: floorData.childComponentInfo,
-                  isInContextDesignMode: getContextDesignMode(),
-                });
-              } else {
-                console.log(`floor data not found: ${containerName}`);
-              }
-            });
+          if (containerInfo.containerName === "Splitter") {
+            tryToLoadSplitterChildComponent(containerInfo);
           }
         },
       });
+    }
+  }
+
+  async function tryToLoadSplitterChildComponent(containerInfo) {
+    const floors = await loadDescendentFloor(ancestorFloorId);
+    console.log(`descendent floors:`, floors);
+
+    if (floors.length < 0 || floors.length > 2) {
+      console.warn(
+        `invalid splitter's direct descendent floor count: ${floors.length}`
+      );
+      return;
+    }
+
+    const floorData = floors.find((floor) => {
+      const nonFloorParentInfo = floor.nonFloorParentInfo;
+
+      // 'IndexedDB'에 저장된 'nonFloorParentInfo'의 'containerName'이
+      // '런타임'에 설정된 'containerInfo'의 'containerName'과 다른 경우,
+      // 즉 '저장 오류' 또는 '데이터 오류'인 경우는 무시한다.
+      if (nonFloorParentInfo.containerName !== containerInfo.containerName) {
+        console.warn(
+          `containerName is different: ${nonFloorParentInfo.containerName}, ${containerInfo.containerName}`
+        );
+        return false;
+      }
+
+      // 로딩된 2개의 'descendent floor' 중에서
+      // 'Splitter'의 같은 '컨텐트 패널' 위치에서 있는 'floor'를 찾기 위한 조건
+      const hasComponent_0 =
+        nonFloorParentInfo.component_0 && containerInfo.component_0;
+      const hasComponent_1 =
+        nonFloorParentInfo.component_1 && containerInfo.component_1;
+      return hasComponent_0 || hasComponent_1;
+    });
+
+    if (floorData) {
+      context.update((value) => {
+        value.updateReason = "updateChildComponentId";
+        const newInvalidFloorId = floorId;
+        const orgFloodId = floorData.floorId;
+        value.replaceIdMap.set(newInvalidFloorId, orgFloodId);
+        return value;
+      });
+      dispatch("loadFloorChildComponent", {
+        orgFloorId: floorData.floorId,
+        childComponentInfo: floorData.childComponentInfo,
+      });
+    } else {
+      // 'null', 즉 '자식 컴포넌트가 설정되지 않은 상태' 또는 '데이터 오류'인 경우
+      console.log(
+        `child floor data not found: ${containerInfo.containerName}, floorLevel: ${floorLevel}, floorId: ${floorId}`
+      );
+
+      // 'floorId'를 '고정' 시키기 위해서 '널 컴포넌트'를 설정한다.
+      childComponentInfo = {
+        customElementName: "null",
+      };
     }
   }
 

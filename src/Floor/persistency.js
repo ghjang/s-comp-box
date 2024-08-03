@@ -1,11 +1,17 @@
-import { update } from "lodash-es";
-
 const dbName = 'SCompBox';
 const dbVersion = 1;
 
 const openDatabase = () => {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, dbVersion);
+
+        request.onsuccess = (event) => {
+            resolve(event.target.result);
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.errorCode);
+        };
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
@@ -20,111 +26,60 @@ const openDatabase = () => {
                 objectStore.createIndex('ancestorFloorId', 'ancestorFloorId', { unique: false });
             }
         };
+    });
+};
 
-        request.onsuccess = (event) => {
-            resolve(event.target.result);
-        };
 
-        request.onerror = (event) => {
-            reject(event.target.errorCode);
-        };
+const promisifyRequest = (request) => {
+    return new Promise((resolve, reject) => {
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
+};
+
+const promisifyTransaction = (transaction) => {
+    return new Promise((resolve, reject) => {
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = (event) => reject(event.target.error);
+        transaction.onabort = (event) => reject(event.target.error);
     });
 };
 
 
 export const getFloorRecordCount = async () => {
     const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction('floors', 'readonly');
-        const objectStore = transaction.objectStore('floors');
-        const countRequest = objectStore.count();
-
-        countRequest.onsuccess = () => {
-            resolve(countRequest.result);
-        };
-
-        countRequest.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
+    const transaction = db.transaction('floors', 'readonly');
+    const objectStore = transaction.objectStore('floors');
+    const countRequest = objectStore.count();
+    return await promisifyRequest(countRequest);
 };
 
 
 export const loadFloor = async (floorId) => {
     const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['floors']);
-        const objectStore = transaction.objectStore('floors');
-        const request = objectStore.get(floorId);
-
-        request.onsuccess = (event) => {
-            const result = event.target.result ?? null;
-            resolve(result);
-        };
-
-        request.onerror = (event) => {
-            reject('Error getting floor: ' + event.target.errorCode);
-        };
-    });
+    const transaction = db.transaction(['floors']);
+    const objectStore = transaction.objectStore('floors');
+    const request = objectStore.get(floorId);
+    return await promisifyRequest(request) ?? null;
 };
 
 
 export const saveFloor = async (floor, overwrite = true) => {
     const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['floors'], 'readwrite');
-        const objectStore = transaction.objectStore('floors');
-
-        if (overwrite) {
-            // overwrite가 true인 경우, 기존 데이터를 덮어쓰기
-            const putRequest = objectStore.put(floor);
-            putRequest.onsuccess = () => {
-                resolve('Floor saved successfully');
-            };
-            putRequest.onerror = (event) => {
-                reject(`Error saving floor: ${event.target.errorCode}`);
-            };
-        } else {
-            // 기존 키가 존재하는지 확인
-            const getRequest = objectStore.get(floor.floorId);
-            getRequest.onsuccess = () => {
-                if (getRequest.result) {
-                    // 키가 존재하면 저장하지 않음
-                    reject(`Error: Floor with ID '${floor.floorId}' already exists.`);
-                } else {
-                    // 키가 존재하지 않으면 저장
-                    const putRequest = objectStore.put(floor);
-                    putRequest.onsuccess = () => {
-                        resolve('Floor saved successfully');
-                    };
-                    putRequest.onerror = (event) => {
-                        reject(`Error saving floor: ${event.target.errorCode}`);
-                    };
-                }
-            };
-            getRequest.onerror = (event) => {
-                reject(`Error checking floor existence: ${event.target.errorCode}`);
-            };
-        }
-    });
+    const transaction = db.transaction(['floors'], 'readwrite');
+    const objectStore = transaction.objectStore('floors');
+    const request = overwrite ? objectStore.put(floor) : objectStore.add(floor);
+    await promisifyRequest(request);
+    await promisifyTransaction(transaction);
 };
 
 export const loadDescendentFloor = async (ancestorFloorId) => {
     const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['floors'], 'readonly');
-        const objectStore = transaction.objectStore('floors');
-        const index = objectStore.index('ancestorFloorId');
-        const request = index.getAll(ancestorFloorId);
-
-        request.onsuccess = (event) => {
-            resolve(event.target.result);
-        };
-
-        request.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
+    const transaction = db.transaction(['floors'], 'readonly');
+    const objectStore = transaction.objectStore('floors');
+    const index = objectStore.index('ancestorFloorId');
+    const request = index.getAll(ancestorFloorId);
+    return await promisifyRequest(request);
 };
 
 
@@ -134,50 +89,25 @@ export const removeFloor = async (floorId) => {
     const objectStore = transaction.objectStore('floors');
 
     const deleteDescendents = async (ancestorFloorId) => {
-        return new Promise((resolve, reject) => {
-            const index = objectStore.index('ancestorFloorId');
-            const request = index.getAll(ancestorFloorId);
+        const index = objectStore.index('ancestorFloorId');
+        const request = index.getAll(ancestorFloorId);
+        const descendents = await promisifyRequest(request);
 
-            request.onsuccess = async (event) => {
-                const descendents = event.target.result;
-                for (const descendent of descendents) {
-                    await deleteDescendents(descendent.floorId);
-                    objectStore.delete(descendent.floorId);
-                }
-                resolve();
-            };
-
-            request.onerror = (event) => {
-                reject(event.target.error);
-            };
-        });
+        for (const descendent of descendents) {
+            await deleteDescendents(descendent.floorId);
+            await promisifyRequest(objectStore.delete(descendent.floorId));
+        }
     };
 
-    // Check if the floorId exists
     const floorRequest = objectStore.get(floorId);
-    const floorExists = await new Promise((resolve, reject) => {
-        floorRequest.onsuccess = (event) => {
-            resolve(!!event.target.result);
-        };
-        floorRequest.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
+    const floor = await promisifyRequest(floorRequest);
 
-    if (floorExists) {
+    if (floor) {
         await deleteDescendents(floorId);
-        objectStore.delete(floorId);
+        await promisifyRequest(objectStore.delete(floorId));
     }
 
-    return new Promise((resolve, reject) => {
-        transaction.oncomplete = () => {
-            resolve();
-        };
-
-        transaction.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
+    await promisifyTransaction(transaction);
 };
 
 
@@ -186,79 +116,92 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
     const transaction = db.transaction('floors', 'readwrite');
     const store = transaction.objectStore('floors');
 
-    const request1 = store.get(floorId_0);
-    const request2 = store.get(floorId_1);
+    const floorData_0 = await promisifyRequest(store.get(floorId_0));
+    const floorData_1 = await promisifyRequest(store.get(floorId_1));
 
+    if (floorData_0 && floorData_1) {
+        // Swap the fields except the keys
+        const temp = { ...floorData_0 };
+        Object.keys(floorData_0).forEach(key => {
+            if (key !== 'floorId' && key !== 'nonFloorParentInfo') {
+                floorData_0[key] = floorData_1[key];
+                floorData_1[key] = temp[key];
+            }
+        });
+
+        await promisifyRequest(store.put(floorData_0));
+        await promisifyRequest(store.put(floorData_1));
+
+        console.log(`0, Swapped floorId: ${floorId_0} and floorId: ${floorId_1}`);
+        await swapAncestorFloorId(store, floorId_0, floorId_1);
+    } else if (floorData_0) {
+        floorData_0.floorId = floorId_1;
+        delete floorData_0.nonFloorParentInfo.component_0;
+        floorData_0.nonFloorParentInfo.component_1 = splitterInfo.props.component_1;
+        await promisifyRequest(store.delete(floorId_0));
+        await promisifyRequest(store.put(floorData_0));
+
+        await swapAncestorFloorId(store, floorId_0, floorId_1);
+    } else if (floorData_1) {
+        floorData_1.floorId = floorId_0;
+        delete floorData_1.nonFloorParentInfo.component_1;
+        floorData_1.nonFloorParentInfo.component_0 = splitterInfo.props.component_0;
+        await promisifyRequest(store.delete(floorId_1));
+        await promisifyRequest(store.put(floorData_1));
+
+        await swapAncestorFloorId(store, floorId_0, floorId_1);
+    }
+
+    await promisifyTransaction(transaction);
+};
+
+// NOTE: 'store.openCursor()'가 리턴하는 '객체'의 속성으로 'onsuccess'와 'onerror'가 있다.
+//       때문에 'promisifyRequest'를 사용할 수 있을 것 같아 보이지만, 커서의 경우 그렇게하면
+//       예상치 못한 결과가 발생하는 것을 확인했다. 이상 현상으로는 '조회 순서'가 이상하거나(?),
+//       조회 자체가 제대로 이루어지지 않는 증상등이 있었다.
+//
+//       '단일 레코드'의 '삽입, 삭제, 갱신'건의 경우는 '1회성 작업'이기 때문에 'promisifyRequest'를
+//       사용해서 코드가 간결해지고 또 정상적으로 작동하는 것을 확인했지만, '커서'와 같이 '여러 레코드'를
+//       순회해야하는, 그러니까 'IndexedDB' 내부적으로 상태를 유지해야하는 경우에는 커서로 현재 레코드건을
+//       참조하고 'continue()' 호출후에 'promisifyRequest'를 사용할 경우에 (아마도) 내부 커서
+//       상태 조작 부분이 제대로 이루어지지 않는 것으로 보인다.
+//
+//       해서 일단은 아래와 같이 원래의 방식대로 'onsuccess'와 'onerror'를 직접 사용해서 처리하도록 했다.
+//       한번 등록한 'onsuccess'와 'onerror' 핸들러가 '커서'가 끝날때까지 계속 재사용되는 구조로 보인다.
+//
+// NOTE: '성능' 개선 가능성 포인트로 필요하다면,
+//       'IndexedDB'의 'transaction' 동작 방식에 대해서 좀 더 알아보는게 맞겠다.
+async function swapAncestorFloorId(store, floorId_0, floorId_1) {
     return new Promise((resolve, reject) => {
-        request1.onsuccess = (event) => {
-            const floorData_0 = event.target.result;
-            request2.onsuccess = async (event) => {
-                const floorData_1 = event.target.result;
+        const request = store.openCursor();
 
-                if (floorData_0 && floorData_1) {
-                    // Swap the fields except the keys
-                    const temp = { ...floorData_0 };
-                    Object.keys(floorData_0).forEach(key => {
-                        if (key !== 'floorId' && key !== 'nonFloorParentInfo') {
-                            floorData_0[key] = floorData_1[key];
-                            floorData_1[key] = temp[key];
-                        }
-                    });
+        request.onsuccess = async (event) => {
+            const cursor = event.target.result;
 
-                    store.put(floorData_0);
-                    store.put(floorData_1);
+            if (cursor) {
+                const value = cursor.value;
 
-                    await updateAncestorFloorId(store, floorId_0, floorId_1);
-                    await updateAncestorFloorId(store, floorId_1, floorId_0);
-                } else if (floorData_0) {
-                    floorData_0.floorId = floorId_1;
-                    delete floorData_0.nonFloorParentInfo.component_0;
-                    floorData_0.nonFloorParentInfo.component_1 = splitterInfo.props.component_1;
-                    store.delete(floorId_0);
-                    store.put(floorData_0);
-
-                    await updateAncestorFloorId(store, floorId_0, floorId_1);
-                } else if (floorData_1) {
-                    floorData_1.floorId = floorId_0;
-                    delete floorData_1.nonFloorParentInfo.component_1;
-                    floorData_1.nonFloorParentInfo.component_0 = splitterInfo.props.component_0;
-                    store.delete(floorId_1);
-                    store.put(floorData_1);
-
-                    await updateAncestorFloorId(store, floorId_1, floorId_0);
+                if (value.ancestorFloorId === floorId_0) {
+                    value.ancestorFloorId = floorId_1;
+                    await promisifyRequest(cursor.update(value));
+                    console.log(`Updated ancestorFloorId of floorId: ${value.floorId}, ancestorFloorId: ${value.ancestorFloorId}`, value);
+                } else if (value.ancestorFloorId === floorId_1) {
+                    value.ancestorFloorId = floorId_0;
+                    await promisifyRequest(cursor.update(value));
+                    console.log(`Updated ancestorFloorId of floorId: ${value.floorId}, ancestorFloorId: ${value.ancestorFloorId}`, value);
                 }
 
-                transaction.oncomplete = () => resolve();
-                transaction.onerror = (event) => reject(event.target.error);
-            };
-
-            request2.onerror = (event) => reject(event.target.error);
+                cursor.continue();
+            } else {
+                resolve();
+            }
         };
 
-        request1.onerror = (event) => reject(event.target.error);
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
     });
-
-    function updateAncestorFloorId(store, floorId_0, floorId_1) {
-        return new Promise((resolve, reject) => {
-            const index = store.index('ancestorFloorId');
-            const ancestorRequest = index.openCursor(IDBKeyRange.only(floorId_0));
-            ancestorRequest.onsuccess = (event) => {
-                const cursor = event.target.result;
-                if (cursor) {
-                    const data = cursor.value;
-                    data.ancestorFloorId = floorId_1;
-                    cursor.update(data);
-                    cursor.continue();
-                } else {
-                    resolve();
-                }
-            };
-            ancestorRequest.onerror = (event) => {
-                reject(event.target.error);
-            };
-        });
-    };
-};
+}
 
 
 // 함수가 설정된 속성을 제거하는 함수

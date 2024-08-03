@@ -22,7 +22,7 @@
   export let floorLevel = -1;
   export let floorId = crypto.randomUUID();
 
-  export const customEvents = ["queryContainerInfo", "updateDescendentFloorId"];
+  export const customEvents = ["queryContainerInfo"];
 
   export const getFloorId = () => floorId;
 
@@ -56,8 +56,6 @@
 
   let highlighted = false;
 
-  $: childComponentInfo && fireUpdateDescendentFloorIdEvent();
-
   $: if (floorContainer) {
     const ancestorFloorContainer = findClosestAncestor(
       floorContainer,
@@ -74,14 +72,6 @@
       floorLevel = 0;
       floorId = "floor-root";
     }
-  }
-
-  function fireUpdateDescendentFloorIdEvent() {
-    console.log("fireUpdateDescendentFloorIdEvent", floorId);
-    dispatch("updateDescendentFloorId", {
-      descendentFloorId: floorId,
-      childComponentInfo,
-    });
   }
 
   async function handleContextMenu(e) {
@@ -171,15 +161,14 @@
     }
   }
 
-  function handleLoadFloorChildComponent(event) {
+  async function handleLoadFloorChildComponent(event) {
     console.log("loadFloorChildComponent", event.detail);
-    restoreComponentClass(
+    const restoredInfo = await restoreComponentClass(
       event.detail.childComponentInfo,
       "/build/dev/default"
-    ).then((restoredInfo) => {
-      floorId = event.detail.orgFloorId;
-      childComponentInfo = updateMenuItemsInProps(restoredInfo, menuItems);
-    });
+    );
+    floorId = event.detail.orgFloorId;
+    childComponentInfo = updateMenuItemsInProps(restoredInfo, menuItems);
   }
 </script>
 

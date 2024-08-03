@@ -64,7 +64,7 @@
   }
 
   function handlePanelSizeChange(event) {
-    if (editor) {
+    if (editor && typeof editor.layout === "function") {
       editor.layout(true);
     }
 
@@ -75,7 +75,7 @@
 
   onMount(() => {
     if (noConsole) {
-      editor.layout(true);
+      editor?.layout(true);
     }
   });
 

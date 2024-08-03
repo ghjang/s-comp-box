@@ -52,7 +52,7 @@
       //       일단 'lodash-es' 라이브러리의 'debounce' 함수를 사용해서 보완하였다.
       resetLtrPanelCollapseButtonClicked();
     } else if (
-      (panel_1.style.display === "none" || panel_1.style.display === "") &&
+      (panel_1?.style.display === "none" || panel_1?.style.display === "") &&
       sizeInfo.panel_1.width === 0
     ) {
       // NOTE:
