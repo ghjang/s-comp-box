@@ -192,10 +192,18 @@
   });
 </script>
 
-<SCompInfo bind:this={sCompInfo} {customElementConfigBasePath} />
+<SCompInfo
+  bind:this={sCompInfo}
+  {customElementConfigBasePath}
+  {compJsBundleBasePath}
+/>
 
 {#if isMenuItemsLoaded}
-  <Floor {menuItems} {designMode} />
+  <Floor
+    {menuItems}
+    {designMode}
+    componentScriptBasePath={compJsBundleBasePath}
+  />
 {:else}
   <div>Loading...</div>
 {/if}

@@ -3,6 +3,7 @@
   import Splitter from "../Splitter/Splitter.svelte";
   import Tab from "../Tab/Tab.svelte";
 
+  export let compJsBundleBasePath;
   export let customElementConfigBasePath;
 
   const configFileName = "s-custom-elements.json";
@@ -25,6 +26,7 @@
               component: Floor,
               componentClassName: "Floor",
               props: {
+                componentScriptBasePath: compJsBundleBasePath,
                 menuItems,
               },
             },
@@ -32,6 +34,7 @@
               component: Floor,
               componentClassName: "Floor",
               props: {
+                componentScriptBasePath: compJsBundleBasePath,
                 menuItems,
               },
             },
@@ -51,6 +54,7 @@
               component: Floor,
               componentClassName: "Floor",
               props: {
+                componentScriptBasePath: compJsBundleBasePath,
                 menuItems,
               },
             },
@@ -58,6 +62,7 @@
               component: Floor,
               componentClassName: "Floor",
               props: {
+                componentScriptBasePath: compJsBundleBasePath,
                 menuItems,
               },
             },
@@ -79,6 +84,7 @@
                 component: Floor,
                 componentClassName: "Floor",
                 props: {
+                  componentScriptBasePath: compJsBundleBasePath,
                   menuItems,
                 },
               },

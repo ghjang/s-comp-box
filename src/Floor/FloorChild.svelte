@@ -34,6 +34,7 @@
   export let ancestorFloorId = null;
   export let childComponentInfo = null;
   export let menuItems = [];
+  export let componentScriptBasePath;
   export let designMode = false;
 
   const contextName = "floor-context";
@@ -66,7 +67,7 @@
     clearChildComponentTreeData();
   }
 
-  $: if (floorLevel >= 0) {
+  $: if (floorLevel >= 0 && componentScriptBasePath) {
     loadChildComponentInfo();
   }
 
@@ -206,7 +207,7 @@
     if (floorLevel === 0) {
       const floorData = await loadFloor(floorId);
       if (floorData) {
-        restoreComponentClass(floorData, "/build/dev/default").then(
+        restoreComponentClass(floorData, componentScriptBasePath).then(
           (restoredData) => {
             const restoredChildInfo = updateMenuItemsInProps(
               restoredData.childComponentInfo,

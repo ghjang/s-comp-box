@@ -13,6 +13,7 @@
   export let childComponentInfo = null;
   export let pattern = "honeycomb";
   export let defaultActionHandler = null;
+  export let componentScriptBasePath = "";
   export let designMode = false;
 
   export let floorLevel = -1;
@@ -159,7 +160,7 @@
   async function handleLoadFloorChildComponent(event) {
     const restoredInfo = await restoreComponentClass(
       event.detail.childComponentInfo,
-      "/build/dev/default"
+      componentScriptBasePath
     );
     floorId = event.detail.orgFloorId;
     childComponentInfo = updateMenuItemsInProps(restoredInfo, menuItems);
@@ -196,6 +197,7 @@
         >
           <FloorChild
             bind:this={floorChild}
+            {componentScriptBasePath}
             {designMode}
             {floorLevel}
             {floorId}
@@ -224,6 +226,7 @@
         >
           <FloorChild
             bind:this={floorChild}
+            {componentScriptBasePath}
             {designMode}
             {floorLevel}
             {floorId}
@@ -248,6 +251,7 @@
     <div class="floor-box {pattern}" on:contextmenu={handleContextMenu}>
       <FloorChild
         bind:this={floorChild}
+        {componentScriptBasePath}
         {floorLevel}
         {floorId}
         {ancestorFloorId}
