@@ -1,11 +1,17 @@
 <script>
-  import { tick } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
   import FloorChild from "./FloorChild.svelte";
   import { findClosestAncestor } from "../common/util.dom.js";
+  import {
+    restoreUnserializableProperties as restoreComponentClass,
+    updateMenuItemsInProps,
+  } from "./persistency.js";
+
+  const dispatch = createEventDispatcher();
 
   export let menuItems = [];
   export let childComponentInfo = null;
@@ -18,6 +24,8 @@
 
   export const customEvents = ["queryContainerInfo"];
 
+  export const getFloorId = () => floorId;
+
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
     "dots",
@@ -27,6 +35,9 @@
   ];
 
   export const setFloorPattern = (newPattern) => (pattern = newPattern);
+
+  export const getCurrentChildComponentInfo = () =>
+    floorChild?.getChildComponentInfo();
 
   let contextMenu;
   let floorContainer;
@@ -122,6 +133,7 @@
 
   function handleComponentTreeChanged(event) {
     componentTreeData = event.detail.componentTreeData;
+    console.log("handleComponentTreeChanged", componentTreeData);
   }
 
   function handleTreeNodeSelected(event) {
@@ -147,6 +159,16 @@
     if (panelSize.panel_0) {
       panel_0_length = `${panelSize.panel_0.width}px`;
     }
+  }
+
+  async function handleLoadFloorChildComponent(event) {
+    console.log("loadFloorChildComponent", event.detail);
+    const restoredInfo = await restoreComponentClass(
+      event.detail.childComponentInfo,
+      "/build/dev/default"
+    );
+    floorId = event.detail.orgFloorId;
+    childComponentInfo = updateMenuItemsInProps(restoredInfo, menuItems);
   }
 </script>
 
@@ -181,10 +203,11 @@
           <FloorChild
             bind:this={floorChild}
             {designMode}
-            {childComponentInfo}
             {floorLevel}
             {floorId}
             {ancestorFloorId}
+            {childComponentInfo}
+            {menuItems}
             on:componentTreeChanged={handleComponentTreeChanged}
             on:highlightFloor={handleHighlightFloor}
           />
@@ -208,10 +231,11 @@
           <FloorChild
             bind:this={floorChild}
             {designMode}
-            {childComponentInfo}
             {floorLevel}
             {floorId}
             {ancestorFloorId}
+            {childComponentInfo}
+            {menuItems}
             on:componentTreeChanged={handleComponentTreeChanged}
             on:highlightFloor={handleHighlightFloor}
           />
@@ -230,11 +254,13 @@
     <div class="floor-box {pattern}" on:contextmenu={handleContextMenu}>
       <FloorChild
         bind:this={floorChild}
-        {childComponentInfo}
         {floorLevel}
         {floorId}
         {ancestorFloorId}
+        {childComponentInfo}
+        {menuItems}
         on:highlightFloor={handleHighlightFloor}
+        on:loadFloorChildComponent={handleLoadFloorChildComponent}
         on:queryContainerInfo
       />
       <slot />

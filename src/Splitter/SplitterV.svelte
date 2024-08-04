@@ -47,7 +47,7 @@
     if (ttbPanelCollapseButtonClicked) {
       resetTtbPanelCollapseButtonClicked();
     } else if (
-      (panel_1.style.display === "none" || panel_1.style.display === "") &&
+      (panel_1?.style.display === "none" || panel_1?.style.display === "") &&
       panelSizeInfo.panel_1.height === 0
     ) {
       bottomPanelCollapsed = false; // 'bottomPanelCollapsed' 클래스 제거

@@ -173,7 +173,12 @@
   }
 
   function handleKeyDown(event) {
-    if (event.ctrlKey && event.metaKey && event.shiftKey && event.key === "D") {
+    if (
+      event.ctrlKey &&
+      event.metaKey &&
+      event.shiftKey &&
+      event.code === "KeyD"
+    ) {
       event.preventDefault();
       designMode = !designMode;
     }

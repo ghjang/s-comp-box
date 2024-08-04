@@ -22,6 +22,11 @@
 
   export let showSelectRect = false;
 
+  $: if (data) {
+    console.log(`[Tree] data:`, data);
+  }
+
+
   export function updateNodeSelected(nodeId) {
     $context.selectedNodeId = nodeId;
     $context.lastSelectRectNodeId = nodeId;
