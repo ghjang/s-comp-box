@@ -89,7 +89,8 @@ function createConfig(targetComponentFilePaths, customElement = false) {
             !customElement && postcss({
                 extract: 's-comp.bundle.css',
                 minimize: production,
-                sourceMap: !production
+                //sourceMap: !production,
+                sourceMap: true,
             }),
             nodeResolve({
                 browser: true,
@@ -97,7 +98,8 @@ function createConfig(targetComponentFilePaths, customElement = false) {
             }),
             commonjs(), // NOTE: 'rollup'은 기좀적으로 'ESM'을 사용함. 'CommonJS' 모듈일 경우에 'ESM'으로 변환해 빌드 호환성을 높인다.
             typescript({
-                sourceMap: !production,
+                //sourceMap: !production,
+                sourceMap: true,
                 inlineSources: !production
             }),
             production && terser({})
