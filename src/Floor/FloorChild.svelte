@@ -8,6 +8,10 @@
   import { writable, get } from "svelte/store";
   import { CustomEventsRegister } from "../common/customEvents.js";
   import {
+    restoreUnserializableProperties as restoreComponentClass,
+    removeUnserializableProperties as cleanProps,
+  } from "../common/serialization.js";
+  import {
     addNodeById,
     resetNodeById,
     updateNodeById,
@@ -20,8 +24,6 @@
     saveFloor,
     removeFloor,
     swapFloorData,
-    removeUnserializableProperties as cleanProps,
-    restoreUnserializableProperties as restoreComponentClass,
     updateMenuItemsInProps,
   } from "./persistency.js";
 

@@ -6,10 +6,8 @@
   import PopUp from "../PopUp/PopUp.svelte";
   import FloorChild from "./FloorChild.svelte";
   import { findClosestAncestor } from "../common/util.dom.js";
-  import {
-    restoreUnserializableProperties as restoreComponentClass,
-    updateMenuItemsInProps,
-  } from "./persistency.js";
+  import { restoreUnserializableProperties as restoreComponentClass } from "../common/serialization.js";
+  import { updateMenuItemsInProps } from "./persistency.js";
 
   export let menuItems = [];
   export let childComponentInfo = null;
