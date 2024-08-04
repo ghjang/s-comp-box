@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, tick } from "svelte";
+  import { tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
@@ -10,8 +10,6 @@
     restoreUnserializableProperties as restoreComponentClass,
     updateMenuItemsInProps,
   } from "./persistency.js";
-
-  const dispatch = createEventDispatcher();
 
   export let menuItems = [];
   export let childComponentInfo = null;
@@ -133,7 +131,6 @@
 
   function handleComponentTreeChanged(event) {
     componentTreeData = event.detail.componentTreeData;
-    console.log("handleComponentTreeChanged", componentTreeData);
   }
 
   function handleTreeNodeSelected(event) {
@@ -162,7 +159,6 @@
   }
 
   async function handleLoadFloorChildComponent(event) {
-    console.log("loadFloorChildComponent", event.detail);
     const restoredInfo = await restoreComponentClass(
       event.detail.childComponentInfo,
       "/build/dev/default"

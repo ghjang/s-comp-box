@@ -15,7 +15,6 @@
     removeInvalidNode,
   } from "./context.js";
   import {
-    getFloorRecordCount,
     loadFloor,
     loadDescendentFloor,
     saveFloor,
@@ -113,7 +112,6 @@
         updateReason: null,
         designMode,
         targetFloorId: null,
-        totalFloorCount: 0,
         replaceIdMap: new Map(),
         childComponentInfo: null,
         componentTreeData: [
@@ -135,9 +133,6 @@
         }
         const treeData = value.componentTreeData;
         addNodeById(treeData, ancestorFloorId, floorId);
-        console.log(
-          `after addNodeById, ancestorFloorId: ${ancestorFloorId}, floorId: ${floorId}`
-        );
         return value;
       });
     }
@@ -149,13 +144,11 @@
       dispatch,
       childComponent,
       (eventName, bubble) => {
-        console.log(`FloorChild, eventName: ${eventName}`);
         if (eventName === "splitterOrientationChanged") {
           const ctx = get(context);
           ctx.replaceIdMap.clear();
 
           const detail = bubble.forwardingDetail;
-          console.log(`splitterOrientationChanged, detail:`, detail);
           childComponentInfo.props.orientation = detail.orientation;
           childComponentInfo = { ...childComponentInfo };
         } else if (eventName === "splitterPanelSwapped") {
@@ -163,24 +156,10 @@
           ctx.replaceIdMap.clear();
 
           const detail = bubble.forwardingDetail;
-          console.log(`splitterPanelSwapped, detail:`, detail);
           const componentInstance_0 =
             detail.component_0.after.componentInstance;
           const componentInstance_1 =
             detail.component_1.after.componentInstance;
-          const componentInfo_0 =
-            componentInstance_0.getCurrentChildComponentInfo();
-          const componentInfo_1 =
-            componentInstance_1.getCurrentChildComponentInfo();
-
-          console.log(
-            `splitterPanelSwapped, childComponentInfo_0:`,
-            componentInfo_0
-          );
-          console.log(
-            `splitterPanelSwapped, childComponentInfo_1:`,
-            componentInfo_1
-          );
 
           const id_0 = componentInstance_0.getFloorId();
           const id_1 = componentInstance_1.getFloorId();
@@ -188,7 +167,7 @@
           childComponentInfo = null;
           loadChildComponentInfo();
         } else {
-          console.log(`unhandled event: ${eventName}`);
+          console.warn(`unhandled event: ${eventName}`);
         }
       }
     );
@@ -196,10 +175,6 @@
 
   function setChildComponentInfo() {
     updateChildComponentTreeData();
-    console.log(
-      `childComponentInfo was set: level: ${floorLevel}, id: ${floorId}`,
-      childComponentInfo
-    );
 
     const cleanedData = cleanProps(childComponentInfo);
 
@@ -213,7 +188,6 @@
     } else {
       dispatch("queryContainerInfo", {
         infoCallback: (containerInfo) => {
-          console.log(`queryContainerInfo, id: ${floorId},`, containerInfo);
           const cleanedInfo = cleanProps(containerInfo);
           saveFloor({
             floorId,
@@ -228,15 +202,6 @@
 
   async function loadChildComponentInfo() {
     if (floorLevel === 0) {
-      console.log("initial root floor is loaded.");
-
-      const count = await getFloorRecordCount();
-      context.update((value) => {
-        value.updateReason = "updateTotalFloorCount";
-        value.totalFloorCount = count;
-        return value;
-      });
-
       const floorData = await loadFloor(floorId);
       if (floorData) {
         restoreComponentClass(floorData, "/build/dev/default").then(
@@ -250,13 +215,8 @@
         );
       }
     } else if (floorLevel > 0) {
-      console.log(
-        `initial floor is loaded, level: ${floorLevel}, floorId: ${floorId}`
-      );
-
       dispatch("queryContainerInfo", {
         infoCallback: (containerInfo) => {
-          console.log(`queryContainerInfo, id: ${floorId},`, containerInfo);
           if (containerInfo.containerName === "Splitter") {
             tryToLoadSplitterChildComponent(containerInfo);
           }
@@ -267,7 +227,6 @@
 
   async function tryToLoadSplitterChildComponent(containerInfo) {
     const floors = await loadDescendentFloor(ancestorFloorId);
-    console.log(`descendent floors:`, floors);
 
     if (floors.length < 0 || floors.length > 2) {
       console.warn(
@@ -312,11 +271,9 @@
       });
     } else {
       // 'null', 즉 '자식 컴포넌트가 설정되지 않은 상태' 또는 '데이터 오류'인 경우
-      console.log(
-        `child floor data not found: ${containerInfo.containerName}, floorLevel: ${floorLevel}, floorId: ${floorId}`
-      );
 
-      // 'floorId'를 '고정' 시키기 위해서 '널 컴포넌트'를 설정한다.
+      // 'null'인 경우는
+      // 'floorId'를 '고정' 시켜 처리를 단순화 하기 위해서 '널 컴포넌트'를 설정해준다.
       childComponentInfo = {
         customElementName: "null",
       };
@@ -325,7 +282,6 @@
 
   function updateFloorState(context) {
     if (context.updateReason === "componentTreeChange") {
-      console.log(`componentTreeChange, ${floorId}`);
       if (floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
         removeInvalidNode(context.componentTreeData, context.replaceIdMap);
@@ -347,13 +303,7 @@
     ) {
       removeFloor(floorId);
       childComponentInfo = null;
-      console.log(`component removed: ${floorId}`);
-    } else if (context.updateReason === "loadFloorChildComponent") {
-      console.log(
-        `loaded floor child component: ${context.targetFloorId}, floorId: ${floorId}`
-      );
     } else if (context.updateReason === "updateChildComponentId") {
-      console.log(`updateChildComponentId, ${floorId}`, context.replaceIdMap);
       let newInvalidFloorId = null;
       let orgFloodId = null;
       if (context.replaceIdMap.has(floorId)) {
@@ -361,8 +311,6 @@
         orgFloodId = context.replaceIdMap.get(newInvalidFloorId);
         replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloodId);
       }
-    } else if (context.updateReason === "updateTotalFloorCount") {
-      console.log(`updateTotalFloorCount: ${context.totalFloorCount}`);
     } else {
       /*
       console.log(

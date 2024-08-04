@@ -132,7 +132,6 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
         await promisifyRequest(store.put(floorData_0));
         await promisifyRequest(store.put(floorData_1));
 
-        console.log(`0, Swapped floorId: ${floorId_0} and floorId: ${floorId_1}`);
         await swapAncestorFloorId(store, floorId_0, floorId_1);
     } else if (floorData_0) {
         floorData_0.floorId = floorId_1;
@@ -184,11 +183,9 @@ async function swapAncestorFloorId(store, floorId_0, floorId_1) {
                 if (value.ancestorFloorId === floorId_0) {
                     value.ancestorFloorId = floorId_1;
                     await promisifyRequest(cursor.update(value));
-                    console.log(`Updated ancestorFloorId of floorId: ${value.floorId}, ancestorFloorId: ${value.ancestorFloorId}`, value);
                 } else if (value.ancestorFloorId === floorId_1) {
                     value.ancestorFloorId = floorId_0;
                     await promisifyRequest(cursor.update(value));
-                    console.log(`Updated ancestorFloorId of floorId: ${value.floorId}, ancestorFloorId: ${value.ancestorFloorId}`, value);
                 }
 
                 cursor.continue();

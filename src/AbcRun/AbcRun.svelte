@@ -118,7 +118,7 @@
         console.log("after extractWarnings", warnings);
         editor.setEditorWarnings(warnings);
       } else {
-        console.log("no warnings");
+        //console.log("abcjs: no warnings");
       }
     }, timeOutVal);
   }
