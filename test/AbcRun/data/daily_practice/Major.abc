@@ -1,0 +1,12 @@
+%% barnumbers 0
+
+X: 1
+T: Major
+K: C
+L: 1/1
+V:1 clef="treble"
+V:2 clef="bass"
+V:1
+"Cadd9" [G,CDE] [CDEG] [DEGc] [EGcd] [DEGc] [CDEG] [G,CDE] ||
+V:2
+C, C, C, C, C, C, C, ||
