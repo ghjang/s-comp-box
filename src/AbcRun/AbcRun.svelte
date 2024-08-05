@@ -212,11 +212,6 @@
       saveToLocalStorage(abcText);
     }
   });
-
-  // FIXME: abcjs 최신 버전(6.4.1)에서 'synth.init'에서 오류 발생
-  //
-  // 6.3.0 버전에서는 정상 동작함. 다음 이슈 참고할 것:
-  // - https://github.com/paulrosen/abcjs/issues/1024
 </script>
 
 <div class="abcrun-box">
