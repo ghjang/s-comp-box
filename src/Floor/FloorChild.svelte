@@ -6,18 +6,11 @@
     restoreUnserializableProperties as restoreComponentClass,
     removeUnserializableProperties as cleanProps,
   } from "../common/serialization.js";
-  import {
-    initContext,
-    resetNodeById,
-    updateNodeById,
-    replaceNodeId,
-    removeInvalidNode,
-  } from "./context.js";
+  import { FloorContext } from "./context.js";
   import {
     loadFloor,
     loadDescendentFloor,
     saveFloor,
-    removeFloor,
     swapFloorData,
     updateMenuItemsInProps,
   } from "./persistency.js";
@@ -38,34 +31,21 @@
     floorLevel,
     floorId,
     ancestorFloorId,
-    designMode,
+    dispatch,
+    setChildComponentInfo: (info) => (childComponentInfo = info),
   });
 
   let context;
-  let contextUnsubscribe;
 
   let childComponent;
   let childCustomEventsRegister;
 
   $: if (floorLevel >= 0) {
     const opts = getContextInitOptions();
-    context = initContext(contextName, opts);
+    context = new FloorContext(contextName, opts);
   }
 
-  // NOTE: 아래 '$context' 문법을 사용해 스토어 '자동 구독'을 한 경우에
-  //       '최상위 Floor'에 'Splitter' 같은 '컨테이너' 성격의
-  //       컴포넌트가 아닌 'Marquee'와 같은 일반 컴포넌트를 추가시
-  //       'context.update'가 분명 호출되었음에도 이 '반응형 블럭'이
-  //       트리거 되지 않은 문제가 있었음. 디버깅을 통해서 확인 결과
-  //       다른 곳에 변경은 없는 상태에서 자동 구독이 아닌 'context.subscribe'를
-  //       이용한 '수동 구독'의 경우에 정상적으로 동작하는 것을 확인했음.
-  //$: context && updateFloorState($context);
-
-  $: if (context) {
-    contextUnsubscribe = context.subscribe((value) => {
-      updateFloorState(value);
-    });
-  }
+  $: floorLevel >= 0 && context?.updateDesignMode(designMode);
 
   $: if (childComponentInfo) {
     setChildComponentInfo();
@@ -84,9 +64,7 @@
     childCustomEventsRegister = null;
   }
 
-  export function getContextDesignMode() {
-    return get(context).designMode;
-  }
+  export const getContextDesignMode = () => context?.getContextDesignMode();
 
   export function getChildComponentInfo() {
     return {
@@ -95,21 +73,9 @@
     };
   }
 
-  export function highlight(targetFloorId) {
-    context.update((value) => {
-      value.updateReason = "highlightFloor";
-      value.targetFloorId = targetFloorId;
-      return value;
-    });
-  }
-
-  export function removeComponent(targetFloorId) {
-    context?.update((value) => {
-      value.updateReason = "componentRemove";
-      value.targetFloorId = targetFloorId;
-      return value;
-    });
-  }
+  export const highlight = (targetFloorId) => context?.highlight(targetFloorId);
+  export const removeComponent = (targetFloorId) =>
+    context?.removeComponent(targetFloorId);
 
   function registerCustomEvents() {
     childCustomEventsRegister = new CustomEventsRegister(
@@ -117,15 +83,13 @@
       childComponent,
       (eventName, bubble) => {
         if (eventName === "splitterOrientationChanged") {
-          const ctx = get(context);
-          ctx.replaceIdMap.clear();
+          context.clearReplaceIdMap();
 
           const detail = bubble.forwardingDetail;
           childComponentInfo.props.orientation = detail.orientation;
           childComponentInfo = { ...childComponentInfo };
         } else if (eventName === "splitterPanelSwapped") {
-          const ctx = get(context);
-          ctx.replaceIdMap.clear();
+          context.clearReplaceIdMap();
 
           const detail = bubble.forwardingDetail;
           const componentInstance_0 =
@@ -146,7 +110,7 @@
   }
 
   function setChildComponentInfo() {
-    updateChildComponentTreeData();
+    context?.updateChildComponentTreeData(childComponentInfo);
 
     const cleanedData = cleanProps(childComponentInfo);
 
@@ -170,6 +134,10 @@
         },
       });
     }
+  }
+
+  function clearChildComponentTreeData() {
+    context?.clearChildComponentTreeData();
   }
 
   async function loadChildComponentInfo() {
@@ -230,13 +198,9 @@
     });
 
     if (floorData) {
-      context.update((value) => {
-        value.updateReason = "updateChildComponentId";
-        const newInvalidFloorId = floorId;
-        const orgFloodId = floorData.floorId;
-        value.replaceIdMap.set(newInvalidFloorId, orgFloodId);
-        return value;
-      });
+      const newInvalidFloorId = floorId;
+      const orgFloodId = floorData.floorId;
+      context?.updateInvalidFloorIdInfo(newInvalidFloorId, orgFloodId);
       dispatch("loadFloorChildComponent", {
         orgFloorId: floorData.floorId,
         childComponentInfo: floorData.childComponentInfo,
@@ -252,86 +216,7 @@
     }
   }
 
-  function updateFloorState(context) {
-    if (context.updateReason === "componentTreeChange") {
-      if (floorLevel === 0) {
-        // NOTE: 'root floor'에서만 업데이트해주면 된다.
-        removeInvalidNode(context.componentTreeData, context.replaceIdMap);
-        dispatch("componentTreeChanged", {
-          componentTreeData: context.componentTreeData,
-        });
-      } else {
-        // do nothing
-      }
-    } else if (
-      context.updateReason === "highlightFloor" &&
-      context.targetFloorId
-    ) {
-      dispatch("highlightFloor", { floorId: context.targetFloorId });
-    } else if (
-      context.updateReason === "componentRemove" &&
-      context.targetFloorId &&
-      context.targetFloorId === floorId
-    ) {
-      removeFloor(floorId);
-      childComponentInfo = null;
-    } else if (context.updateReason === "updateChildComponentId") {
-      let newInvalidFloorId = null;
-      let orgFloodId = null;
-      if (context.replaceIdMap.has(floorId)) {
-        newInvalidFloorId = floorId;
-        orgFloodId = context.replaceIdMap.get(newInvalidFloorId);
-        replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloodId);
-      }
-    } else {
-      /*
-      console.log(
-        `unhandled update reason: ${context.updateReason}, floorId: ${floorId}, targetFloorId: ${context.targetFloorId}`
-      );
-      */
-    }
-  }
-
-  // NOTE: 'SCompBox'의 '디자인 모드'에서 좌측의 '컴포넌트 트리' 표시를 위한 데이터를 업데이트한다.
-  function updateChildComponentTreeData() {
-    context.update((value) => {
-      value.updateReason = "componentTreeChange";
-      if (floorLevel === 0 && value.componentTreeData.length === 0) {
-        value.componentTreeData = [
-          {
-            id: "floor-root",
-            open: true,
-            children: [],
-          },
-        ];
-      }
-      const treeData = value.componentTreeData;
-      updateNodeById(
-        treeData,
-        floorId,
-        childComponentInfo,
-        getContextDesignMode()
-      );
-      return value;
-    });
-  }
-
-  function clearChildComponentTreeData() {
-    context?.update((value) => {
-      value.updateReason = "componentTreeChange";
-      if (floorLevel === 0) {
-        value.componentTreeData = [];
-      } else {
-        const treeData = value.componentTreeData;
-        resetNodeById(treeData, floorId);
-      }
-      return value;
-    });
-  }
-
-  onDestroy(() => {
-    contextUnsubscribe?.();
-  });
+  onDestroy(() => context?.dispose());
 </script>
 
 {#if childComponentInfo}

@@ -137,9 +137,17 @@
     floorChild.highlight(selectedNode.id);
   }
 
-  function handleTreeNodeRemove(event) {
-    const floorId = event.detail.id;
-    floorChild.removeComponent(floorId);
+  // NOTE: 현재 구현에서 'floor-root'의 'childComponentInfo'는 항상 'null'이다.
+  //       'floor-root'의 'FloorChild' 컴포넌트에서만 'childComponentInfo'를
+  //       설정하고 있다. 다른 'Floor' 컴포넌트에서는 'childComponentInfo'를
+  //       'FloorChild' 컴포넌트로부터 전달받아서 설정하고 있다.
+  //       이런 구조를 개선할 필요가 있다.
+  //
+  //       또한 'handleTreeNodeRemove'는 '디자인 모드'에서만 호출되면,
+  //       'floor-root'의 'Floor' 인스턴스에서만 호출되고 있다는 점을 기억할 것.
+  async function handleTreeNodeRemove(event) {
+    const targetFloorId = event.detail.id;
+    floorChild.removeComponent(targetFloorId);
   }
 
   function handleHighlightFloor(event) {
