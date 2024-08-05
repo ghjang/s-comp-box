@@ -1,18 +1,13 @@
 <script>
-  import {
-    getContext,
-    setContext,
-    createEventDispatcher,
-    onDestroy,
-  } from "svelte";
-  import { writable, get } from "svelte/store";
+  import { createEventDispatcher, onDestroy } from "svelte";
+  import { get } from "svelte/store";
   import { CustomEventsRegister } from "../common/customEvents.js";
   import {
     restoreUnserializableProperties as restoreComponentClass,
     removeUnserializableProperties as cleanProps,
   } from "../common/serialization.js";
   import {
-    addNodeById,
+    initContext,
     resetNodeById,
     updateNodeById,
     replaceNodeId,
@@ -32,19 +27,30 @@
   export let floorLevel = -1;
   export let floorId = null;
   export let ancestorFloorId = null;
-  export let childComponentInfo = null;
-  export let menuItems = [];
-  export let componentScriptBasePath;
   export let designMode = false;
 
+  export let componentScriptBasePath;
+  export let childComponentInfo = null;
+  export let menuItems = [];
+
   const contextName = "floor-context";
+  const getContextInitOptions = () => ({
+    floorLevel,
+    floorId,
+    ancestorFloorId,
+    designMode,
+  });
+
   let context;
   let contextUnsubscribe;
 
   let childComponent;
   let childCustomEventsRegister;
 
-  $: floorLevel >= 0 && (context = initContext(contextName));
+  $: if (floorLevel >= 0) {
+    const opts = getContextInitOptions();
+    context = initContext(contextName, opts);
+  }
 
   // NOTE: 아래 '$context' 문법을 사용해 스토어 '자동 구독'을 한 경우에
   //       '최상위 Floor'에 'Splitter' 같은 '컨테이너' 성격의
@@ -103,43 +109,6 @@
       value.targetFloorId = targetFloorId;
       return value;
     });
-  }
-
-  function initContext(ctxName) {
-    let context;
-    if (floorLevel === 0) {
-      // 로컬 스토리지에 저장된 것이 있는지 확인후 로딩 처리?
-
-      context = writable({
-        maxLevel: 0,
-        updateReason: null,
-        designMode,
-        targetFloorId: null,
-        replaceIdMap: new Map(),
-        childComponentInfo: null,
-        componentTreeData: [
-          {
-            id: floorId,
-            name: null,
-            open: true,
-            children: [],
-          },
-        ],
-      });
-      setContext(ctxName, context);
-    } else {
-      context = getContext(ctxName);
-      context.update((value) => {
-        value.updateReason = "componentTreeChange";
-        if (floorLevel > value.maxLevel) {
-          value.maxLevel = floorLevel;
-        }
-        const treeData = value.componentTreeData;
-        addNodeById(treeData, ancestorFloorId, floorId);
-        return value;
-      });
-    }
-    return context;
   }
 
   function registerCustomEvents() {

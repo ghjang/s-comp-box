@@ -1,3 +1,46 @@
+import { getContext, setContext } from "svelte";
+import { writable } from "svelte/store";
+
+export function initContext(ctxName, opts) {
+    let context;
+    if (opts.floorLevel === 0) {
+        context = writable({
+            maxLevel: 0,
+            updateReason: null,
+            targetFloorId: null,
+            replaceIdMap: new Map(),
+            designMode: opts.designMode,
+            childComponentInfo: null,
+            componentTreeData: [
+                {
+                    id: opts.floorId,
+                    name: null,
+                    open: true,
+                    children: [],
+                },
+            ],
+        });
+        setContext(ctxName, context);
+    } else {
+        context = getContext(ctxName);
+        context.update((value) => {
+            value.updateReason = "componentTreeChange";
+            if (opts.floorLevel > value.maxLevel) {
+                value.maxLevel = floorLevel;
+            }
+            const treeData = value.componentTreeData;
+            addNodeById(treeData, opts.ancestorFloorId, opts.floorId);
+            return value;
+        });
+    }
+    return context;
+}
+
+
+//=============================================================================
+// 최상위에 계층에 위치한 'Floor' 컴포넌트가 '디자인 모드'로 동작시 좌측의 '컴포넌트 트리'를
+// 표현하기 위한 '스벨트 스토어 컨텍스트' 데이터 조작을 위한 함수들이다.
+//=============================================================================
 // 'tree' 노드 중에 'id'가 'ancestorFloorId'인 노드를 찾아서 그 노드의 'children'에 'newFloorId'를 추가한다.
 // 리턴값은 'newFloorId'를 추가했는지 여부이다.
 export function addNodeById(tree, ancestorFloorId, newFloorId) {
