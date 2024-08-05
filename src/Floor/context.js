@@ -26,7 +26,7 @@ export function initContext(ctxName, opts) {
         context.update((value) => {
             value.updateReason = "componentTreeChange";
             if (opts.floorLevel > value.maxLevel) {
-                value.maxLevel = floorLevel;
+                value.maxLevel = opts.floorLevel;
             }
             const treeData = value.componentTreeData;
             addNodeById(treeData, opts.ancestorFloorId, opts.floorId);
