@@ -52,18 +52,15 @@ export const restoreUnserializableProperties = async (obj, scriptBase, printLog 
                     console.log(`restoring function with key: '${keyPathStr}' and class name: '${className}'`);
                 }
 
-                try {
-                    const module = await import(`${scriptBase}/${className}.js`);
-                    restoredObject[key] = module[className] || module.default;
-                } catch (error) {
-                    // NOTE: '배포용 번들링 최적화'시에 'removed: XX'의 'XX' 부분에 'XX' 같이 원래의 '클래스명'이 아닌 '축소된 임의의 클래스명'으로
-                    //       변환되어 있기 때문에 여기에 도달할 수 있다. 이 경우에 대해서는 'componentClassName' 속성이 지정되어 있을 경우에
-                    //       이 속성의 값을 이용하여 모듈 로딩을 재시도해준다.
-                    if (obj.hasOwnProperty('componentClassName')) {
-                        const componentClassName = obj.componentClassName;
-                        const module = await import(`${scriptBase}/${componentClassName}.js`);
-                        restoredObject[key] = module[componentClassName] || module.default;
-                    }
+                // NOTE: '배포용 번들링 최적화'시에 'removed: XX'의 'XX' 부분에 'XX' 같이 원래의 '클래스명'이 아닌 '축소된 임의의 클래스명'으로
+                //       변환되어 있을 수 있다. 'componentClassName' 속성이 지정되어 있을 경우에 이 속성의 값을 이용하여 모듈 로딩을 먼저 시도한다.
+                if (obj.hasOwnProperty('componentClassName')) {
+                    const componentClassName = obj.componentClassName;
+                    const _module = await import(`${scriptBase}/${componentClassName}.js`);
+                    restoredObject[key] = _module[componentClassName] || _module.default;
+                } else {
+                    const _module = await import(`${scriptBase}/${className}.js`);
+                    restoredObject[key] = _module[className] || _module.default;
                 }
             } else {
                 restoredObject[key] = await restoreUnserializableProperties(value, scriptBase, printLog, keyPath.concat(key));

@@ -81,9 +81,8 @@
         const comp = item.component;
         let props = comp.props || {};
 
-        if (comp.componentClass) {
-          // 설정에서 직접 '컴포넌트 이름 문자열'이 아닌
-          // '컴포넌트 클래스'를 직접 지정한 경우
+        if (comp.componentClass || comp.componentClassName) {
+          // 설정에서 직접 '컴포넌트 클래스 생성자'나 '컴포넌트 이름 문자열' 지정한 경우
 
           // NOTE: 'comp.componentClass.name'은 사용할 수 없다.
           //       릴리즈 빌드의 '번들링 최적화' 과정에서 '클래스 이름이 축소 변경'될 수 있기 때문이다.
@@ -99,6 +98,12 @@
           if (compJsBundleBasePath) {
             const scriptPath = `${compJsBundleBasePath}/${orgCompName}.js`;
             await loadScript(scriptPath);
+            if (!comp.componentClass) {
+              comp.componentClass = await loadClassFromModule(
+                scriptPath,
+                orgCompName
+              );
+            }
           }
         } else if (comp.name) {
           // '컴포넌트 문자열 이름'으로 설정한 경우
