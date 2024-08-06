@@ -1,6 +1,5 @@
 <script>
   import { createEventDispatcher, onDestroy } from "svelte";
-  import { get } from "svelte/store";
   import { CustomEventsRegister } from "../common/customEvents.js";
   import {
     restoreUnserializableProperties as restoreComponentClass,
