@@ -1,28 +1,48 @@
-<script>
+<script lang="ts">
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
+  import StringAdaptor from "./abc.string.adaptor.js";
 
-  export let abcParams = {};
+  interface AbcParams {
+    noTextEditor?: boolean;
+    abcText?: string;
+    editAreaAdaptor?: any;
+    position?: any;
+  }
+
+  export let abcParams: AbcParams = {};
   export let showPlayControl = false;
   export let enableMidiFileDownload = false;
   export let enablePdfFileDownload = false;
 
-  let editAreaAdaptor = null;
-  let abcjsEditor = null;
-  let timerId = null;
+  let editAreaAdaptor: any = null;
+  let abcjsEditor: any = null;
+  let timerId: number | undefined;
 
-  let noteStaff;
-  $: noteStaff && (noteStaff.id = crypto.randomUUID());
+  let noteStaff: HTMLDivElement | undefined;
+  $: if (noteStaff) {
+    noteStaff.id = crypto.randomUUID();
+    if (editAreaAdaptor && editAreaAdaptor.isStringAdaptor) {
+      renderAbc();
+    }
+  }
 
   $: updateAbcParams(abcParams);
 
-  function updateAbcParams(params) {
-    if (params.editAreaAdaptor) {
+  function updateAbcParams(params: AbcParams): void {
+    if (params.noTextEditor) {
+      editAreaAdaptor = new StringAdaptor(params.abcText);
+    } else if (params.editAreaAdaptor) {
       editAreaAdaptor = params.editAreaAdaptor;
     }
+
     if (params.abcText) {
+      if (editAreaAdaptor.isStringAdaptor) {
+        editAreaAdaptor.setString(params.abcText);
+      }
       renderAbc();
     }
+
     if (params.position) {
       abcjsEditor?.fireSelectionChanged();
     }
@@ -38,9 +58,9 @@
   //
   // 아니면, renderAbc후에 '경고 문자열'이 아닌 오류 정보를 나타내는 객체가 어딘가에 있다면
   // 그것을 활용할 수도 있을 것이다.
-  function extractWarnings(warnings, unique = false) {
+  function extractWarnings(warnings: string[], unique = false) {
     const warningMap = new Map();
-    const allWarnings = [];
+    const allWarnings: any[] = [];
 
     warnings.forEach((warning) => {
       const regex = /Music Line:(\d+):(\d+): ([^:]+):( ([^:]+):)? (.+)/;
@@ -93,7 +113,14 @@
       return;
     }
 
+    if (editAreaAdaptor.isStringAdaptor && !noteStaff) {
+      return;
+    }
+
     if (!abcjsEditor) {
+      if (!noteStaff) {
+        return;
+      }
       abcjsEditor = new abcjs.Editor(editAreaAdaptor, {
         canvas_id: noteStaff.id,
         add_classes: true,
@@ -112,13 +139,13 @@
       clearTimeout(timerId);
     }
 
-    timerId = setTimeout(() => {
+    timerId = window.setTimeout(() => {
       const abcjsWarnings = abcjsEditor.warnings;
       if (abcjsWarnings) {
         console.log("before extractWarnings", abcjsWarnings);
         const warnings = extractWarnings(abcjsWarnings);
         console.log("after extractWarnings", warnings);
-        editor.setEditorWarnings(warnings);
+        editAreaAdaptor.setEditorWarnings(warnings);
       } else {
         //console.log("abcjs: no warnings");
       }

@@ -1,7 +1,11 @@
 
 import Tab from '/build/dev/default/Tab.js';
+
 import Console from '/build/dev/default/Console.js';
 import PyRun from '/build/dev/default/PyRun.js';
+
+import AbcRenderer from '/build/dev/default/AbcRenderer.js';
+import AbcRun from '/build/dev/default/AbcRun.js';
 
 const tab = new Tab({
     target: document.getElementById('container'),
@@ -47,6 +51,31 @@ const tab = new Tab({
                 }
             },
             {
+                label: "AbcRun - Editor",
+                component: AbcRun,
+                props: {
+                    editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist",
+                    abcText:
+                        `X: 1
+T: Simple Tune
+M: 4/4
+L: 1/4
+K: C
+C D E F | G A B c | c B A G | F E D C |`,
+                    autoSave: false,
+                    showPlayControl: true,
+                    enableMidiFileDownload: true,
+                    enablePdfFileDownload: true
+                }
+            },
+            {
+                label: "AbcRun - Renderer",
+                component: AbcRenderer,
+                props: {
+                    abcParams: {}
+                }
+            },
+            {
             }
         ]
     }
@@ -64,16 +93,24 @@ const tab = new Tab({
 //       좀더 테스트가 필요할 것 같으나, 'new Tab'가 리턴되는 시점이 자식 컴포넌트가 모두
 //       마운트된 시점이라고 볼 수 있을 것 같음. 해서 일단 아래와 같이 메쏘드 호출로 처리함.
 const tabComponents = tab.getTabComponents();
-let unscribe = null;
+const unsubscribes = [];
 
 if (tabComponents?.length > 0) {
     const noConsolePyRun = tabComponents[2];
     const console = tabComponents[3];
 
-    const dataStore = noConsolePyRun.getDataStore?.();
-    const dataSink = console.getDataSink?.();
+    let dataStore = noConsolePyRun.getDataStore?.();
+    let dataSink = console.getDataSink?.();
 
-    unscribe = dataStore?.subscribe(dataSink);
+    unsubscribes.push(dataStore?.subscribe(dataSink));
+
+    const abcRun = tabComponents[4];
+    const abcRenderer = tabComponents[5];
+
+    dataStore = abcRun.getDataStore?.();
+    dataSink = abcRenderer.getDataSink?.();
+
+    unsubscribes.push(dataStore?.subscribe(dataSink));
 }
 
 
@@ -92,6 +129,6 @@ window.addEventListener('load', function () {
 });
 
 window.addEventListener("beforeunload", () => {
-    unscribe?.();
+    unsubscribes.forEach((unsubscribe) => unsubscribe());
     tab?.$destroy();
 });

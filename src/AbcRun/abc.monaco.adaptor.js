@@ -1,9 +1,9 @@
 import { createRange } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
-export default class EditAreaAdaptor {
+export default class MonacoAdaptor {
     constructor(editor) {
         if (!editor) {
-            throw new Error("Editor is required");
+            throw new Error("Monaco editor is required");
         }
 
         this.editor = editor;
@@ -84,5 +84,9 @@ export default class EditAreaAdaptor {
 
     clearEditorWarnings() {
         this.editor.clearEditorWarnings();
+    }
+
+    setEditorWarnings(warnings) {
+        this.editor.setEditorWarnings(warnings);
     }
 };

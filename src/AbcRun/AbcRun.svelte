@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
-  import AbcRender from "./AbcRender.svelte";
+  import AbcRenderer from "../AbcRenderer/AbcRenderer.svelte";
   import langdef from "./abc.lang.def.js";
   import completionItemProvider from "./abc.completion.js";
-  import EditAreaAdaptor from "./abc.editarea.adaptor.js";
+  import EditAreaAdaptor from "./abc.monaco.adaptor.js";
   import {
     createLocalStorageDebouncedSaver,
     loadFromLocalStorage,
@@ -18,13 +18,14 @@
   export let editorMiniMap = false;
   export let abcText = "";
   export let autoSave = false;
+  export let noRenderer = false;
   export let showPlayControl = false;
   export let enableMidiFileDownload = false;
   export let enablePdfFileDownload = false;
 
   let abcParams = {};
 
-  let editor;
+  let editor: MonacoEditor;
 
   $: if (editor) {
     const languageId = "abc";
@@ -62,7 +63,7 @@
     editor?.update();
   }
 
-  function handleContentChange(event) {
+  function handleContentChange(event: any) {
     abcText = event.detail.value;
     abcParams = { abcText };
     if (autoSave) {
@@ -70,7 +71,7 @@
     }
   }
 
-  function handleCursorPositionChange(event) {
+  function handleCursorPositionChange(event: any) {
     abcParams = { position: event.detail.position };
   }
 
@@ -91,17 +92,9 @@
 </script>
 
 <div class="abcrun-box">
-  <Splitter orientation="vertical" on:panelSizeChanged={handlePanelSizeChange}>
-    <AbcRender
-      slot="top"
-      {abcParams}
-      {showPlayControl}
-      {enableMidiFileDownload}
-      {enablePdfFileDownload}
-    ></AbcRender>
+  {#if noRenderer}
     <MonacoEditor
       bind:this={editor}
-      slot="bottom"
       resourcePath={editorResourcePath}
       language="abc"
       minimap={editorMiniMap}
@@ -113,7 +106,34 @@
       on:contentChange={handleContentChange}
       on:cursorPositionChange={handleCursorPositionChange}
     />
-  </Splitter>
+  {:else}
+    <Splitter
+      orientation="vertical"
+      on:panelSizeChanged={handlePanelSizeChange}
+    >
+      <AbcRenderer
+        slot="top"
+        {abcParams}
+        {showPlayControl}
+        {enableMidiFileDownload}
+        {enablePdfFileDownload}
+      ></AbcRenderer>
+      <MonacoEditor
+        bind:this={editor}
+        slot="bottom"
+        resourcePath={editorResourcePath}
+        language="abc"
+        minimap={editorMiniMap}
+        hover={true}
+        matchBrackets="near"
+        bracketPairColorization={true}
+        autoFindMatches={true}
+        on:editorInit={handleEditorInit}
+        on:contentChange={handleContentChange}
+        on:cursorPositionChange={handleCursorPositionChange}
+      />
+    </Splitter>
+  {/if}
 </div>
 
 <style lang="scss">
