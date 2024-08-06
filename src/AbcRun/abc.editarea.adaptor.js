@@ -81,4 +81,8 @@ export default class EditAreaAdaptor {
     getElem() {
         return null;
     }
+
+    clearEditorWarnings() {
+        this.editor.clearEditorWarnings();
+    }
 };
