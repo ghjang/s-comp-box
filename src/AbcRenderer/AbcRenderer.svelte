@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DataSink } from "../common/data/DataStoreAdaptor.js";
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
   import StringAdaptor from "./abc.string.adaptor.js";
@@ -14,6 +15,30 @@
   export let showPlayControl = false;
   export let enableMidiFileDownload = false;
   export let enablePdfFileDownload = false;
+
+  export function getDataSink(): DataSink {
+    interface Data {
+      detail?: {
+        abcText?: string;
+        position?: any;
+        editAreaAdaptor?: any;
+      };
+      [key: string]: any;
+    }
+
+    return new (class extends DataSink {
+      update(data: Data) {
+        const { detail } = data;
+        if (Object.keys(data).length === 0) {
+          // 완전히 '빈 객체'는 무시
+        } else if (detail) {
+          abcParams = { ...detail };
+        } else {
+          console.warn("invalid abc data: ", data);
+        }
+      }
+    })();
+  }
 
   let editAreaAdaptor: any = null;
   let abcjsEditor: any = null;

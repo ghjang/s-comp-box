@@ -63,9 +63,7 @@ L: 1/4
 K: C
 C D E F | G A B c | c B A G | F E D C |`,
                     autoSave: false,
-                    showPlayControl: true,
-                    enableMidiFileDownload: true,
-                    enablePdfFileDownload: true
+                    noRenderer: true
                 }
             },
             {

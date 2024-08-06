@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import AbcRenderer from "../AbcRenderer/AbcRenderer.svelte";
+  import DataStore from "../DataStore/DataStore.svelte";
   import langdef from "./abc.lang.def.js";
   import completionItemProvider from "./abc.completion.js";
   import EditAreaAdaptor from "./abc.monaco.adaptor.js";
@@ -10,6 +11,7 @@
     createLocalStorageDebouncedSaver,
     loadFromLocalStorage,
   } from "./storage.js";
+  import { data } from "autoprefixer";
 
   const localStorageKey = "abcText";
   const saveToLocalStorage = createLocalStorageDebouncedSaver(localStorageKey);
@@ -23,9 +25,23 @@
   export let enableMidiFileDownload = false;
   export let enablePdfFileDownload = false;
 
+  export const getDataStore = () => dataStore;
+
+  export const update = async (focus = false) => {
+    if (editor) {
+      await tick();
+      editor.layout(true);
+      if (focus) {
+        editor.focus();
+      }
+    }
+  };
+
   let abcParams = {};
 
   let editor: MonacoEditor;
+  let editAreaAdaptor: EditAreaAdaptor;
+  let dataStore: DataStore;
 
   $: if (editor) {
     const languageId = "abc";
@@ -43,10 +59,9 @@
   function handleEditorInit() {
     if (abcText) {
       editor.setText(abcText);
-      abcParams = {
-        abcText,
-        editAreaAdaptor: new EditAreaAdaptor(editor),
-      };
+      editAreaAdaptor = new EditAreaAdaptor(editor);
+      abcParams = { abcText, editAreaAdaptor };
+      dataStore?.set(abcParams);
     }
   }
 
@@ -66,6 +81,7 @@
   function handleContentChange(event: any) {
     abcText = event.detail.value;
     abcParams = { abcText };
+    dataStore?.set({ ...abcParams, editAreaAdaptor });
     if (autoSave) {
       saveToLocalStorage(abcText);
     }
@@ -73,6 +89,7 @@
 
   function handleCursorPositionChange(event: any) {
     abcParams = { position: event.detail.position };
+    dataStore?.set({ ...abcParams, editAreaAdaptor });
   }
 
   onMount(() => {
@@ -106,6 +123,7 @@
       on:contentChange={handleContentChange}
       on:cursorPositionChange={handleCursorPositionChange}
     />
+    <DataStore bind:this={dataStore} />
   {:else}
     <Splitter
       orientation="vertical"
