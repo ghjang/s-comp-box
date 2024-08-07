@@ -11,7 +11,6 @@
     createLocalStorageDebouncedSaver,
     loadFromLocalStorage,
   } from "./storage.js";
-  import { data } from "autoprefixer";
 
   const localStorageKey = "abcText";
   const saveToLocalStorage = createLocalStorageDebouncedSaver(localStorageKey);
