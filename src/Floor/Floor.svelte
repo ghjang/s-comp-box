@@ -36,6 +36,8 @@
   export const getCurrentChildComponentInfo = () =>
     floorChild?.getChildComponentInfo();
 
+  export const update = (focus = false) => floorChild?.update(focus);
+
   let contextMenu;
   let floorContainer;
   let floorChild;

@@ -5,7 +5,7 @@
 <svelte:options customElement="s-splitter" accessors />
 
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import SplitterH from "./SplitterH.svelte";
   import SplitterV from "./SplitterV.svelte";
   import {
@@ -185,6 +185,9 @@
     } else if (orientation === "vertical") {
       panel_0_length = `${event.detail.panel_0.height}px`;
     }
+
+    this_component_0?.update?.();
+    this_component_1?.update?.();
   }
 
   /**

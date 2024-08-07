@@ -25,6 +25,8 @@
   export let childComponentInfo = null;
   export let menuItems = [];
 
+  export const update = (focus = false) => childComponent?.update?.(focus);
+
   const contextName = "floor-context";
   const getContextInitOptions = () => ({
     floorLevel,
