@@ -18,12 +18,11 @@
   export function subscribe(dataSink: DataSink): SubscribeReturnType {
     const unsubscribe = dataStore.subscribe(dataSink);
     ++_subscriberCount;
-    const f = () => {
+    dataSink.unsubscribe = () => {
       unsubscribe();
       --_subscriberCount;
     };
-    dataSink.unsubscribe = f;
-    return f;
+    return dataSink.unsubscribe;
   }
 
   export function set(data: object): SetReturnType {
