@@ -52,7 +52,7 @@
     {
         "component": {
             "name": "PyRun",
-            "customElementName": "s-pyrun",
+            "componentClassName": "PyRun",
             "description": "PyRun",
             "props": {
                 "pyodideIndexURL": "/build/dev/vendor/pyodide",

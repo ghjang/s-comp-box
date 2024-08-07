@@ -9,7 +9,7 @@
 
   import { onMount } from "svelte";
   import { preventOverscroll } from "../common/action/preventOverscroll.js";
-  import { DataProps, DataSink } from "../common/data/DataStoreAdaptor";
+  import { DataProps, DataSink } from "../common/data/DataStore";
 
   export let height = "100%";
   export let fontSize = "0.5em";

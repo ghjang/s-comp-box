@@ -18,6 +18,7 @@ export class FloorContext {
                 maxLevel: 0,
                 updateReason: null,
                 targetFloorId: null,
+                dataSink: null,
                 replaceIdMap: new Map(),
                 designMode: !!props.designMode,
                 childComponentInfo: null,
@@ -142,7 +143,11 @@ export class FloorContext {
     }
 
     linkDataStore(dataSink) {
-        console.log("linkDataStore", dataSink);
+        this.#contextStore.update((value) => {
+            value.updateReason = "linkDataStore";
+            value.dataSink = dataSink;
+            return value;
+        });
     }
 
     // context: '#contextStore'에 저장된 '공유 컨텍스트 객체'
@@ -183,6 +188,9 @@ export class FloorContext {
                 replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloodId);
                 this.#props.floorId = orgFloodId;
             }
+        } else if (context.updateReason === "linkDataStore") {
+            const dataSink = context.dataSink;
+            this.#props.dispatch("linkDataStore", { dataSink });
         } else {
             /*
             console.log(

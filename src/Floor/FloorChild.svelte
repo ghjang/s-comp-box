@@ -58,7 +58,7 @@
 
   $: if (childComponent) {
     registerCustomEvents();
-    linkDataStore();
+    tryToLinkThisToDataStore();
   } else {
     childCustomEventsRegister?.unregister();
     childCustomEventsRegister = null;
@@ -76,6 +76,16 @@
   export const highlight = (targetFloorId) => context?.highlight(targetFloorId);
   export const removeComponent = (targetFloorId) =>
     context?.removeComponent(targetFloorId);
+
+  export function tryToLinkDataSink(dataSink) {
+    if (childComponent && childComponent.getDataStore) {
+      const dataStore = childComponent.getDataStore();
+      const dataProps = dataStore.dataProps;
+      if (dataSink.isCompatible(dataProps)) {
+        dataStore.subscribe(dataSink);
+      }
+    }
+  }
 
   function registerCustomEvents() {
     childCustomEventsRegister = new CustomEventsRegister(
@@ -109,7 +119,7 @@
     );
   }
 
-  function linkDataStore() {
+  function tryToLinkThisToDataStore() {
     if (childComponent && childComponent.getDataSink) {
       const dataSink = childComponent.getDataSink();
       context?.linkDataStore(dataSink);

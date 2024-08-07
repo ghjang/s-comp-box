@@ -9,7 +9,7 @@ if (window.location.protocol === 'chrome-extension:') {
     urlPrefix = '/s-comp';
 }
 
-const url = `${urlPrefix}/test/PyRun/PyRun.custom.html`;
+const url = `${urlPrefix}/test/PyRun/PyRun.html`;
 
 const webView = new WebView({
     target: document.getElementById('container'),

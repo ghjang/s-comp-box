@@ -1,5 +1,3 @@
-<svelte:options customElement="s-pyrun" />
-
 <script>
   import { onMount, tick } from "svelte";
   import Pyodide from "./Pyodide.svelte";

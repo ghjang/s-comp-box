@@ -100,7 +100,8 @@ if (tabComponents?.length > 0) {
     let dataStore = noConsolePyRun.getDataStore?.();
     let dataSink = console.getDataSink?.();
 
-    unsubscribes.push(dataStore?.subscribe(dataSink));
+    dataStore?.subscribe(dataSink);
+    unsubscribes.push(dataSink.linkedDataStoreInfos[0].unsubscribe);
 
     const abcRun = tabComponents[4];
     const abcRenderer = tabComponents[5];
@@ -108,7 +109,8 @@ if (tabComponents?.length > 0) {
     dataStore = abcRun.getDataStore?.();
     dataSink = abcRenderer.getDataSink?.();
 
-    unsubscribes.push(dataStore?.subscribe(dataSink));
+    dataStore?.subscribe(dataSink);
+    unsubscribes.push(dataSink.linkedDataStoreInfos[0].unsubscribe);
 }
 
 

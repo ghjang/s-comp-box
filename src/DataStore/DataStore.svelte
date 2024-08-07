@@ -2,11 +2,11 @@
 
 <script lang="ts">
   import {
-    DataStore,
-    DataStoreAdaptor,
-    DataSink,
     DataProps,
-  } from "../common/data/DataStoreAdaptor";
+    DataSink,
+    DataStore,
+    DefaultDataStore,
+  } from "../common/data/DataStore";
 
   let _subscriberCount = 0;
   export const subscriberCount = () => _subscriberCount;
@@ -16,14 +16,11 @@
   let dataStore: DataStore;
 
   $: if (dataProps) {
-    dataStore = new DataStoreAdaptor(dataProps);
+    dataStore = new DefaultDataStore(dataProps);
     _subscriberCount = 0;
   }
 
-  type SubscribeReturnType = ReturnType<typeof dataStore.subscribe>;
-  type SetReturnType = ReturnType<typeof dataStore.set>;
-
-  export function subscribe(dataSink: DataSink): SubscribeReturnType {
+  export function subscribe(dataSink: DataSink): void {
     if (
       maxSubscriberCount !== undefined &&
       _subscriberCount >= maxSubscriberCount
@@ -33,16 +30,11 @@
       );
     }
 
-    const unsubscribe = dataStore.subscribe(dataSink);
+    dataStore.subscribe(dataSink, () => --_subscriberCount);
     ++_subscriberCount;
-    dataSink.unsubscribe = () => {
-      unsubscribe();
-      --_subscriberCount;
-    };
-    return dataSink.unsubscribe;
   }
 
-  export function set(data: object): SetReturnType {
+  export function set(data: object): void {
     dataStore.set({
       subscriberCount: _subscriberCount,
       dataProps,

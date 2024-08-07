@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DataProps, DataSink } from "../common/data/DataStoreAdaptor.js";
+  import { DataProps, DataSink } from "../common/data/DataStore";
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
   import StringAdaptor from "./abc.string.adaptor.js";
@@ -66,7 +66,7 @@
     }
 
     if (params.abcText) {
-      if (editAreaAdaptor.isStringAdaptor) {
+      if (editAreaAdaptor?.isStringAdaptor) {
         editAreaAdaptor.setString(params.abcText);
       }
       renderAbc();

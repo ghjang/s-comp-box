@@ -158,6 +158,11 @@
     highlighted = floorId === event.detail.floorId;
   }
 
+  function handleLinkDataStore(event) {
+    const dataSink = event.detail.dataSink;
+    floorChild.tryToLinkDataSink(dataSink);
+  }
+
   function handlePanelSwapButtonClick(slot) {
     treeViewSlot = slot;
     if (panelSize.panel_0) {
@@ -266,6 +271,7 @@
         {childComponentInfo}
         {menuItems}
         on:highlightFloor={handleHighlightFloor}
+        on:linkDataStore={handleLinkDataStore}
         on:loadFloorChildComponent={handleLoadFloorChildComponent}
         on:queryContainerInfo
       />
