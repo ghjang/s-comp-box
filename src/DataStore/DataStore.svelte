@@ -7,7 +7,8 @@
     DataSink,
   } from "../common/data/DataStoreAdaptor";
 
-  export let subscriberCount = 0;
+  let _subscriberCount = 0;
+  export const subscriberCount = () => _subscriberCount;
 
   const dataStore: DataStore = new DataStoreAdaptor();
 
@@ -16,13 +17,18 @@
 
   export function subscribe(dataSink: DataSink): SubscribeReturnType {
     const unsubscribe = dataStore.subscribe(dataSink);
-    ++subscriberCount;
-    return unsubscribe;
+    ++_subscriberCount;
+    const f = () => {
+      unsubscribe();
+      --_subscriberCount;
+    };
+    dataSink.unsubscribe = f;
+    return f;
   }
 
   export function set(data: object): SetReturnType {
     dataStore.set({
-      subscriberCount,
+      subscriberCount: _subscriberCount,
       detail: data,
     });
   }
