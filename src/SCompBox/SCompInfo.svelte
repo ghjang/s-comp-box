@@ -19,7 +19,7 @@
           componentClass: Splitter,
           componentClassName: "Splitter",
           customElementName: "s-splitter",
-          description: "Horizontal Splitter",
+          description: "Splitter(Horizontal)",
           props: {
             orientation: "horizontal",
             component_0: {
@@ -47,7 +47,7 @@
           componentClass: Splitter,
           componentClassName: "Splitter",
           customElementName: "s-splitter",
-          description: "Vertical Splitter",
+          description: "Splitter(Vertical)",
           props: {
             orientation: "vertical",
             component_0: {

@@ -96,7 +96,15 @@
           context.clearReplaceIdMap();
 
           const detail = bubble.forwardingDetail;
-          childComponentInfo.props.orientation = detail.orientation;
+          const orientation = detail.orientation;
+          childComponentInfo.props.orientation = orientation;
+          if (orientation === "horizontal") {
+            childComponentInfo.componentNodeName = "Splitter(Horizontal)";
+          } else if (orientation === "vertical") {
+            childComponentInfo.componentNodeName = "Splitter(Vertical)";
+          } else {
+            console.warn(`invalid orientation: ${orientation}`);
+          }
           childComponentInfo = { ...childComponentInfo };
         } else if (eventName === "splitterPanelSwapped") {
           context.clearReplaceIdMap();
