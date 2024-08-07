@@ -258,15 +258,16 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
                 throw new Error("Component name is required.");
             }
 
-            node.name = compName;
-            node.children = [];
-
             if (compName === "Splitter") {
                 childComponentInfo.props = {
                     ...childComponentInfo.props,
                     showPanelControl: isDesignMode,
                 };
             }
+
+            const compNodeName = childComponentInfo.componentNodeName || compName;
+            node.name = compNodeName;
+            node.children = [];
 
             return true;
         }

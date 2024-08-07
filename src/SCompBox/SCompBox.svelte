@@ -166,6 +166,7 @@
                 componentClass: comp.componentClass,
                 componentClassName: comp.componentClassName,
                 customElementName: comp.customElementName,
+                componentNodeName: comp.description,
                 props,
               };
             },

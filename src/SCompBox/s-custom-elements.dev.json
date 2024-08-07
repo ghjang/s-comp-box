@@ -1,6 +1,27 @@
 [
     {
         "component": {
+            "name": "AbcRenderer",
+            "componentClassName": "AbcRenderer",
+            "description": "Abc Render",
+            "props": {
+            }
+        }
+    },
+    {
+        "component": {
+            "name": "AbcRun",
+            "componentClassName": "AbcRun",
+            "description": "Abc Editor",
+            "props": {
+                "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
+                "autoSave": false,
+                "noRenderer": true
+            }
+        }
+    },
+    {
+        "component": {
             "name": "AbcRun",
             "componentClassName": "AbcRun",
             "description": "AbcRun",
@@ -11,6 +32,11 @@
                 "enableMidiFileDownload": true,
                 "enablePdfFileDownload": true
             }
+        }
+    },
+    {
+        "divider": {
+            "style": {}
         }
     },
     {
