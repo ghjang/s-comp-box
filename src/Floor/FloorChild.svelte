@@ -58,6 +58,7 @@
 
   $: if (childComponent) {
     registerCustomEvents();
+    linkDataStore();
   } else {
     childCustomEventsRegister?.unregister();
     childCustomEventsRegister = null;
@@ -106,6 +107,13 @@
         }
       }
     );
+  }
+
+  function linkDataStore() {
+    if (childComponent && childComponent.getDataSink) {
+      const dataSink = childComponent.getDataSink();
+      context?.linkDataStore(dataSink);
+    }
   }
 
   function setChildComponentInfo() {

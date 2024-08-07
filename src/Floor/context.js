@@ -141,6 +141,10 @@ export class FloorContext {
         ctx.replaceIdMap.clear();
     }
 
+    linkDataStore(dataSink) {
+        console.log("linkDataStore", dataSink);
+    }
+
     // context: '#contextStore'에 저장된 '공유 컨텍스트 객체'
     #updateFloorState(context) {
         if (context.updateReason === "componentTreeChange") {

@@ -1,6 +1,6 @@
 interface DownloadParams {
     abcjs: any;
-    visualObj: any;
+    visualObj?: any;
     abcjsEditor: any;
   }
   

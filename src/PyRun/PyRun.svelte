@@ -94,7 +94,7 @@
         } else {
           console.error(msg);
         }
-      }
+      },
     };
   }
 </script>
@@ -116,7 +116,10 @@
       bind:this={editor}
       on:runCode={handleRunCodeFromEditor}
     />
-    <DataStore bind:this={dataStore} />
+    <DataStore
+      bind:this={dataStore}
+      dataProps={{ sourceComponentName: "PyRun" }}
+    />
   {:else}
     <Splitter
       orientation="vertical"

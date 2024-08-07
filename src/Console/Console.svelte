@@ -9,7 +9,7 @@
 
   import { onMount } from "svelte";
   import { preventOverscroll } from "../common/action/preventOverscroll.js";
-  import { DataSink } from "../common/data/DataStoreAdaptor";
+  import { DataProps, DataSink } from "../common/data/DataStoreAdaptor";
 
   export let height = "100%";
   export let fontSize = "0.5em";
@@ -32,6 +32,10 @@
     }
 
     return new (class extends DataSink {
+      isCompatible(props: DataProps): boolean {
+        return props.sourceComponentName === "PyRun";
+      }
+
       update(data: Data) {
         const { detail } = data;
         if (Object.keys(data).length === 0) {

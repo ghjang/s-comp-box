@@ -122,7 +122,10 @@
       on:contentChange={handleContentChange}
       on:cursorPositionChange={handleCursorPositionChange}
     />
-    <DataStore bind:this={dataStore} />
+    <DataStore
+      bind:this={dataStore}
+      dataProps={{ sourceComponentName: "AbcRun" }}
+    />
   {:else}
     <Splitter
       orientation="vertical"

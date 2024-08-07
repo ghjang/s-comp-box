@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DataSink } from "../common/data/DataStoreAdaptor.js";
+  import { DataProps, DataSink } from "../common/data/DataStoreAdaptor.js";
   import abcjs from "../../vendor/abcjs/dist/abcjs.bundle.js";
   import { downloadMidiFile, downloadPdfFile } from "./abc.download.js";
   import StringAdaptor from "./abc.string.adaptor.js";
@@ -27,6 +27,10 @@
     }
 
     return new (class extends DataSink {
+      isCompatible(props: DataProps): boolean {
+        return props.sourceComponentName === "AbcRun";
+      }
+
       update(data: Data) {
         const { detail } = data;
         if (Object.keys(data).length === 0) {
