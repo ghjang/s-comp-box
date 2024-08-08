@@ -223,3 +223,19 @@ export const updateMenuItemsInProps = (obj, floorMenuItems) => {
     }
     return updatedObject;
 };
+
+export const updateFloorChildComponentProps = async (floorId, props) => {
+    const db = await openDatabase();
+    const transaction = db.transaction('floors', 'readwrite');
+    const store = transaction.objectStore('floors');
+    const request = store.get(floorId);
+    const floorData = await promisifyRequest(request);
+
+    if (floorData && floorData.childComponentInfo) {
+        floorData.childComponentInfo.props
+            = { ...(floorData.childComponentInfo.props || {}), ...props };
+        await promisifyRequest(store.put(floorData));
+    }
+
+    await promisifyTransaction(transaction);
+};

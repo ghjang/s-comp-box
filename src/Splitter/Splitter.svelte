@@ -34,6 +34,7 @@
   export let customEvents = [
     "splitterOrientationChanged",
     "splitterPanelSwapped",
+    "splitterPanelSizeChanged",
   ];
 
   export const toggleOrientation = () => {
@@ -74,27 +75,27 @@
     component_0 = { ...component_1 };
     component_1 = { ...temp };
 
-    dispatch("splitterPanelSwapped", { 
-      component_0 : {
+    dispatch("splitterPanelSwapped", {
+      component_0: {
         before: {
           componentInfo: component_1,
-          componentInstance: this_component_1
+          componentInstance: this_component_1,
         },
         after: {
           componentInfo: component_0,
-          componentInstance: this_component_0
-        }
+          componentInstance: this_component_0,
+        },
       },
-      component_1 : {
+      component_1: {
         before: {
           componentInfo: component_0,
-          componentInstance: this_component_0
+          componentInstance: this_component_0,
         },
         after: {
           componentInfo: component_1,
-          componentInstance: this_component_1
-        }
-      }
+          componentInstance: this_component_1,
+        },
+      },
     });
   };
 
@@ -188,6 +189,12 @@
 
     this_component_0?.update?.();
     this_component_1?.update?.();
+
+    dispatch("splitterPanelSizeChanged", {
+      orientation,
+      panel_0_length,
+      splitterSize: event.detail.container,
+    });
   }
 
   /**

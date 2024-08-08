@@ -11,7 +11,9 @@ export function resizeObserver(panel_0, params) {
     const debouncedHandler = debounce((entries) => {
         const entry = entries[0];
         if (entry.target === panel_0 || entry.target === panel_1) {
+            const container = (panel_0 || panel_1).parentElement.getBoundingClientRect();
             const panelSizeInfo = {
+                container,
                 panel_0: panel_0.getBoundingClientRect(),
                 panel_1: panel_1?.getBoundingClientRect(),
             };

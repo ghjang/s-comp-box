@@ -1,5 +1,5 @@
 <script>
-  import { tick } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import Splitter from "../Splitter/Splitter.svelte";
   import TreeView from "../TreeView/TreeView.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
@@ -9,12 +9,17 @@
   import { restoreUnserializableProperties as restoreComponentClass } from "../common/serialization.js";
   import { updateMenuItemsInProps } from "./persistency.js";
 
+  const dispatch = createEventDispatcher();
+
   export let menuItems = [];
   export let childComponentInfo = null;
   export let pattern = "honeycomb";
   export let defaultActionHandler = null;
   export let componentScriptBasePath = "";
+
   export let designMode = false;
+  export let panel_0_length = "20%";
+  export let treeViewSlot = "left";
 
   export let floorLevel = -1;
   export let floorId = crypto.randomUUID();
@@ -49,9 +54,7 @@
   let popUpProps = {};
 
   let panelSize = {};
-  let panel_0_length = "20%";
   let showPanelControl = { toggleOrientaionButton: false };
-  let treeViewSlot = "left";
 
   let highlighted = false;
 
@@ -165,11 +168,28 @@
     floorChild.tryToLinkDataSink(dataSink);
   }
 
+  function handlePanelSizeChanged(event) {
+    panelSize = event.detail;
+
+    dispatch("designModeLayoutChanged", {
+      treeViewSlot,
+      splitterSize: panelSize.container,
+      panel_0_length: `${panelSize.panel_0.width}px`,
+    });
+  }
+
+  // NOTE: 'designMode=true'에서만 호출된다.
   function handlePanelSwapButtonClick(slot) {
     treeViewSlot = slot;
     if (panelSize.panel_0) {
       panel_0_length = `${panelSize.panel_0.width}px`;
     }
+
+    dispatch("designModeLayoutChanged", {
+      treeViewSlot,
+      splitterSize: panelSize.container,
+      panel_0_length,
+    });
   }
 
   async function handleLoadFloorChildComponent(event) {
@@ -195,7 +215,7 @@
         orientation="horizontal"
         {panel_0_length}
         {showPanelControl}
-        on:panelSizeChanged={(e) => (panelSize = e.detail)}
+        on:panelSizeChanged={(e) => handlePanelSizeChanged(e)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
         <TreeView

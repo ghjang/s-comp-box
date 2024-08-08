@@ -15,8 +15,11 @@
   export let customCompJsBundleBasePath;
 
   let menuItems = [];
-  let designMode = true;
   let isMenuItemsLoaded = false;
+
+  let designMode = true;
+  let panel_0_length = "20%";
+  let treeViewSlot = "left";
 
   let sCompInfo;
 
@@ -204,12 +207,38 @@
   function restoreSettings() {
     const settings = loadSettings();
 
+    // designMode
     if (settings.designMode !== undefined) {
       designMode = settings.designMode;
     } else {
       settings.designMode = designMode;
     }
-    
+
+    // panel_0_length
+    if (settings.panel_0_length !== undefined) {
+      if (settings.splitterSize) {
+        const last_panel_0_width = parseInt(settings.panel_0_length);
+        const splitterWidth = settings.splitterSize.width;
+        const percent = (last_panel_0_width / splitterWidth) * 100;
+        panel_0_length = `${percent}%`;
+      } else {
+        panel_0_length = settings.panel_0_length;
+      }
+    }
+
+    // treeViewSlot
+    if (settings.treeViewSlot !== undefined) {
+      treeViewSlot = settings.treeViewSlot;
+    }
+
+    saveSettings(settings);
+  }
+
+  function handleDesignModeLayoutChanged(event) {
+    const settings = loadSettings();
+    settings.treeViewSlot = event.detail.treeViewSlot ?? treeViewSlot;
+    settings.splitterSize = event.detail.splitterSize ?? null;
+    settings.panel_0_length = event.detail.panel_0_length ?? panel_0_length;
     saveSettings(settings);
   }
 
@@ -232,7 +261,10 @@
   <Floor
     {menuItems}
     {designMode}
+    {panel_0_length}
+    {treeViewSlot}
     componentScriptBasePath={compJsBundleBasePath}
+    on:designModeLayoutChanged={handleDesignModeLayoutChanged}
   />
 {:else}
   <div>Loading...</div>

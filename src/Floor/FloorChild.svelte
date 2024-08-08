@@ -12,6 +12,7 @@
     saveFloor,
     swapFloorData,
     updateMenuItemsInProps,
+    updateFloorChildComponentProps as updateFloorProps,
   } from "./persistency.js";
 
   const dispatch = createEventDispatcher();
@@ -96,37 +97,61 @@
       (eventName, bubble) => {
         if (eventName === "splitterOrientationChanged") {
           context.clearReplaceIdMap();
-
-          const detail = bubble.forwardingDetail;
-          const orientation = detail.orientation;
-          childComponentInfo.props.orientation = orientation;
-          if (orientation === "horizontal") {
-            childComponentInfo.componentNodeName = "Splitter(Horizontal)";
-          } else if (orientation === "vertical") {
-            childComponentInfo.componentNodeName = "Splitter(Vertical)";
-          } else {
-            console.warn(`invalid orientation: ${orientation}`);
-          }
-          childComponentInfo = { ...childComponentInfo };
+          handleSplitterOrientationChanged(bubble);
         } else if (eventName === "splitterPanelSwapped") {
           context.clearReplaceIdMap();
-
-          const detail = bubble.forwardingDetail;
-          const componentInstance_0 =
-            detail.component_0.after.componentInstance;
-          const componentInstance_1 =
-            detail.component_1.after.componentInstance;
-
-          const id_0 = componentInstance_0.getFloorId();
-          const id_1 = componentInstance_1.getFloorId();
-          swapFloorData(id_0, id_1, cleanProps(childComponentInfo));
-          childComponentInfo = null;
-          loadChildComponentInfo();
+          handleSplitterPanelSwapped(bubble);
+        } else if (eventName === "splitterPanelSizeChanged") {
+          handleSplitterPanelSizeChanged(bubble);
         } else {
           console.warn(`unhandled event: ${eventName}`);
         }
       }
     );
+
+    function handleSplitterOrientationChanged(bubble) {
+      const detail = bubble.forwardingDetail;
+      const orientation = detail.orientation;
+      childComponentInfo.props.orientation = orientation;
+      if (orientation === "horizontal") {
+        childComponentInfo.componentNodeName = "Splitter(Horizontal)";
+      } else if (orientation === "vertical") {
+        childComponentInfo.componentNodeName = "Splitter(Vertical)";
+      } else {
+        console.warn(`invalid orientation: ${orientation}`);
+      }
+      childComponentInfo = { ...childComponentInfo };
+    }
+
+    function handleSplitterPanelSwapped(bubble) {
+      const detail = bubble.forwardingDetail;
+      const componentInstance_0 = detail.component_0.after.componentInstance;
+      const componentInstance_1 = detail.component_1.after.componentInstance;
+
+      const id_0 = componentInstance_0.getFloorId();
+      const id_1 = componentInstance_1.getFloorId();
+      swapFloorData(id_0, id_1, cleanProps(childComponentInfo));
+      childComponentInfo = null;
+      loadChildComponentInfo();
+    }
+
+    function handleSplitterPanelSizeChanged(bubble) {
+      const detail = bubble.forwardingDetail;
+      const { orientation, panel_0_length, splitterSize } = detail;
+      if (childComponentInfo && panel_0_length) {
+        if (orientation && splitterSize) {
+          const last_panel_0_length = parseInt(panel_0_length);
+          const splitterLength =
+            orientation === "horizontal"
+              ? splitterSize.width
+              : splitterSize.height;
+          const percent = (last_panel_0_length / splitterLength) * 100;
+          updateFloorProps(floorId, { panel_0_length: `${percent}%` });
+        } else {
+          updateFloorProps(floorId, { panel_0_length });
+        }
+      }
+    }
   }
 
   function tryToLinkThisToDataStore() {
