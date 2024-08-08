@@ -185,11 +185,37 @@
     ) {
       event.preventDefault();
       designMode = !designMode;
+
+      const settings = loadSettings();
+      settings.designMode = designMode;
+      saveSettings(settings);
     }
+  }
+
+  function loadSettings() {
+    const settings = localStorage.getItem("SCompBox_settings");
+    return settings ? JSON.parse(settings) : {};
+  }
+
+  function saveSettings(settings) {
+    localStorage.setItem("SCompBox_settings", JSON.stringify(settings));
+  }
+
+  function restoreSettings() {
+    const settings = loadSettings();
+
+    if (settings.designMode !== undefined) {
+      designMode = settings.designMode;
+    } else {
+      settings.designMode = designMode;
+    }
+    
+    saveSettings(settings);
   }
 
   onMount(() => {
     document.addEventListener("keydown", handleKeyDown);
+    restoreSettings();
   });
   onDestroy(() => {
     document.removeEventListener("keydown", handleKeyDown);
