@@ -26,6 +26,7 @@
         const itemCopy = { ...item };
         itemCopy.component = "TabButton";
         itemCopy.tabPosition = tabPosition;
+        delete itemCopy.componentClassName;
         delete itemCopy.props;
 
         if (itemCopy.label === undefined) {
