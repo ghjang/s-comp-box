@@ -56,7 +56,7 @@
     },
     {
         "name": "MonacoEditor",
-        "data": "MonacoEditor/MonacoEditor.custom.html"
+        "data": "MonacoEditor/MonacoEditor.html"
     },
     {
         "name": "PdfViewer",

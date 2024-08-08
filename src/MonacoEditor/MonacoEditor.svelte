@@ -1,5 +1,3 @@
-<svelte:options customElement="s-monaco-editor" />
-
 <script>
   import { onDestroy, createEventDispatcher, tick } from "svelte";
   import {
@@ -224,18 +222,6 @@
         dispatch("runCode", { value: ed.getValue() });
       },
     });
-
-    const slotElem = container.querySelector("slot");
-    if (slotElem) {
-      const firstCodeElem = slotElem
-        .assignedNodes()
-        .find((node) => node.nodeName === "CODE");
-
-      if (firstCodeElem) {
-        const codeText = firstCodeElem.textContent;
-        setText(codeText, true);
-      }
-    }
   }
 
   $: if (editorContainer) {

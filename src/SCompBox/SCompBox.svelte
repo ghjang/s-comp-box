@@ -1,5 +1,3 @@
-<svelte:options customElement="s-comp-box" />
-
 <script>
   import { onMount, onDestroy } from "svelte";
   import {
