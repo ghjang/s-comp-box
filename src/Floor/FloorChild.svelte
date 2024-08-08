@@ -164,7 +164,7 @@
   function setChildComponentInfo() {
     context?.updateChildComponentTreeData(childComponentInfo);
 
-    const cleanedData = cleanProps(childComponentInfo);
+    const cleanedData = cleanProps(childComponentInfo, (key) => key !== "menuItems");
 
     if (floorLevel === 0) {
       saveFloor({

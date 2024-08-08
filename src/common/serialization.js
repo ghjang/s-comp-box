@@ -1,12 +1,12 @@
-export const removeUnserializableProperties = (obj, printLog = false, keyPath = []) => {
+export const removeUnserializableProperties = (obj, keyPredicate = (key) => true, printLog = false, keyPath = []) => {
     if (obj === null || typeof obj !== 'object') {
         return obj;
     }
 
     if (Array.isArray(obj)) {
-        return obj.map((item, index) => {
-            removeUnserializableProperties(item, printLog, keyPath.concat(`[${index}]`))
-        });
+        return obj.map((item, index) =>
+            removeUnserializableProperties(item, keyPredicate, printLog, keyPath.concat(`[${index}]`))
+        );
     }
 
     const plainObject = {};
@@ -21,7 +21,13 @@ export const removeUnserializableProperties = (obj, printLog = false, keyPath = 
 
                 plainObject[key] = `removed: ${value.name}`;
             } else {
-                plainObject[key] = removeUnserializableProperties(value, printLog, keyPath.concat(key));
+                if (keyPredicate(key)) {
+                    plainObject[key] = removeUnserializableProperties(value, keyPredicate, printLog, keyPath.concat(key));
+                } else if (Array.isArray(value)) {
+                    plainObject[key] = [];
+                } else if (typeof value === 'object') {
+                    plainObject[key] = null;
+                }
             }
         }
     }
@@ -35,9 +41,9 @@ export const restoreUnserializableProperties = async (obj, scriptBase, printLog 
     }
 
     if (Array.isArray(obj)) {
-        return Promise.all(obj.map((item, index) => {
-            return restoreUnserializableProperties(item, scriptBase, printLog, keyPath.concat(`[${index}]`));
-        }));
+        return Promise.all(obj.map((item, index) =>
+            restoreUnserializableProperties(item, scriptBase, printLog, keyPath.concat(`[${index}]`))
+        ));
     }
 
     const restoredObject = {};
