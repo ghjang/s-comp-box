@@ -30,8 +30,6 @@
 
   // NOTE: 탭 컴포넌트가 '추가, 삭제'될 경우에도 실행됨.
   $: if (tabs.length === tabComponents.length) {
-    console.log("tabComponents", tabComponents);
-
     customEventsRegisters.forEach((register) => register?.unregister?.());
     customEventsRegisters = [];
 
