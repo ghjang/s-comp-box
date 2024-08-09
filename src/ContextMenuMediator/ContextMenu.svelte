@@ -251,6 +251,7 @@
         background: none;
         border: none;
         cursor: pointer;
+        user-select: none;
 
         &:hover {
           background-color: $context-menu-hover-background-color;

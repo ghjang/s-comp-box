@@ -27,6 +27,8 @@
   export const customEvents = ["queryContainerInfo"];
 
   export const getFloorId = () => floorId;
+  export const getComponentScriptBasePath = () => componentScriptBasePath;
+  export const getMenuItems = () => menuItems;
 
   export const getAvailableFloorPatterns = () => [
     "honeycomb",
@@ -161,6 +163,14 @@
     }
 
     highlighted = floorId === event.detail.floorId;
+
+    if (highlighted) {
+      floorContainer.addEventListener(
+        "animationend",
+        () => (highlighted = false),
+        { once: true }
+      );
+    }
   }
 
   function handleLinkDataStore(event) {

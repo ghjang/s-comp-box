@@ -270,7 +270,7 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
                 throw new Error("Component name is required.");
             }
 
-            if (compName === "Splitter") {
+            if (compName === "Splitter" || compName === "Tab") {
                 childComponentInfo.props = {
                     ...childComponentInfo.props,
                     showContentControl: isDesignMode,

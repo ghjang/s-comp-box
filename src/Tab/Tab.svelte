@@ -2,6 +2,7 @@
 
 <script>
   import { createEventDispatcher } from "svelte";
+  import Floor from "../Floor/Floor.svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
   import TabButtonGroup from "./TabButtonGroup.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
@@ -141,9 +142,70 @@
   }
 
   function handleTabsContextMenu(event) {
+    if (!contextMenu) {
+      return;
+    }
+
+    // NOTE: 최소 1개의 탭은 있다.
+    const firstTabComponent = tabComponents[0];
+    if (!firstTabComponent) {
+      return;
+    }
+
+    menuItems = [];
+
+    // 'Floor' 컴포넌트를 이미 사용하고 있는 경우만 'Add New Tab' 메뉴 추가
+    if (typeof firstTabComponent.getComponentScriptBasePath == "function") {
+      const scriptBasePath = firstTabComponent.getComponentScriptBasePath();
+      const items = firstTabComponent.getMenuItems();
+      menuItems.push(
+        {
+          action: {
+            text: "Add New Tab",
+            handler: () => {
+              tabs = [
+                ...tabs,
+                {
+                  label: "Tab 1",
+                  component: Floor,
+                  componentClassName: "Floor",
+                  props: {
+                    componentScriptBasePath: scriptBasePath,
+                    menuItems: items,
+                  },
+                },
+              ];
+
+              selectedTabIndex = tabs.length - 1;
+            },
+          },
+        },
+        {
+          divider: { style: {} },
+        }
+      );
+    }
+
+    // '탭 위치' 변경 메뉴 항목 추가
+    const tabPositions = ["top", "bottom", "left", "right"];
+    tabPositions.forEach((position) => {
+      menuItems.push({
+        action: {
+          text: `${position}`,
+          checked: tabPosition === position,
+          handler: () => (tabPosition = position),
+        },
+      });
+    });
+
+    contextMenu.showContextMenu(event, true, { parentBox: tabView });
   }
 
   function handleMenuItemClicked(event) {
+    const { action } = event.detail;
+    if (action && typeof action.handler === "function") {
+      action.handler();
+    }
   }
 </script>
 
@@ -161,7 +223,10 @@
     vAlign={tabVAlign}
     reverse={tabReverse}
   >
-    <div class="tabs" on:contextmenu|stopPropagation={handleTabsContextMenu}>
+    <div
+      class="tabs"
+      on:contextmenu|preventDefault|stopPropagation={handleTabsContextMenu}
+    >
       <TabButtonGroup
         {tabs}
         {selectedTabIndex}
