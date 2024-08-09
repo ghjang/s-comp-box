@@ -5,7 +5,7 @@
 <svelte:options customElement="s-splitter" accessors />
 
 <script>
-  import { createEventDispatcher, tick } from "svelte";
+  import { createEventDispatcher } from "svelte";
   import SplitterH from "./SplitterH.svelte";
   import SplitterV from "./SplitterV.svelte";
   import {
