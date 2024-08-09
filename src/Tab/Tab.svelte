@@ -4,6 +4,7 @@
   import { createEventDispatcher } from "svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
   import TabButtonGroup from "./TabButtonGroup.svelte";
+  import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import {
     CustomEventsRegister,
     combineCustomEvents,
@@ -15,6 +16,7 @@
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
+  export let showContentControl = false;
 
   export let customEvents = [];
 
@@ -27,6 +29,9 @@
   let tabHAlign = "left";
   let tabVAlign = "bottom";
   let tabReverse = false;
+
+  let contextMenu;
+  let menuItems = [];
 
   // NOTE: 탭 컴포넌트가 '추가, 삭제'될 경우에도 실행됨.
   $: if (tabs.length === tabComponents.length) {
@@ -134,6 +139,12 @@
       selectedTabIndex = index;
     }
   }
+
+  function handleTabsContextMenu(event) {
+  }
+
+  function handleMenuItemClicked(event) {
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -150,7 +161,7 @@
     vAlign={tabVAlign}
     reverse={tabReverse}
   >
-    <div class="tabs">
+    <div class="tabs" on:contextmenu|stopPropagation={handleTabsContextMenu}>
       <TabButtonGroup
         {tabs}
         {selectedTabIndex}
@@ -179,6 +190,14 @@
     {/if}
   </StackPanel>
 </div>
+
+{#if showContentControl}
+  <ContextMenuMediator
+    {menuItems}
+    bind:this={contextMenu}
+    on:menuItemClicked={handleMenuItemClicked}
+  />
+{/if}
 
 <style lang="scss">
   $tabs-length: 1.25em;

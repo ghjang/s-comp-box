@@ -273,7 +273,7 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
             if (compName === "Splitter") {
                 childComponentInfo.props = {
                     ...childComponentInfo.props,
-                    showPanelControl: isDesignMode,
+                    showContentControl: isDesignMode,
                 };
             }
 

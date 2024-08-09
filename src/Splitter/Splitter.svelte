@@ -16,7 +16,7 @@
   const dispatch = createEventDispatcher();
 
   export let orientation = "horizontal";
-  export let showPanelControl = false;
+  export let showContentControl = false;
 
   export let panel_0_length = "50%";
 
@@ -217,7 +217,7 @@
   {#if orientation === "horizontal"}
     {#if component_0.component && component_1.component}
       <SplitterH
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -238,7 +238,7 @@
       </SplitterH>
     {:else if component_0.component}
       <SplitterH
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -254,7 +254,7 @@
       </SplitterH>
     {:else if component_1.component}
       <SplitterH
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -270,7 +270,7 @@
       </SplitterH>
     {:else}
       <SplitterH
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged
         on:panelSwapButtonClicked
@@ -283,7 +283,7 @@
   {:else if orientation === "vertical"}
     {#if component_0.component && component_1.component}
       <SplitterV
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -304,7 +304,7 @@
       </SplitterV>
     {:else if component_0.component}
       <SplitterV
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -320,7 +320,7 @@
       </SplitterV>
     {:else if component_1.component}
       <SplitterV
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -336,7 +336,7 @@
       </SplitterV>
     {:else}
       <SplitterV
-        {showPanelControl}
+        {showContentControl}
         {panel_0_length}
         on:panelSizeChanged
         on:panelSwapButtonClicked

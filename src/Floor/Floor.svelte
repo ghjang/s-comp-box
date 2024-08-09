@@ -54,7 +54,7 @@
   let popUpProps = {};
 
   let panelSize = {};
-  let showPanelControl = { toggleOrientaionButton: false };
+  let showContentControl = { toggleOrientaionButton: false };
 
   let highlighted = false;
 
@@ -214,7 +214,7 @@
       <Splitter
         orientation="horizontal"
         {panel_0_length}
-        {showPanelControl}
+        {showContentControl}
         on:panelSizeChanged={(e) => handlePanelSizeChanged(e)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
@@ -249,7 +249,7 @@
       <Splitter
         orientation="horizontal"
         {panel_0_length}
-        {showPanelControl}
+        {showContentControl}
         on:panelSizeChanged={(e) => (panelSize = e.detail)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("left")}
       >

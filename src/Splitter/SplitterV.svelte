@@ -7,7 +7,7 @@
 
   const dispatch = createEventDispatcher();
 
-  export let showPanelControl = false;
+  export let showContentControl = false;
   export let panel_0_length = "50%";
 
   let panel_0;
@@ -19,7 +19,7 @@
   let lastNonZeroPanel0Height = panel_0_length;
   let splitterPanelLength = "auto";
 
-  $: if (showPanelControl) {
+  $: if (showContentControl) {
     resetTtbPanelCollapseButtonClicked = debounce(
       () => (ttbPanelCollapseButtonClicked = false),
       300
@@ -38,7 +38,7 @@
     panel_0_length = `${panelSizeInfo.panel_0.height}px`;
     dispatch("panelSizeChanged", panelSizeInfo);
 
-    if (!showPanelControl) {
+    if (!showContentControl) {
       return;
     }
 
@@ -113,7 +113,7 @@
     <slot name="top"></slot>
   </div>
   <div class="divider-panel" style:height={splitterPanelLength}>
-    {#if showPanelControl}
+    {#if showContentControl}
       <div
         class="divider-grip-content panel-collapse"
         use:dragGrip={{ direction: "vertical", panel_0, panel_1 }}
@@ -124,13 +124,13 @@
             on:mousedown|stopPropagation>▲</button
           >
         {/if}
-        {#if showPanelControl.toggleOrientaionButton !== false}
+        {#if showContentControl.toggleOrientaionButton !== false}
           <button
             on:click={() => handlePanelOrientationButtonClick()}
             on:mousedown|stopPropagation>↺</button
           >
         {/if}
-        {#if showPanelControl.panelSwapButton !== false}
+        {#if showContentControl.panelSwapButton !== false}
           <button
             class="rotate-90"
             on:click={() => handlePanelSwapButtonClick()}
