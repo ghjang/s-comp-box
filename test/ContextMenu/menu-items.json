@@ -6,7 +6,8 @@
     },
     {
         "action": {
-            "text": "Menu Item 2(second item)"
+            "text": "Menu Item 2(second item)",
+            "checked": true
         }
     },
     {

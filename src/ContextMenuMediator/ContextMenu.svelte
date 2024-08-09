@@ -184,6 +184,7 @@
       {:else if item.action}
         <button
           class="action-btn"
+          class:action-btn-checked={item.action.checked}
           on:click|preventDefault={() => dispatch("menuItemClicked", item)}
         >
           {item.action.text}
@@ -260,6 +261,14 @@
           float: right;
           padding-left: 10px;
           padding-right: 0;
+        }
+
+        &.action-btn-checked:after {
+          content: "✔";
+          float: right;
+          padding-left: 10px;
+          padding-right: 0;
+          color: $context-menu-text-color;
         }
 
         &.sub-menu-btn:after {
