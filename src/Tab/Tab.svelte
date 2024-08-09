@@ -142,6 +142,7 @@
   class="tab-view {tabPosition}"
   tabindex="-1"
   on:keyup={handleKeyUp}
+  on:contextmenu|preventDefault|stopPropagation
 >
   <StackPanel
     direction={tabDirection}

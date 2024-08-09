@@ -228,7 +228,7 @@
         <div
           slot="right"
           class="floor-box {pattern}"
-          on:contextmenu={handleContextMenu}
+          on:contextmenu|stopPropagation={handleContextMenu}
         >
           <FloorChild
             bind:this={floorChild}
@@ -257,7 +257,7 @@
         <div
           slot="left"
           class="floor-box {pattern}"
-          on:contextmenu={handleContextMenu}
+          on:contextmenu|stopPropagation={handleContextMenu}
         >
           <FloorChild
             bind:this={floorChild}
@@ -283,7 +283,10 @@
     {/if}
   {:else}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="floor-box {pattern}" on:contextmenu={handleContextMenu}>
+    <div
+      class="floor-box {pattern}"
+      on:contextmenu|stopPropagation={handleContextMenu}
+    >
       <FloorChild
         bind:this={floorChild}
         {componentScriptBasePath}

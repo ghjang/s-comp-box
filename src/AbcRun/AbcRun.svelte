@@ -107,7 +107,8 @@
   });
 </script>
 
-<div class="abcrun-box">
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="abcrun-box" on:contextmenu|preventDefault|stopPropagation>
   {#if noRenderer}
     <MonacoEditor
       bind:this={editor}
