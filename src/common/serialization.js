@@ -11,7 +11,7 @@ export const removeUnserializableProperties = (obj, keyPredicate = (key) => true
 
     const plainObject = {};
     for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
             const value = obj[key];
             if (typeof value === 'function') {
                 if (printLog) {
@@ -19,14 +19,20 @@ export const removeUnserializableProperties = (obj, keyPredicate = (key) => true
                     console.log(`removing function with key: '${keyPathStr}' and function name: '${value.name}'`);
                 }
 
-                plainObject[key] = `removed: ${value.name}`;
+                plainObject[key] = keyPredicate(key) ? `removed: ${value.name}` : null;
             } else {
                 if (keyPredicate(key)) {
-                    plainObject[key] = removeUnserializableProperties(value, keyPredicate, printLog, keyPath.concat(key));
-                } else if (Array.isArray(value)) {
-                    plainObject[key] = [];
-                } else if (typeof value === 'object') {
-                    plainObject[key] = null;
+                    if (value === undefined) {
+                        plainObject[key] = null;
+                    } else {
+                        plainObject[key] = removeUnserializableProperties(value, keyPredicate, printLog, keyPath.concat(key));
+                    }
+                } else {
+                    if (Array.isArray(value)) {
+                        plainObject[key] = [];
+                    } else if (value === undefined || typeof value === 'object') {
+                        plainObject[key] = null;
+                    }
                 }
             }
         }

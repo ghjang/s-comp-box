@@ -37,6 +37,8 @@
     setChildComponentInfo: (info) => (childComponentInfo = info),
   });
 
+  const keyPredicate = (key) => key !== "menuItems" && !key.startsWith("$");
+
   let context;
 
   let childComponent;
@@ -130,7 +132,7 @@
 
       const id_0 = componentInstance_0.getFloorId();
       const id_1 = componentInstance_1.getFloorId();
-      swapFloorData(id_0, id_1, cleanProps(childComponentInfo));
+      swapFloorData(id_0, id_1, cleanProps(childComponentInfo, keyPredicate));
       childComponentInfo = null;
       loadChildComponentInfo();
     }
@@ -164,24 +166,24 @@
   function setChildComponentInfo() {
     context?.updateChildComponentTreeData(childComponentInfo);
 
-    const cleanedData = cleanProps(childComponentInfo, (key) => key !== "menuItems");
+    const cleanedChildInfo = cleanProps(childComponentInfo, keyPredicate);
 
     if (floorLevel === 0) {
       saveFloor({
         floorId,
         ancestorFloorId,
-        childComponentInfo: cleanedData,
+        childComponentInfo: cleanedChildInfo,
         nonFloorParentInfo: null,
       });
     } else {
       dispatch("queryContainerInfo", {
         infoCallback: (containerInfo) => {
-          const cleanedInfo = cleanProps(containerInfo);
+          const cleanedContainerInfo = cleanProps(containerInfo, keyPredicate);
           saveFloor({
             floorId,
             ancestorFloorId,
-            childComponentInfo: cleanedData,
-            nonFloorParentInfo: cleanedInfo,
+            childComponentInfo: cleanedChildInfo,
+            nonFloorParentInfo: cleanedContainerInfo,
           });
         },
       });
@@ -211,9 +213,35 @@
         infoCallback: (containerInfo) => {
           if (containerInfo.containerName === "Splitter") {
             tryToLoadSplitterChildComponent(containerInfo);
+          } else if (containerInfo.containerName === "Tab") {
+            tryToLoadTabChildComponent(containerInfo);
+          } else {
+            console.warn(
+              `unsupported containerName: ${containerInfo.containerName}`
+            );
           }
         },
       });
+    }
+  }
+
+  function loadFloorChildComponent(floorData) {
+    if (floorData) {
+      const newInvalidFloorId = floorId;
+      const orgFloodId = floorData.floorId;
+      context?.updateInvalidFloorIdInfo(newInvalidFloorId, orgFloodId);
+      dispatch("loadFloorChildComponent", {
+        orgFloorId: floorData.floorId,
+        childComponentInfo: floorData.childComponentInfo,
+      });
+    } else {
+      // 'null', 즉 '자식 컴포넌트가 설정되지 않은 상태' 또는 '데이터 오류'인 경우
+
+      // 'null'인 경우는
+      // 'floorId'를 '고정' 시켜 처리를 단순화 하기 위해서 '널 컴포넌트'를 설정해준다.
+      childComponentInfo = {
+        customElementName: "null",
+      };
     }
   }
 
@@ -249,23 +277,39 @@
       return hasComponent_0 || hasComponent_1;
     });
 
-    if (floorData) {
-      const newInvalidFloorId = floorId;
-      const orgFloodId = floorData.floorId;
-      context?.updateInvalidFloorIdInfo(newInvalidFloorId, orgFloodId);
-      dispatch("loadFloorChildComponent", {
-        orgFloorId: floorData.floorId,
-        childComponentInfo: floorData.childComponentInfo,
-      });
-    } else {
-      // 'null', 즉 '자식 컴포넌트가 설정되지 않은 상태' 또는 '데이터 오류'인 경우
+    loadFloorChildComponent(floorData);
+  }
 
-      // 'null'인 경우는
-      // 'floorId'를 '고정' 시켜 처리를 단순화 하기 위해서 '널 컴포넌트'를 설정해준다.
-      childComponentInfo = {
-        customElementName: "null",
-      };
+  async function tryToLoadTabChildComponent(containerInfo) {
+    const floors = await loadDescendentFloor(ancestorFloorId);
+
+    if (floors.length < 0) {
+      console.warn(
+        `invalid tab's direct descendent floor count: ${floors.length}`
+      );
+      return;
     }
+
+    const floorData = floors.find((floor) => {
+      const nonFloorParentInfo = floor.nonFloorParentInfo;
+
+      // 'IndexedDB'에 저장된 'nonFloorParentInfo'의 'containerName'이
+      // '런타임'에 설정된 'containerInfo'의 'containerName'과 다른 경우,
+      // 즉 '저장 오류' 또는 '데이터 오류'인 경우는 무시한다.
+      if (nonFloorParentInfo.containerName !== containerInfo.containerName) {
+        console.warn(
+          `containerName is different: ${nonFloorParentInfo.containerName}, ${containerInfo.containerName}`
+        );
+        return false;
+      }
+
+      // 로딩된 'descendent floor'들 중에서 '같은 탭 인덱스'에 있는 'floor'를 선택
+      return (
+        nonFloorParentInfo.tabComponents[containerInfo.tabIndex] !== undefined
+      );
+    });
+
+    loadFloorChildComponent(floorData);
   }
 
   onDestroy(() => context?.dispose());
