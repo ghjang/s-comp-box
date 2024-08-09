@@ -1,21 +1,79 @@
+<svelte:options accessors />
+
 <script>
   import { createEventDispatcher } from "svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
   import TabButtonGroup from "./TabButtonGroup.svelte";
+  import {
+    CustomEventsRegister,
+    combineCustomEvents,
+  } from "../common/customEvents.js";
+
+  const dispatch = createEventDispatcher();
 
   // FIXME: 다수의 '탭'들이 추가될 경우 탭이 잘려서 표시되거나 아예 보이지 않음.
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
 
+  export let customEvents = [];
+
   export const getTabComponents = () => tabComponents;
 
   let tabComponents = [];
+  let customEventsRegisters = [];
 
   let tabDirection = "vertical";
   let tabHAlign = "left";
   let tabVAlign = "bottom";
   let tabReverse = false;
+
+  // NOTE: 탭 컴포넌트가 '추가, 삭제'될 경우에도 실행됨.
+  $: if (tabs.length === tabComponents.length) {
+    console.log("tabComponents", tabComponents);
+
+    customEventsRegisters.forEach((register) => register?.unregister?.());
+    customEventsRegisters = [];
+
+    tabComponents.forEach((component, index) => {
+      if (!component) {
+        return;
+      }
+
+      const register = new CustomEventsRegister(
+        dispatch,
+        component,
+        () => {
+          // event의 'detail' 속성에 설정할 값
+          return {
+            componentName: "Tab",
+            tabComponents,
+            selectedTabIndex,
+          };
+        },
+        (callback) => {
+          // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
+          callback({
+            containerName: "Tab",
+            tabComponents,
+            tabIndex: index,
+            selectedTabIndex,
+          });
+        }
+      );
+
+      customEventsRegisters.push(register);
+    });
+
+    tabComponents.forEach((component) => {
+      if (component && component.customEvents) {
+        customEvents = combineCustomEvents(
+          component.customEvents,
+          customEvents
+        );
+      }
+    });
+  }
 
   // NOTE: '모나코 에디터'와 같은 특정 컴포넌트는 화면에 보이지 않는 탭에 설정된 상태에서
   //       초기화되었을 경우에 자신의 화면을 정상적으로 'update(layout)'할 수 없는 문제가 있음.
