@@ -22,7 +22,7 @@ const langdef = {
     tokenizer: {
         root: [
             [
-                /^\s*([A-Z])(\s*)(:)/,
+                /([A-Z])(\s*)(:)/,
                 [
                     {
                         cases: {
@@ -37,6 +37,8 @@ const langdef = {
             { include: '@whitespace' },
 
             [/[\[\]]/, '@brackets'],
+
+            [/!.*?!/, 'decorator'],
 
             [/[A-Ga-gz]/, 'constant'],
 

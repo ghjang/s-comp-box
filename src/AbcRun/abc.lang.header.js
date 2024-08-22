@@ -42,7 +42,7 @@ export const headerRules = {
         [/\d+/, 'number'],
         [/\//, 'operator'],
         [/[ \t]+/, 'white'],
-        [/\n/, '', '@pop'],
+        [/\n|\]/, '', '@pop'],
     ],
 
     headerL: [
@@ -56,7 +56,7 @@ export const headerRules = {
         [/\d+/, 'number'],
         [/[\/=]/, 'operator'],
         [/[ \t]+/, 'white'],
-        [/\n/, '', '@pop'],
+        [/\n|\]/, '', '@pop'],
     ],
 
     headerK: [
