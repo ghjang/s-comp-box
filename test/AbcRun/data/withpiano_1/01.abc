@@ -3,10 +3,10 @@
 X: 1
 T: 카트라이더 Main Theme
 C: Nexon
+K: C
 M: 2/4
 L: 1/8
 Q: 1/4=140
-K: C
 V:1 clef="treble" nm="R.H."
 V:2 clef="bass" nm="L.H."
 V:1 %{
