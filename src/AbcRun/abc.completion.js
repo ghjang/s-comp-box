@@ -6,12 +6,26 @@ import {
 function setCompletionItemReplaceInfo(model, position, items) {
     items.forEach(item => {
         switch (item.type) {
-            case 'key':
+            case 'key': {
+                const lineContent = model.getLineContent(position.lineNumber);
+                const afterCursor = lineContent.slice(position.column - 1);
+                for (const i of items) {
+                    const keyText = i.insertText;
+                    const match = afterCursor.match(new RegExp(`\\s*${keyText}`));
+                    if (match) {
+                        const startIdx = position.column;
+                        const endIdx = startIdx + match[0].length + 1;
+                        item.range = createRange(position.lineNumber, startIdx, position.lineNumber, endIdx);
+                        break;
+                    }
+                }
                 break;
+            }
+
             case 'noteLength':
                 break;
 
-            case 'decoration':
+            case 'decoration': {
                 const lineContent = model.getLineContent(position.lineNumber);
                 const startIdx = lineContent.lastIndexOf('!', position.column - 1);
                 if (startIdx !== -1) {
@@ -35,6 +49,7 @@ function setCompletionItemReplaceInfo(model, position, items) {
                     }
                 }
                 break;
+            }
 
             default:
                 break
