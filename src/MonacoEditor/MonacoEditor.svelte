@@ -28,6 +28,7 @@
   export let bracketPairColorization = true;
   export let autoFindInSelection = "multiline";
   export let autoFindMatches = false;
+  export let showStatusBar = false;
 
   export const registerCustomLanguage = register;
   export const setEditorWarnings = (warnings) =>
@@ -36,6 +37,7 @@
 
   let editorContainer;
   let editor;
+  let statusBar;
 
   export async function update() {
     await tick();
@@ -213,6 +215,16 @@
       });
     }
 
+    if (showStatusBar && statusBar) {
+      editor.onDidChangeCursorPosition((e) => {
+        const lineNumber = e.position.lineNumber;
+        const column = e.position.column;
+        const model = editor.getModel();
+        const lineCount = model.getLineCount();
+        statusBar.textContent = `Ln ${lineNumber}, Col ${column} (${lineCount} lines)`;
+      });
+    }
+
     const { keyMod, keyCode } = getMonacoKeyBindingConstant();
     editor.addAction({
       id: "svelte-monaco-editor-action",
@@ -230,15 +242,20 @@
   }
 </script>
 
-<div
-  bind:this={editorContainer}
-  id="svelte-monaco-editor-container"
-  style:width
-  style:height
->
-  <div style:display="none">
-    <slot />
+<div class="editor-wrapper">
+  <div
+    bind:this={editorContainer}
+    class="monaco-editor-container"
+    style:width
+    style:height
+  >
+    <div style:display="none">
+      <slot />
+    </div>
   </div>
+  {#if showStatusBar}
+    <div bind:this={statusBar} class="status-bar"></div>
+  {/if}
 </div>
 
 <style>
@@ -246,5 +263,28 @@
   :global(.s-comp-monaco-editor-selection-match) {
     background-color: rgba(128, 128, 128, 0.2); /* 회색 계열의 옅은 배경색 */
     outline: 1px solid rgba(255, 255, 0, 0.3); /* 얇은 노란색 옅은 보더 */
+  }
+
+  .editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .monaco-editor-container {
+    flex-grow: 1;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 1.2em;
+    text-align: right;
+    padding-right: 10px;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: "Courier New", Courier, monospace;
+    border-top: 1px solid #3c3c3c;
   }
 </style>
