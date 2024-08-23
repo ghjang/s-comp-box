@@ -22,8 +22,22 @@ function setCompletionItemReplaceInfo(model, position, items) {
                 break;
             }
 
-            case 'noteLength':
+            case 'noteLength': {
+                const lineContent = model.getLineContent(position.lineNumber);
+                const afterCursor = lineContent.slice(position.column - 1);
+                for (const i of items) {
+                    const noteLengthText = i.insertText;
+                    const [numerator, denominator] = noteLengthText.split('/');
+                    const match = afterCursor.match(new RegExp(`\\s*${numerator}\\s*/\\s*${denominator}`));
+                    if (match) {
+                        const startIdx = position.column;
+                        const endIdx = startIdx + match[0].length + 1;
+                        item.range = createRange(position.lineNumber, startIdx, position.lineNumber, endIdx);
+                        break;
+                    }
+                }
                 break;
+            }
 
             case 'decoration': {
                 const lineContent = model.getLineContent(position.lineNumber);
