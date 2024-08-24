@@ -108,6 +108,11 @@
         } else {
           console.warn(`unhandled event: ${eventName}`);
         }
+      },
+      null,
+      (updateCallback) => {
+        updateCallback({ childComponentInfo });
+        setChildComponentInfo();
       }
     );
 
@@ -304,9 +309,7 @@
       }
 
       // 로딩된 'descendent floor'들 중에서 '같은 탭 인덱스'에 있는 'floor'를 선택
-      return (
-        nonFloorParentInfo.tabComponents[containerInfo.tabIndex] !== undefined
-      );
+      return nonFloorParentInfo.tabIndex === containerInfo.tabIndex;
     });
 
     loadFloorChildComponent(floorData);

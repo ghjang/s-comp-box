@@ -2,7 +2,13 @@ export class CustomEventsRegister {
     #unregisters = [];
     customEvents = [];
 
-    constructor(dispatch, component, detailHandler = null, queryContainerInfoHandler = null) {
+    constructor(
+        dispatch,
+        component,
+        detailHandler = null,
+        queryContainerInfoHandler = null,
+        updateChildComponentInfoHandler = null
+    ) {
         if (!dispatch || !typeof dispatch === "function") {
             throw new Error("dispatch must be a function.");
         }
@@ -38,6 +44,16 @@ export class CustomEventsRegister {
                         queryContainerInfoHandler?.(callback, component);
                     } else {
                         throw new Error("queryContainerInfo event must have a 'infoCallback' function in the detail object.");
+                    }
+                });
+                this.#unregisters.push(unregister);
+            } else if (eventName === "updateChildComponentInfo") {
+                const unregister = component.$on(eventName, (event) => {
+                    const callback = event.detail.updateCallback;
+                    if (typeof callback === "function") {
+                        updateChildComponentInfoHandler?.(callback);
+                    } else {
+                        throw new Error("updateChildComponentInfo event must have a 'updateCallback' function in the detail object.");
                     }
                 });
                 this.#unregisters.push(unregister);

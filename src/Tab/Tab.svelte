@@ -19,7 +19,7 @@
   export let tabPosition = "top";
   export let showContentControl = false;
 
-  export let customEvents = [];
+  export let customEvents = ["updateChildComponentInfo"];
 
   export const getTabComponents = () => tabComponents;
 
@@ -163,20 +163,28 @@
           action: {
             text: "Add New Tab",
             handler: () => {
-              tabs = [
-                ...tabs,
-                {
-                  label: "Tab 1",
-                  component: Floor,
-                  componentClassName: "Floor",
-                  props: {
-                    componentScriptBasePath: scriptBasePath,
-                    menuItems: items,
-                  },
+              const newTabChildComponentInfo = {
+                label: "Tab 1",
+                component: Floor,
+                componentClassName: "Floor",
+                props: {
+                  componentScriptBasePath: scriptBasePath,
+                  menuItems: items,
                 },
-              ];
+              };
+
+              tabs = [...tabs, newTabChildComponentInfo];
 
               selectedTabIndex = tabs.length - 1;
+
+              dispatch("updateChildComponentInfo", {
+                updateCallback: (childComponentInfo) => {
+                  const _childComponentInfo =
+                    childComponentInfo.childComponentInfo;
+                  _childComponentInfo.props.tabs.push(newTabChildComponentInfo);
+                  _childComponentInfo.props.selectedTabIndex = selectedTabIndex;
+                },
+              });
             },
           },
         },
