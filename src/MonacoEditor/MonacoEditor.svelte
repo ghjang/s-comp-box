@@ -37,6 +37,7 @@
 
   let editorContainer;
   let editor;
+  let editorBgColor;
   let statusBar;
 
   export async function update() {
@@ -46,10 +47,15 @@
 
   export function layout(revealPosition = false) {
     if (editor) {
-      const pos = editor.getPosition();
       editor.layout();
+
       if (revealPosition) {
+        const pos = editor.getPosition();
         editor.revealPosition(pos);
+      }
+
+      if (!editorBgColor) {
+        editorBgColor = getEditorBackgroundColor();
       }
     }
   }
@@ -106,6 +112,18 @@
 
   export function getModel() {
     return editor ? editor.getModel() : null;
+  }
+
+  export function getEditorBackgroundColor() {
+    if (editorContainer) {
+      const monacoEditorDiv = editorContainer.querySelector(".monaco-editor");
+      if (monacoEditorDiv) {
+        const bgColor =
+          window.getComputedStyle(monacoEditorDiv).backgroundColor;
+        return bgColor;
+      }
+    }
+    return null;
   }
 
   onDestroy(() => {
@@ -242,7 +260,7 @@
   }
 </script>
 
-<div class="editor-wrapper">
+<div class="editor-wrapper" style:background-color={editorBgColor}>
   <div
     bind:this={editorContainer}
     class="monaco-editor-container"

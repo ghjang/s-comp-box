@@ -98,7 +98,6 @@
     }
 
     if (needToUpdate) {
-      console.log(`widthDiff: ${widthDiff}, heightDiff: ${heightDiff}, roundedWidthDiff: ${roundedWidthDiff}, roundedHeightDiff: ${roundedHeightDiff}`);
       editor?.update();
     }
 

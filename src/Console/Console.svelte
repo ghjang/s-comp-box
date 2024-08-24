@@ -13,6 +13,7 @@
 
   export let height = "100%";
   export let fontSize = "0.5em";
+  export let backgroundColor = "black";
 
   export let initialOutput = null;
   export let autoClear = false;
@@ -49,6 +50,18 @@
         }
       }
     })();
+  }
+
+  export function update() {
+    if (consoleDiv) {
+      // FIXME: 부모 컨테이너가 'Splitter'인 경우에 대해서만 부모의 배경색 업데이트를 하드코딩으로 처리하고 있음.
+      //
+      // 임의의 부모 컨테이너에 대해서도 처리할 수 있도록 수정 필요.
+      const parent = consoleDiv.parentElement;
+      if (parent && parent.tagName === "DIV" && parent.classList.contains("content-panel")) {
+        parent.style.backgroundColor = backgroundColor;
+      }
+    }
   }
 
   export function clear() {
@@ -115,6 +128,7 @@
   bind:this={consoleDiv}
   style:height
   style:font-size={fontSize}
+  style:background-color={backgroundColor}
   use:preventOverscroll
 ></div>
 
@@ -124,7 +138,6 @@
     padding: 10px;
     overflow: auto;
     box-sizing: border-box;
-    background-color: black;
     white-space: pre-wrap;
     font-family: monospace;
     color: lime;

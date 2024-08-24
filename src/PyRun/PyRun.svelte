@@ -33,6 +33,10 @@
         editor.focus();
       }
     }
+
+    if (!noConsole && customConsole) {
+      customConsole.update();
+    }
   };
 
   export const runCode = (code = "") => {
@@ -74,6 +78,8 @@
   onMount(() => {
     if (noConsole) {
       editor?.layout(true);
+    } else {
+      customConsole?.update();
     }
   });
 
