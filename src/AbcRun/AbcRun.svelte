@@ -36,6 +36,7 @@
     }
   };
 
+  let lastEditorWidth = 0;
   let lastEditorHeight = 0;
 
   let abcParams = {};
@@ -76,13 +77,28 @@
   // 'Splitter' 컴포넌트 쪽에서 설정되는 '패널 자식 컴포넌트'의 가장 가까운 요소의 '배경색'을 런타임에 조사해서
   //  패널 리싸이징시에 최대한 덜 이상하게 보이도록 하는 방법을 취할 수 있을 것 같다(?).
   function handlePanelSizeChange(e: CustomEvent) {
+    const widthDiff = e.detail.panel_1.width - lastEditorWidth;
     const heightDiff = e.detail.panel_1.height - lastEditorHeight;
+    const roundedWidthDiff = roundToNDecimals(Math.abs(widthDiff), 2);
     const roundedHeightDiff = roundToNDecimals(Math.abs(heightDiff), 2);
+
+    let needToUpdate = false;
 
     // NOTE: '상태바'를 표시할 경우에 과도하게 'update(layout)'이 호출되는 것을 줄이기 위한 workaround이다.
     //       '1.2'라는 수치는 테스트를 통해서 구한 적당한 값이다.
+
+    if (roundedWidthDiff > 1.2) {
+      lastEditorWidth = e.detail.panel_1.width;
+      needToUpdate = true;
+    }
+
     if (roundedHeightDiff > 1.2) {
       lastEditorHeight = e.detail.panel_1.height;
+      needToUpdate = true;
+    }
+
+    if (needToUpdate) {
+      console.log(`widthDiff: ${widthDiff}, heightDiff: ${heightDiff}, roundedWidthDiff: ${roundedWidthDiff}, roundedHeightDiff: ${roundedHeightDiff}`);
       editor?.update();
     }
 
