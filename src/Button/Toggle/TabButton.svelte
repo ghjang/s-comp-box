@@ -52,6 +52,7 @@
 
     &.selected {
       background-color: #b0b0b0;
+      font-weight: bold;
     }
 
     &.top {
