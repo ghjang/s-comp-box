@@ -1,7 +1,7 @@
 <svelte:options customElement="s-marquee" />
 
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
   export let text = "";
   export let direction = "rtl";
@@ -11,6 +11,8 @@
   let container;
   let marquee;
   let animationDuration;
+
+  let observer;
 
   function enableDebug(debug, container, marquee) {
     container && (container.style.border = debug ? "1px solid black" : "");
@@ -26,7 +28,23 @@
     marquee.style.animationDuration = `${animationDuration}s`;
   }
 
-  onMount(setAnimation);
+  onMount(() => {
+    const { width, height } = marquee.getBoundingClientRect();
+    if (width > 0 && height > 0) {
+      setAnimation();
+    } else {
+      observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setAnimation();
+          observer.disconnect();
+          observer = null;
+        }
+      });
+      observer.observe(container);
+    }
+  });
+
+  onDestroy(() => observer?.disconnect());
 
   $: enableDebug(debug, container, marquee);
 </script>
