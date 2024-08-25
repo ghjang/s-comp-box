@@ -1,7 +1,7 @@
 import { getContext, setContext } from "svelte";
 import { writable, get } from "svelte/store";
 import { deepCopy, cDiffObj } from "../common/util.js";
-import { removeFloor } from "./persistency.js";
+import { loadFloor, removeFloor } from "./persistency.js";
 
 export class FloorContext {
   #ctxName;
@@ -174,8 +174,21 @@ export class FloorContext {
       context.updateReason === "highlightFloor" &&
       context.targetFloorId
     ) {
-      this.#props.dispatch("highlightFloor", {
-        floorId: context.targetFloorId,
+      this.#props.dispatch("queryContainerInfo", {
+        infoCallback: async (containerInfo) => {
+          if (containerInfo.containerName === "Tab") {
+            const curTabIndex = containerInfo.tabIndex;
+            const curFloorInfo = await loadFloor(context.targetFloorId);
+            const curFloorTabIndex = curFloorInfo.nonFloorParentInfo?.tabIndex;
+            if (curTabIndex === curFloorTabIndex) {
+              containerInfo.ensureTabVisible(curTabIndex);
+            }
+          }
+
+          this.#props.dispatch("highlightFloor", {
+            floorId: context.targetFloorId,
+          });
+        },
       });
     } else if (
       context.updateReason === "componentRemove" &&

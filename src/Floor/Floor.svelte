@@ -63,7 +63,7 @@
   $: if (floorContainer) {
     const ancestorFloorContainer = findClosestAncestor(
       floorContainer,
-      "floor-container"
+      "floor-container",
     );
 
     // NOTE: '자식 컴포넌트'가 먼저 바인딩된다는 것을 기억할 것.
@@ -115,7 +115,7 @@
         } else {
           handler = () => {
             console.warn(
-              `no proper action menu item handler: ${event.detail.action.text}`
+              `no proper action menu item handler: ${event.detail.action.text}`,
             );
           };
         }
@@ -168,7 +168,7 @@
       floorContainer.addEventListener(
         "animationend",
         () => (highlighted = false),
-        { once: true }
+        { once: true },
       );
     }
   }
@@ -205,7 +205,7 @@
   async function handleLoadFloorChildComponent(event) {
     const restoredInfo = await restoreComponentClass(
       event.detail.childComponentInfo,
-      componentScriptBasePath
+      componentScriptBasePath,
     );
     floorId = event.detail.orgFloorId;
     childComponentInfo = updateMenuItemsInProps(restoredInfo, menuItems);

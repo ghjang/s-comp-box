@@ -62,8 +62,9 @@
             tabComponents,
             tabIndex: index,
             selectedTabIndex,
+            ensureTabVisible: (tabIndex) => (selectedTabIndex = tabIndex),
           });
-        }
+        },
       );
 
       customEventsRegisters.push(register);
@@ -73,7 +74,7 @@
       if (component && component.customEvents) {
         customEvents = combineCustomEvents(
           component.customEvents,
-          customEvents
+          customEvents,
         );
       }
     });
@@ -190,7 +191,7 @@
         },
         {
           divider: { style: {} },
-        }
+        },
       );
     }
 
