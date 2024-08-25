@@ -15,7 +15,7 @@
   function updateTabButtonState(context) {
     if (!context) {
       throw new Error(
-        `The component must be used below a <ToggleGroup> parent component.`
+        `The component must be used below a <ToggleGroup> parent component.`,
       );
     }
   }
@@ -23,6 +23,10 @@
   async function handleToggleItemChanged(eventName) {
     eventName = value ? "toggleItemChanged" : eventName;
     dispatch(eventName, { label, value });
+  }
+
+  function isKorean(text) {
+    return /[\u3131-\uD79D]/.test(text);
   }
 </script>
 
@@ -32,7 +36,7 @@
   tabindex="-1"
   on:click={() => handleToggleItemChanged("tabClicked")}
 >
-  {label}
+  <span class={isKorean(label) ? "korean" : "english"}>{label}</span>
 </button>
 
 <style lang="scss">
@@ -45,6 +49,9 @@
     font-size: 0.7em;
     user-select: none;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:focus {
       outline: none;
@@ -67,21 +74,39 @@
       clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%);
     }
 
+    &.left,
+    &.right {
+      writing-mode: vertical-rl;
+      padding: 0.5em 0.2em;
+
+      span {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.korean {
+          text-orientation: upright;
+        }
+
+        &.english {
+          text-orientation: mixed;
+        }
+      }
+    }
+
     &.left {
       margin-left: $button-margin;
-      padding: 0.5em 0.2em;
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      white-space: nowrap;
-      clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
+      clip-path: polygon(0 3%, 100% 0, 100% 100%, 0 97%);
+
+      span.english {
+        transform: rotate(180deg);
+      }
     }
 
     &.right {
       margin-right: $button-margin;
-      padding: 0.5em 0.2em;
-      writing-mode: vertical-rl;
-      white-space: nowrap;
-      clip-path: polygon(0 0%, 100% 3%, 100% 97%, 0 100%);
+      clip-path: polygon(0 0, 100% 3%, 100% 97%, 0 100%);
     }
   }
 </style>
