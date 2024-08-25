@@ -1,7 +1,7 @@
 import { getContext, setContext } from "svelte";
 import { writable, get } from "svelte/store";
+import { deepCopy, cDiffObj } from "../common/util.js";
 import { removeFloor } from "./persistency.js";
-
 
 export class FloorContext {
     #ctxName;
@@ -57,7 +57,6 @@ export class FloorContext {
         this.#unsubscribe();
     }
 
-
     getContextDesignMode() {
         return get(this.#contextStore).designMode;
     }
@@ -98,7 +97,10 @@ export class FloorContext {
     updateChildComponentTreeData(childComponentInfo) {
         this.#contextStore.update((value) => {
             value.updateReason = "componentTreeChange";
-            if (this.#props.floorLevel === 0 && value.componentTreeData.length === 0) {
+            if (
+                this.#props.floorLevel === 0 &&
+                value.componentTreeData.length === 0
+            ) {
                 value.componentTreeData = [
                     {
                         id: "floor-root",
@@ -107,12 +109,18 @@ export class FloorContext {
                     },
                 ];
             }
+            const beforeUpdate = deepCopy(value.componentTreeData);
             const treeData = value.componentTreeData;
             updateNodeById(
                 treeData,
                 this.#props.floorId,
                 childComponentInfo,
                 value.designMode
+            );
+            cDiffObj(
+                beforeUpdate,
+                treeData,
+                `floorId: ${this.#props.floorId}, 트리 데이터 변경사항:`
             );
             return value;
         });
@@ -155,7 +163,10 @@ export class FloorContext {
         if (context.updateReason === "componentTreeChange") {
             if (this.#props.floorLevel === 0) {
                 // NOTE: 'root floor'에서만 업데이트해주면 된다.
-                removeInvalidNode(context.componentTreeData, context.replaceIdMap);
+                removeInvalidNode(
+                    context.componentTreeData,
+                    context.replaceIdMap
+                );
                 this.#props.dispatch("componentTreeChanged", {
                     componentTreeData: context.componentTreeData,
                 });
@@ -166,13 +177,15 @@ export class FloorContext {
             context.updateReason === "highlightFloor" &&
             context.targetFloorId
         ) {
-            this.#props.dispatch("highlightFloor", { floorId: context.targetFloorId });
+            this.#props.dispatch("highlightFloor", {
+                floorId: context.targetFloorId,
+            });
         } else if (
             context.updateReason === "componentRemove" &&
             context.targetFloorId &&
             context.targetFloorId === this.#props.floorId
         ) {
-            // 'IndexedDB'에서 해당 컴포넌트 정보를 '삭제'한다.  
+            // 'IndexedDB'에서 해당 컴포넌트 정보를 '삭제'한다.
             removeFloor(this.#props.floorId);
 
             // '화면'에서 해당 컴포넌트를 '제거'한다.
@@ -185,7 +198,11 @@ export class FloorContext {
             if (context.replaceIdMap.has(this.#props.floorId)) {
                 newInvalidFloorId = this.#props.floorId;
                 orgFloodId = context.replaceIdMap.get(newInvalidFloorId);
-                replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloodId);
+                replaceNodeId(
+                    context.componentTreeData,
+                    newInvalidFloorId,
+                    orgFloodId
+                );
                 this.#props.floorId = orgFloodId;
             }
         } else if (context.updateReason === "linkDataStore") {
@@ -200,7 +217,6 @@ export class FloorContext {
         }
     }
 }
-
 
 //=============================================================================
 // 최상위에 계층에 위치한 'Floor' 컴포넌트가 '디자인 모드'로 동작시 좌측의 '컴포넌트 트리'를
@@ -220,7 +236,11 @@ function addNodeById(tree, ancestorFloorId, newFloorId) {
             return true;
         }
         if (node.children.length > 0) {
-            const found = addNodeById(node.children, ancestorFloorId, newFloorId);
+            const found = addNodeById(
+                node.children,
+                ancestorFloorId,
+                newFloorId
+            );
             if (found) {
                 return true;
             }
@@ -228,7 +248,6 @@ function addNodeById(tree, ancestorFloorId, newFloorId) {
     }
     return false;
 }
-
 
 // 'tree' 노드 중에 'id'가 'floorId'인 노드를 찾아서 그 노드의 내용을 '리셋'한다.
 function resetNodeById(tree, id) {
@@ -247,7 +266,6 @@ function resetNodeById(tree, id) {
     }
     return false;
 }
-
 
 // 'tree' 노드 중에 'id'에 해당하는 노드의 'name' 정보를 업데이트한다.
 // 'childComponentInfo'는 'id'와 대응되는 '컴포넌트' 정보를 가지고 있다.
@@ -277,14 +295,20 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
                 };
             }
 
-            const compNodeName = childComponentInfo.componentNodeName || compName;
+            const compNodeName =
+                childComponentInfo.componentNodeName || compName;
             node.name = compNodeName;
             node.children = [];
 
             return true;
         }
         if (node.children.length > 0) {
-            const found = updateNodeById(node.children, id, childComponentInfo, isDesignMode);
+            const found = updateNodeById(
+                node.children,
+                id,
+                childComponentInfo,
+                isDesignMode
+            );
             if (found) {
                 return true;
             }
@@ -292,7 +316,6 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
     }
     return false;
 }
-
 
 // 'tree' 전체를 순회하면서 'oldId'를 'newId'로 변경한다.
 function replaceNodeId(tree, oldId, newId) {
@@ -307,9 +330,8 @@ function replaceNodeId(tree, oldId, newId) {
     }
 }
 
-
 // 'TreeView'에 표시를 위해서 구성된 데이터 중에 DOM에서 '삭제'된 'Floor' 컴포넌트 데이터를 제거한다.
-// 
+//
 // treeRootData: 'SCompBox'의 '디자인 모드'에서 좌측 '트리'를 표현하는 데이터
 // excludeIdMap: NOTE: '스벨트' 컴포넌트의 동장 방식으로 인해 현재 '처림 시점' 제어가 쉽지 않은 상황이다.
 //                     일단은 돌아가는 임시 방법으로 도입한 것이다.
