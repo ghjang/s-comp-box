@@ -150,21 +150,81 @@ export function diffObj(obj1, obj2, isRoot = true) {
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-function formatValue(value) {
-  if (typeof value === "string") {
-    return `'${value}'`;
+export function cDiffObj(obj1, obj2, message = "") {
+  const diff = compareObjects(obj1, obj2);
+  if (diff !== undefined) {
+    console.log(message);
+    console.log(JSON.stringify(diff, null, 2));
   }
-  return JSON.stringify(value);
 }
 
-export function cDiffObj(obj1, obj2, logHeader = null, pretty = true) {
-  const diff = diffObj(obj1, obj2);
-  const space = pretty ? 2 : 0;
-  const diffString = JSON.stringify(diff, null, space);
+function compareObjects(obj1, obj2) {
+  if (obj1 === obj2) return undefined;
 
-  if (logHeader) {
-    console.log(logHeader);
+  if (
+    obj1 === null ||
+    obj2 === null ||
+    typeof obj1 !== "object" ||
+    typeof obj2 !== "object"
+  ) {
+    return `${formatValue(obj1)} => ${formatValue(obj2)}`;
   }
 
-  console.log(diffString);
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    return compareArrays(obj1, obj2);
+  }
+
+  const result = {};
+  const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
+
+  for (const key of keys) {
+    if (!(key in obj2)) {
+      result[key] = `${formatValue(obj1[key])} => undefined`;
+    } else if (!(key in obj1)) {
+      result[key] = `undefined => ${formatValue(obj2[key])}`;
+    } else {
+      const nestedDiff = compareObjects(obj1[key], obj2[key]);
+      if (nestedDiff !== undefined) {
+        result[key] = nestedDiff;
+      }
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function compareArrays(arr1, arr2) {
+  const result = {};
+  const maxLength = Math.max(arr1.length, arr2.length);
+
+  for (let i = 0; i < maxLength; i++) {
+    if (i >= arr1.length) {
+      result[i] = `undefined => ${formatValue(arr2[i])}`;
+    } else if (i >= arr2.length) {
+      result[i] = `${formatValue(arr1[i])} => undefined`;
+    } else {
+      const nestedDiff = compareObjects(arr1[i], arr2[i]);
+      if (nestedDiff !== undefined) {
+        result[i] = nestedDiff;
+      }
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function formatValue(value) {
+  if (value === null) {
+    return "null";
+  } else if (value === undefined) {
+    return "undefined";
+  } else if (typeof value === "string") {
+    return `'${value}'`;
+  } else if (Array.isArray(value)) {
+    return `[${value.map(formatValue).join(", ")}]`;
+  } else if (typeof value === "object") {
+    return "{...}";
+  } else {
+    return `${typeof value}(${String(value)})`;
+  }
 }
