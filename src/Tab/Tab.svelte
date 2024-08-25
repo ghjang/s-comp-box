@@ -127,6 +127,16 @@
       default:
         throw new Error(`Invalid tab position: ${tabPosition}`);
     }
+
+    dispatch("updateChildComponentInfo", {
+      updateCallback: (childComponentInfo) => {
+        const _childComponentInfo = childComponentInfo.childComponentInfo;
+        if (_childComponentInfo.componentClassName === "Tab") {
+          _childComponentInfo.props.selectedTabIndex = tabIndex;
+          _childComponentInfo.props.tabPosition = tabPosition;
+        }
+      },
+    });
   }
 
   $: updateSelectedTab(selectedTabIndex, tabPosition);
