@@ -94,7 +94,7 @@ export class FloorContext {
   }
 
   // NOTE: 'SCompBox'의 '디자인 모드'에서 좌측의 '컴포넌트 트리' 표시를 위한 데이터를 업데이트한다.
-  updateChildComponentTreeData(childComponentInfo) {
+  updateChildComponentTreeData(childComponentInfo, debug = false) {
     this.#contextStore.update((value) => {
       value.updateReason = "componentTreeChange";
       if (
@@ -109,7 +109,9 @@ export class FloorContext {
           },
         ];
       }
-      const beforeUpdate = deepCopy(value.componentTreeData);
+
+      const beforeUpdate = debug ? deepCopy(value.componentTreeData) : null;
+
       const treeData = value.componentTreeData;
       updateNodeById(
         treeData,
@@ -117,11 +119,15 @@ export class FloorContext {
         childComponentInfo,
         value.designMode
       );
-      cDiffObj(
-        beforeUpdate,
-        treeData,
-        `floorId: ${this.#props.floorId}, 트리 데이터 변경사항:`
-      );
+
+      if (beforeUpdate) {
+        cDiffObj(
+          beforeUpdate,
+          treeData,
+          `floorId: ${this.#props.floorId}, 트리 데이터 변경사항:`
+        );
+      }
+
       return value;
     });
   }
