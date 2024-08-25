@@ -286,10 +286,11 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
 
       const compNodeName = childComponentInfo.componentNodeName || compName;
       node.name = compNodeName;
-      node.children = [];
+      node.children = node.children ?? [];
 
       return true;
     }
+
     if (node.children.length > 0) {
       const found = updateNodeById(
         node.children,
@@ -302,6 +303,7 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
       }
     }
   }
+
   return false;
 }
 
