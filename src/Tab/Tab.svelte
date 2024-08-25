@@ -6,6 +6,7 @@
   import StackPanel from "../Layout/StackPanel.svelte";
   import TabButtonGroup from "./TabButtonGroup.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
+  import PopUp from "../PopUp/PopUp.svelte";
   import {
     CustomEventsRegister,
     combineCustomEvents,
@@ -143,6 +144,12 @@
 
   let tabView;
 
+  let showPopUp = false;
+  let popUpKind;
+  let popUpTitle;
+  let popUpContent;
+  let popUpButtonClickAction;
+
   // 'Ctrl + 숫자' 키 입력을 통한 '탭' 선택, 'Ctrl + 1'은 '첫 번째 탭'을 의미함.
   function handleKeyUp(event) {
     const index = parseInt(event.key) - 1;
@@ -173,7 +180,7 @@
         {
           action: {
             text: "Add New Tab",
-            handler: () => {
+            handler: async () => {
               const newTabChildComponentInfo = {
                 label: "Tab 1",
                 component: Floor,
@@ -184,17 +191,33 @@
                 },
               };
 
-              tabs = [...tabs, newTabChildComponentInfo];
+              popUpKind = "prompt";
+              popUpTitle = "Tab Name";
+              popUpContent = "Input a New Tab Name:";
+              showPopUp = true;
 
-              selectedTabIndex = tabs.length - 1;
+              return new Promise((resolve) => {
+                popUpButtonClickAction = (value, userInput) => {
+                  if (value === "ok") {
+                    newTabChildComponentInfo.label = userInput;
+                    tabs = [...tabs, newTabChildComponentInfo];
 
-              dispatch("updateChildComponentInfo", {
-                updateCallback: (childComponentInfo) => {
-                  const _childComponentInfo =
-                    childComponentInfo.childComponentInfo;
-                  _childComponentInfo.props.tabs.push(newTabChildComponentInfo);
-                  _childComponentInfo.props.selectedTabIndex = selectedTabIndex;
-                },
+                    selectedTabIndex = tabs.length - 1;
+
+                    dispatch("updateChildComponentInfo", {
+                      updateCallback: (childComponentInfo) => {
+                        const _childInfo =
+                          childComponentInfo.childComponentInfo;
+                        _childInfo.props.tabs.push(newTabChildComponentInfo);
+                        _childInfo.props.selectedTabIndex = selectedTabIndex;
+                      },
+                    });
+
+                    resolve(newTabChildComponentInfo);
+                  } else {
+                    resolve(null);
+                  }
+                };
               });
             },
           },
@@ -212,7 +235,7 @@
         action: {
           text: `${position}`,
           checked: tabPosition === position,
-          handler: () => (tabPosition = position),
+          handler: async () => (tabPosition = position),
         },
       });
     });
@@ -220,11 +243,19 @@
     contextMenu.showContextMenu(event, true, { parentBox: tabView });
   }
 
-  function handleMenuItemClicked(event) {
+  async function handleMenuItemClicked(event) {
     const { action } = event.detail;
     if (action && typeof action.handler === "function") {
-      action.handler();
+      await action.handler();
     }
+  }
+
+  function handlePopUpButtonClicked(event) {
+    const { value, userInput } = event.detail;
+    if (typeof popUpButtonClickAction === "function") {
+      popUpButtonClickAction(value, userInput);
+    }
+    showPopUp = false;
   }
 </script>
 
@@ -280,6 +311,15 @@
     {menuItems}
     bind:this={contextMenu}
     on:menuItemClicked={handleMenuItemClicked}
+  />
+{/if}
+
+{#if showPopUp}
+  <PopUp
+    kind={popUpKind}
+    title={popUpTitle}
+    content={popUpContent}
+    on:buttonClicked={handlePopUpButtonClicked}
   />
 {/if}
 
