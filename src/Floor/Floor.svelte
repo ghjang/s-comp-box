@@ -89,7 +89,7 @@
     contextMenu?.showContextMenu(e);
   }
 
-  function handleMenuItemClicked(event) {
+  async function handleMenuItemClicked(event) {
     if (event.detail.link) {
       const url = event.detail.link.url;
       const target = event.detail.link.target;
@@ -121,7 +121,7 @@
         }
       }
 
-      const newElemInfo = handler();
+      const newElemInfo = await handler();
 
       // FIXME: 'svelte:element'로 동적으로 요소 렌더링시에 불필요 '경고' 출력 제거
       // 'svelte:element'로 동적으로 요소 렌더링시에

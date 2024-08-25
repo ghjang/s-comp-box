@@ -7,6 +7,7 @@
   } from "../common/util.js";
   import SCompInfo from "./SCompInfo.svelte";
   import Floor from "../Floor/Floor.svelte";
+  import PopUp from "../PopUp/PopUp.svelte";
 
   export let compProps = {};
   export let customElementConfigBasePath;
@@ -21,6 +22,12 @@
   let panel_0_length = "20%";
   let treeViewSlot = "left";
 
+  let showPopUp = false;
+  let popUpKind;
+  let popUpTitle;
+  let popUpContent;
+  let popUpButtonClickAction;
+
   let sCompInfo;
 
   $: if (sCompInfo) {
@@ -34,7 +41,7 @@
         return loadCustomElementsInfo(customContainers, customElements);
       })
       .then((_menuItems) => {
-        // NOTE: 이 '반응형 블럭'과 다른 '비동기 실행 컨텍스트'에 있는
+        // NOTE: 이 '반응형 블럭'과 다른 '비동��� 실행 컨텍스트'에 있는
         //       이 대입문의 실행은 결과적으로 이 반응형 블럭을 '무한 루프'에 빠뜨린다.
         //       'menuItems'는 이 반응형 블럭 실행 의존성에 포함되어 있다.
         //menuItems = _menuItems;
@@ -102,7 +109,7 @@
             if (!comp.componentClass) {
               comp.componentClass = await loadClassFromModule(
                 scriptPath,
-                orgCompName
+                orgCompName,
               );
             }
           }
@@ -125,7 +132,7 @@
               } catch (error) {
                 console.warn(
                   `failed to load the custom component script: ${scriptPath}, error: `,
-                  error
+                  error,
                 );
               }
             } else {
@@ -138,7 +145,7 @@
                   await loadScript(scriptPath);
                   comp.componentClass = await loadClassFromModule(
                     scriptPath,
-                    comp.name
+                    comp.name,
                   );
                 }
               }
@@ -151,25 +158,45 @@
         if (!comp.componentClass && !comp.customElementName) {
           console.error(
             "No proper component class or custom element name: ",
-            comp
+            comp,
           );
           throw new Error(
             "No proper component class or custom element name: ",
-            comp
+            comp,
           );
         }
 
         _menuItems.push({
           action: {
             text: comp.description,
-            handler: () => {
-              return {
+            handler: async () => {
+              const componentInfo = {
                 componentClass: comp.componentClass,
                 componentClassName: comp.componentClassName,
                 customElementName: comp.customElementName,
                 componentNodeName: comp.description,
                 props,
               };
+
+              if (comp.componentClassName === "Tab") {
+                popUpKind = "prompt";
+                popUpTitle = "Tab Name";
+                popUpContent = "Input a New Tab Name:";
+                showPopUp = true;
+
+                return new Promise((resolve) => {
+                  popUpButtonClickAction = (value, userInput) => {
+                    if (value === "ok") {
+                      componentInfo.props.tabs[0].label = userInput;
+                      resolve(componentInfo);
+                    } else {
+                      resolve(null);
+                    }
+                  };
+                });
+              }
+
+              return componentInfo;
             },
           },
         });
@@ -242,6 +269,14 @@
     saveSettings(settings);
   }
 
+  function handlePopUpButtonClicked(event) {
+    const { value, userInput } = event.detail;
+    if (typeof popUpButtonClickAction === "function") {
+      popUpButtonClickAction(value, userInput);
+    }
+    showPopUp = false;
+  }
+
   onMount(() => {
     document.addEventListener("keydown", handleKeyDown);
     restoreSettings();
@@ -268,4 +303,13 @@
   />
 {:else}
   <div>Loading...</div>
+{/if}
+
+{#if showPopUp}
+  <PopUp
+    kind={popUpKind}
+    title={popUpTitle}
+    content={popUpContent}
+    on:buttonClicked={handlePopUpButtonClicked}
+  />
 {/if}
