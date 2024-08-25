@@ -26,6 +26,7 @@
   let popUpKind;
   let popUpTitle;
   let popUpContent;
+  let popUpUserInput;
   let popUpButtonClickAction;
 
   let sCompInfo;
@@ -182,6 +183,7 @@
                 popUpKind = "prompt";
                 popUpTitle = "Tab Name";
                 popUpContent = "Input a New Tab Name:";
+                popUpUserInput = componentInfo.props.tabs[0].label;
                 showPopUp = true;
 
                 return new Promise((resolve) => {
@@ -310,6 +312,7 @@
     kind={popUpKind}
     title={popUpTitle}
     content={popUpContent}
+    userInput={popUpUserInput}
     on:buttonClicked={handlePopUpButtonClicked}
   />
 {/if}

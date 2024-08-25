@@ -13,6 +13,7 @@
 
   export let title = "";
   export let content = "";
+  export let userInput = "";
   export let buttons = null;
   export let background = "white";
 
@@ -153,10 +154,11 @@
         <div class="content">
           {@html content}
           <input
+            bind:this={promptInputElem}
             class="prompt-input-text"
             type="text"
             tabindex={buttonTabIndex}
-            bind:this={promptInputElem}
+            value={userInput}
             on:focus={(e) => (lastFocusedElem = e.target)}
             on:keydown={handleKeydown}
           />

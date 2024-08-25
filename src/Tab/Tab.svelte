@@ -147,6 +147,7 @@
   let showPopUp = false;
   let popUpKind;
   let popUpTitle;
+  let popUpUserInput;
   let popUpContent;
   let popUpButtonClickAction;
 
@@ -182,7 +183,7 @@
             text: "Add New Tab",
             handler: async () => {
               const newTabChildComponentInfo = {
-                label: "Tab 1",
+                label: `Tab ${tabs.length + 1}`,
                 component: Floor,
                 componentClassName: "Floor",
                 props: {
@@ -193,6 +194,7 @@
 
               popUpKind = "prompt";
               popUpTitle = "Tab Name";
+              popUpUserInput = newTabChildComponentInfo.label;
               popUpContent = "Input a New Tab Name:";
               showPopUp = true;
 
@@ -319,6 +321,7 @@
     kind={popUpKind}
     title={popUpTitle}
     content={popUpContent}
+    userInput={popUpUserInput}
     on:buttonClicked={handlePopUpButtonClicked}
   />
 {/if}
