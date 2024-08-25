@@ -1,16 +1,15 @@
 const Direction = {
-    RIGHT: 'right',
-    LEFT: 'left',
-    UP: 'up',
-    DOWN: 'down',
+  RIGHT: "right",
+  LEFT: "left",
+  UP: "up",
+  DOWN: "down",
 
-    HOME: 'home',
-    END: 'end',
-    CTRL_HOME: 'ctrl_home',
-    CTRL_END: 'ctrl_end',
+  HOME: "home",
+  END: "end",
+  CTRL_HOME: "ctrl_home",
+  CTRL_END: "ctrl_end",
 
-    EXIT: 'exit'
+  EXIT: "exit",
 };
-
 
 export default Direction;

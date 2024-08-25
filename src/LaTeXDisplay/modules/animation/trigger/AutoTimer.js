@@ -1,29 +1,28 @@
-import BaseTrigger from './BaseTrigger.js';
-import Direction from '../../data/Direction.js';
-
+import BaseTrigger from "./BaseTrigger.js";
+import Direction from "../../data/Direction.js";
 
 export default class AutoTimerTrigger extends BaseTrigger {
-    #timerId = null;
+  #timerId = null;
 
-    performAction(initDelay = 0) {
-        this.#timerId = setTimeout(() => {
-            this.resolveWait({
-                nextDirection: Direction.RIGHT
-            });
-            this.#timerId = null;
-        }, initDelay);
+  performAction(initDelay = 0) {
+    this.#timerId = setTimeout(() => {
+      this.resolveWait({
+        nextDirection: Direction.RIGHT,
+      });
+      this.#timerId = null;
+    }, initDelay);
+  }
+
+  stop(_opts) {
+    if (this.#timerId) {
+      clearTimeout(this.#timerId);
+      this.#timerId = null;
     }
 
-    stop(_opts) {
-        if (this.#timerId) {
-            clearTimeout(this.#timerId);
-            this.#timerId = null;
-        }
-        
-        super.stop();
-    }
+    super.stop();
+  }
 
-    get isUserInteractive() {
-        return false;
-    }
+  get isUserInteractive() {
+    return false;
+  }
 }

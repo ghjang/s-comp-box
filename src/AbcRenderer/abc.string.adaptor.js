@@ -1,43 +1,43 @@
 export default class StringAdaptor {
-    constructor(str) {
-        if (!str) {
-            throw new Error("string value is required");
-        }
-
-        this.str = str;
-        this.isStringAdaptor = true;
-
-        this.initialText = "";
-        this.changelistener = null;
-        this.selectionlistener = null;
+  constructor(str) {
+    if (!str) {
+      throw new Error("string value is required");
     }
 
-    addChangeListener(listener) { }
-    addSelectionListener(listener) { }
-    fireChanged() { }
-    fireSelectionChanged() { }
+    this.str = str;
+    this.isStringAdaptor = true;
 
-    getString() {
-        return this.str;
-    }
+    this.initialText = "";
+    this.changelistener = null;
+    this.selectionlistener = null;
+  }
 
-    setString(str) {
-        this.str = str;
-    }
+  addChangeListener(listener) {}
+  addSelectionListener(listener) {}
+  fireChanged() {}
+  fireSelectionChanged() {}
 
-    getSelection() {
-        return {
-            start: 0,
-            end: 0
-        };
-    }
+  getString() {
+    return this.str;
+  }
 
-    setSelection(startOffset, endOffset) { }
+  setString(str) {
+    this.str = str;
+  }
 
-    getElem() {
-        return null;
-    }
+  getSelection() {
+    return {
+      start: 0,
+      end: 0,
+    };
+  }
 
-    clearEditorWarnings() { }
-    setEditorWarnings(warnings) { }
-};
+  setSelection(startOffset, endOffset) {}
+
+  getElem() {
+    return null;
+  }
+
+  clearEditorWarnings() {}
+  setEditorWarnings(warnings) {}
+}

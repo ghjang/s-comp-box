@@ -11,112 +11,112 @@
 import { headers, headerRules } from "./abc.lang.header";
 
 const langdef = {
-    ignoreCase: false,
-    includeLF: true,
-    defaultToken: 'invalid',
+  ignoreCase: false,
+  includeLF: true,
+  defaultToken: "invalid",
 
-    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+  escapes:
+    /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-    headers,
+  headers,
 
-    tokenizer: {
-        root: [
-            [
-                /([A-Z])(\s*)(:)/,
-                [
-                    {
-                        cases: {
-                            '@headers': 'keyword',
-                        }
-                    },
-                    'white',
-                    { token: 'delimiter', next: '@header$1' }
-                ]
-            ],
-
-            { include: '@whitespace' },
-
-            [/[\[\]]/, '@brackets'],
-
-            [/!.*?!/, 'decorator'],
-
-            [/[A-Ga-gz]/, 'constant'],
-
-            [/\d+/, 'number'],
-
-            // accidentals, factors and tie
-            [/[\^_=\/,>-]/, 'operator'],
-
-            [/\|:|:\||\|/, 'delimiter'],
-
-            // strings
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
-            [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
-
-            // characters
-            [/'[^\\']'/, 'string'],
-            [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-            [/'/, 'string.invalid'],
+  tokenizer: {
+    root: [
+      [
+        /([A-Z])(\s*)(:)/,
+        [
+          {
+            cases: {
+              "@headers": "keyword",
+            },
+          },
+          "white",
+          { token: "delimiter", next: "@header$1" },
         ],
+      ],
 
-        string: [
-            [/[^\\"]+/, 'string'],
-            [/@escapes/, 'string.escape'],
-            [/\\./, 'string.escape.invalid'],
-            [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
-        ],
+      { include: "@whitespace" },
 
-        whitespace: [
-            [/[ \t\r\n]+/, 'white'],
-            [/%\{/, { token: 'delimiter.bracket', bracket: '@open' }],
-            [/%\}/, { token: 'delimiter.bracket', bracket: '@close' }],
-            [/%.*\n/, 'comment']
-        ],
+      [/[\[\]]/, "@brackets"],
 
-        ...headerRules,
+      [/!.*?!/, "decorator"],
+
+      [/[A-Ga-gz]/, "constant"],
+
+      [/\d+/, "number"],
+
+      // accidentals, factors and tie
+      [/[\^_=\/,>-]/, "operator"],
+
+      [/\|:|:\||\|/, "delimiter"],
+
+      // strings
+      [/"([^"\\]|\\.)*$/, "string.invalid"], // non-teminated string
+      [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
+
+      // characters
+      [/'[^\\']'/, "string"],
+      [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
+      [/'/, "string.invalid"],
+    ],
+
+    string: [
+      [/[^\\"]+/, "string"],
+      [/@escapes/, "string.escape"],
+      [/\\./, "string.escape.invalid"],
+      [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+    ],
+
+    whitespace: [
+      [/[ \t\r\n]+/, "white"],
+      [/%\{/, { token: "delimiter.bracket", bracket: "@open" }],
+      [/%\}/, { token: "delimiter.bracket", bracket: "@close" }],
+      [/%.*\n/, "comment"],
+    ],
+
+    ...headerRules,
+  },
+
+  brackets: [
+    ["{", "}", "delimiter.curly"],
+    ["[", "]", "delimiter.square"],
+    ["(", ")", "delimiter.parenthesis"],
+    ["%{", "%}", "delimiter.bracket"],
+  ],
+
+  autoClosingPairs: [
+    { open: "{", close: "}" },
+    { open: "[", close: "]" },
+    { open: "(", close: ")" },
+    { open: "%{", close: "%}" },
+    { open: '"', close: '"' },
+    { open: "'", close: "'" },
+  ],
+
+  surroundingPairs: [
+    { open: "{", close: "}" },
+    { open: "[", close: "]" },
+    { open: "(", close: ")" },
+    { open: "%{", close: "%}" },
+    { open: '"', close: '"' },
+    { open: "'", close: "'" },
+  ],
+
+  folding: {
+    offSide: true,
+    markers: {
+      start: /%\{/,
+      end: /%\}/,
     },
+  },
 
-    brackets: [
-        ['{', '}', 'delimiter.curly'],
-        ['[', ']', 'delimiter.square'],
-        ['(', ')', 'delimiter.parenthesis'],
-        ['%{', '%}', 'delimiter.bracket']
-    ],
-
-    autoClosingPairs: [
-        { open: '{', close: '}' },
-        { open: '[', close: ']' },
-        { open: '(', close: ')' },
-        { open: '%{', close: '%}' },
-        { open: '"', close: '"' },
-        { open: "'", close: "'" }
-    ],
-
-    surroundingPairs: [
-        { open: '{', close: '}' },
-        { open: '[', close: ']' },
-        { open: '(', close: ')' },
-        { open: '%{', close: '%}' },
-        { open: '"', close: '"' },
-        { open: "'", close: "'" }
-    ],
-
-    folding: {
-        offSide: true,
-        markers: {
-            start: /%\{/,
-            end: /%\}/
-        }
+  onEnterRules: [
+    {
+      beforeText: /%\{\s*$/,
+      afterText: /%\}/,
+      action: { indentAction: 2 },
     },
-
-    onEnterRules: [
-        {
-            beforeText: /%\{\s*$/,
-            afterText: /%\}/,
-            action: { indentAction: 2 }
-        }
-    ]
+  ],
 };
-
 
 export default langdef;
