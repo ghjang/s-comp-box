@@ -116,6 +116,35 @@
     <slot />
   </StackPanel>
 {:else}
-  <!-- FIXME: 컴포넌트가 로딩되고 있다는 것을 어떤 식으로든지 인지 할 수 있게 할 필요가 있다. -->
-  <div>Loading...</div>
+  <div
+    class="loading-container"
+    class:vertical={direction === "vertical"}
+    class:right={hAlign === "right"}
+    class:left={hAlign === "left"}
+  >
+    <div class="loading-text">Loading...</div>
+  </div>
 {/if}
+
+<style lang="scss">
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    height: 100%;
+
+    &.vertical {
+      min-height: 100px;
+
+      .loading-text {
+        writing-mode: vertical-lr;
+        text-orientation: mixed;
+      }
+
+      &.right .loading-text {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+</style>
