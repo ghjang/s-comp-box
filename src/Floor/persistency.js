@@ -1,114 +1,39 @@
+import IndexedDBManager, {
+  promisifyRequest,
+  promisifyTransaction,
+} from "../common/data/IndexedDBManager";
+
 const dbName = "SCompBox";
 const dbVersion = 1;
 
-const openDatabase = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(dbName, dbVersion);
+const dbManager = new IndexedDBManager(dbName, dbVersion);
 
-    request.onsuccess = (event) => {
-      resolve(event.target.result);
-    };
+dbManager.addStoreConfig("floors", "floorId", [
+  { name: "ancestorFloorId", keyPath: "ancestorFloorId", unique: false },
+]);
 
-    request.onerror = (event) => {
-      reject(event.target.errorCode);
-    };
+export const getFloorRecordCount = async () =>
+  await dbManager.getRecordCount("floors");
 
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      let objectStore;
-      if (!db.objectStoreNames.contains("floors")) {
-        objectStore = db.createObjectStore("floors", { keyPath: "floorId" });
-      } else {
-        objectStore = request.transaction.objectStore("floors");
-      }
+export const loadFloor = async (floorId) =>
+  await dbManager.getData("floors", floorId);
 
-      if (!objectStore.indexNames.contains("ancestorFloorId")) {
-        objectStore.createIndex("ancestorFloorId", "ancestorFloorId", {
-          unique: false,
-        });
-      }
-    };
-  });
-};
+export const loadDescendentFloor = async (ancestorFloorId) =>
+  await dbManager.getDataByIndex("floors", "ancestorFloorId", ancestorFloorId);
 
-const promisifyRequest = (request) => {
-  return new Promise((resolve, reject) => {
-    request.onsuccess = (event) => resolve(event.target.result);
-    request.onerror = (event) => reject(event.target.error);
-  });
-};
-
-const promisifyTransaction = (transaction) => {
-  return new Promise((resolve, reject) => {
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = (event) => reject(event.target.error);
-    transaction.onabort = (event) => reject(event.target.error);
-  });
-};
-
-export const getFloorRecordCount = async () => {
-  const db = await openDatabase();
-  const transaction = db.transaction("floors", "readonly");
-  const objectStore = transaction.objectStore("floors");
-  const countRequest = objectStore.count();
-  return await promisifyRequest(countRequest);
-};
-
-export const loadFloor = async (floorId) => {
-  const db = await openDatabase();
-  const transaction = db.transaction(["floors"]);
-  const objectStore = transaction.objectStore("floors");
-  const request = objectStore.get(floorId);
-  return (await promisifyRequest(request)) ?? null;
-};
-
-export const saveFloor = async (floor, overwrite = true) => {
-  const db = await openDatabase();
-  const transaction = db.transaction(["floors"], "readwrite");
-  const objectStore = transaction.objectStore("floors");
-  const request = overwrite ? objectStore.put(floor) : objectStore.add(floor);
-  await promisifyRequest(request);
-  await promisifyTransaction(transaction);
-};
-
-export const loadDescendentFloor = async (ancestorFloorId) => {
-  const db = await openDatabase();
-  const transaction = db.transaction(["floors"], "readonly");
-  const objectStore = transaction.objectStore("floors");
-  const index = objectStore.index("ancestorFloorId");
-  const request = index.getAll(ancestorFloorId);
-  return await promisifyRequest(request);
-};
+export const saveFloor = async (floor, overwrite = true) =>
+  await dbManager.saveData("floors", floor, null, overwrite);
 
 export const removeFloor = async (floorId) => {
-  const db = await openDatabase();
-  const transaction = db.transaction("floors", "readwrite");
-  const objectStore = transaction.objectStore("floors");
-
-  const deleteDescendents = async (ancestorFloorId) => {
-    const index = objectStore.index("ancestorFloorId");
-    const request = index.getAll(ancestorFloorId);
-    const descendents = await promisifyRequest(request);
-
-    for (const descendent of descendents) {
-      await deleteDescendents(descendent.floorId);
-      await promisifyRequest(objectStore.delete(descendent.floorId));
-    }
-  };
-
-  const floorRequest = objectStore.get(floorId);
-  const floor = await promisifyRequest(floorRequest);
-
-  if (floor) {
-    await deleteDescendents(floorId);
-    await promisifyRequest(objectStore.delete(floorId));
+  await dbManager.deleteData("floors", floorId);
+  const descendents = await loadDescendentFloor(floorId);
+  for (const descendent of descendents) {
+    await removeFloor(descendent.floorId);
   }
-
-  await promisifyTransaction(transaction);
 };
 
 export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
-  const db = await openDatabase();
+  const db = await dbManager.getDatabase();
   const transaction = db.transaction("floors", "readwrite");
   const store = transaction.objectStore("floors");
 
@@ -179,7 +104,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
 //       상태 조작 부분이 제대로 이루어지지 않는 것으로 보인다.
 //
 //       해서 일단은 아래와 같이 원래의 방식대로 'onsuccess'와 'onerror'를 직접 사용해서 처리하도록 했다.
-//       한번 등록한 'onsuccess'와 'onerror' 핸들러가 '커서'가 끝날때까��� 계속 재사용되는 구조로 보인다.
+//       한번 등록한 'onsuccess'와 'onerror' 핸들러가 '커서'가 끝날때까지 계속 재사용되는 구조로 보인다.
 //
 // NOTE: '성능' 개선 가능성 포인트로 필요하다면,
 //       'IndexedDB'의 'transaction' 동작 방식에 대해서 좀 더 알아보는게 맞겠다.
@@ -237,7 +162,7 @@ export const updateMenuItemsInProps = (obj, floorMenuItems) => {
 };
 
 export const updateFloorChildComponentProps = async (floorId, props) => {
-  const db = await openDatabase();
+  const db = await dbManager.getDatabase();
   const transaction = db.transaction("floors", "readwrite");
   const store = transaction.objectStore("floors");
   const request = store.get(floorId);
