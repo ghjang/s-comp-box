@@ -17,6 +17,13 @@ export function getFloorRecordCount(): Promise<number> {
   return dbManager.getRecordCount("floors");
 }
 
+export async function getAncestorFloorId(
+  floorId: string
+): Promise<string | null> {
+  const floorData = await loadFloor(floorId);
+  return floorData?.ancestorFloorId || null;
+}
+
 export function loadFloor(floorId: string): Promise<FloorData | undefined> {
   return dbManager.getData("floors", floorId);
 }

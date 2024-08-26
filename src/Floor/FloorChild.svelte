@@ -171,6 +171,7 @@
   // NOTE: 'saveFloor' 함수는 'async' 함수이다. 이 문맥에서 'await' 해주지 않아도 큰 문제는 없어 보인다.
   function setChildComponentInfo() {
     context?.updateChildComponentTreeData(childComponentInfo);
+    //context?.updateChildComponentTreeData(childComponentInfo, true); // for debugging
 
     const cleanedChildInfo = cleanProps(childComponentInfo, keyPredicate);
 

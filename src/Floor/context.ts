@@ -2,8 +2,8 @@ import { getContext, setContext } from "svelte";
 import { Writable, writable, get } from "svelte/store";
 import { deepCopy, cDiffObj } from "../common/util";
 import { DataSink } from "../common/data/DataStore.js";
-import { ChildComponentInfo, FloorData } from "./types";
-import { loadFloor, removeFloor } from "./persistency";
+import { ChildComponentInfo } from "./types";
+import { loadFloor, removeFloor, getAncestorFloorId } from "./persistency";
 
 interface TreeNode {
   id: string;
@@ -16,6 +16,7 @@ interface ContextStore {
   maxLevel: number;
   updateReason: string | null;
   targetFloorId: string | null;
+  ancestorFloorId: string | null;
   dataSink: DataSink | null;
   replaceIdMap: Map<string, string>;
   designMode: boolean;
@@ -38,6 +39,7 @@ export class FloorContext {
         maxLevel: 0,
         updateReason: null,
         targetFloorId: null,
+        ancestorFloorId: null,
         dataSink: null,
         replaceIdMap: new Map(),
         designMode: !!props.designMode,
@@ -89,10 +91,12 @@ export class FloorContext {
     }
   }
 
-  highlight(targetFloorId: string) {
+  async highlight(targetFloorId: string) {
+    const ancestorFloorId = await getAncestorFloorId(targetFloorId);
     this.#contextStore.update((value) => {
       value.updateReason = "highlightFloor";
       value.targetFloorId = targetFloorId;
+      value.ancestorFloorId = ancestorFloorId;
       return value;
     });
   }
@@ -202,16 +206,22 @@ export class FloorContext {
       }
     } else if (
       context.updateReason === "highlightFloor" &&
-      context.targetFloorId
+      context.targetFloorId &&
+      context.ancestorFloorId
     ) {
       const targetFloorId = context.targetFloorId;
+      const targetAncestorFloorId = context.ancestorFloorId;
       this.#props.dispatch("queryContainerInfo", {
         infoCallback: async (containerInfo: Record<string, any>) => {
           if (containerInfo.containerName === "Tab") {
+            const curTabAncestorFloorId = containerInfo.ancestorFloorId;
             const curTabIndex = containerInfo.tabIndex;
             const curFloorInfo = await loadFloor(targetFloorId);
             const curFloorTabIndex = curFloorInfo?.nonFloorParentInfo?.tabIndex;
-            if (curTabIndex === curFloorTabIndex) {
+            if (
+              targetAncestorFloorId === curTabAncestorFloorId &&
+              curTabIndex === curFloorTabIndex
+            ) {
               containerInfo.ensureTabVisible(curTabIndex);
             }
           }

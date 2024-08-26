@@ -7,6 +7,7 @@
   import TabButtonGroup from "./TabButtonGroup.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
+  import { findClosestAncestor } from "../common/util.dom.js";
   import {
     CustomEventsRegister,
     combineCustomEvents,
@@ -63,6 +64,8 @@
             tabComponents,
             tabIndex: index,
             selectedTabIndex,
+            ancestorFloorId: findClosestAncestor(tabView, "floor-container")
+              ?.dataset.floorId,
             ensureTabVisible: (tabIndex) => (selectedTabIndex = tabIndex),
           });
         },

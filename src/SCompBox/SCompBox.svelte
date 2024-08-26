@@ -176,7 +176,7 @@
                 componentClassName: comp.componentClassName,
                 customElementName: comp.customElementName,
                 componentNodeName: comp.description,
-                props,
+                props: { ...props },
               };
 
               if (comp.componentClassName === "Tab") {
@@ -189,6 +189,9 @@
                 return new Promise((resolve) => {
                   popUpButtonClickAction = (value, userInput) => {
                     if (value === "ok") {
+                      componentInfo.props.tabs = [
+                        { ...componentInfo.props.tabs[0] },
+                      ];
                       componentInfo.props.tabs[0].label = userInput;
                       resolve(componentInfo);
                     } else {
