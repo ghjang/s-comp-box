@@ -112,42 +112,59 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
   const transaction = db.transaction("floors", "readwrite");
   const store = transaction.objectStore("floors");
 
-  const floorData_0 = await promisifyRequest(store.get(floorId_0));
-  const floorData_1 = await promisifyRequest(store.get(floorId_1));
+  try {
+    const [floorData_0, floorData_1] = await Promise.all([
+      promisifyRequest(store.get(floorId_0)),
+      promisifyRequest(store.get(floorId_1)),
+    ]);
 
-  if (floorData_0 && floorData_1) {
-    // Swap the fields except the keys
-    const temp = { ...floorData_0 };
-    Object.keys(floorData_0).forEach((key) => {
-      if (key !== "floorId" && key !== "nonFloorParentInfo") {
-        floorData_0[key] = floorData_1[key];
-        floorData_1[key] = temp[key];
-      }
-    });
+    if (floorData_0 && floorData_1) {
+      // Swap the fields except the keys
+      const temp = { ...floorData_0 };
+      Object.keys(floorData_0).forEach((key) => {
+        if (key !== "floorId" && key !== "nonFloorParentInfo") {
+          floorData_0[key] = floorData_1[key];
+          floorData_1[key] = temp[key];
+        }
+      });
 
-    await promisifyRequest(store.put(floorData_0));
-    await promisifyRequest(store.put(floorData_1));
+      // Perform all updates in a single transaction
+      await Promise.all([
+        promisifyRequest(store.put(floorData_0)),
+        promisifyRequest(store.put(floorData_1)),
+        swapAncestorFloorId(store, floorId_0, floorId_1),
+      ]);
+    } else if (floorData_0) {
+      // Handle case where only floorData_0 exists
+      floorData_0.floorId = floorId_1;
+      delete floorData_0.nonFloorParentInfo.component_0;
+      floorData_0.nonFloorParentInfo.component_1 =
+        splitterInfo.props.component_1;
 
-    await swapAncestorFloorId(store, floorId_0, floorId_1);
-  } else if (floorData_0) {
-    floorData_0.floorId = floorId_1;
-    delete floorData_0.nonFloorParentInfo.component_0;
-    floorData_0.nonFloorParentInfo.component_1 = splitterInfo.props.component_1;
-    await promisifyRequest(store.delete(floorId_0));
-    await promisifyRequest(store.put(floorData_0));
+      await Promise.all([
+        promisifyRequest(store.delete(floorId_0)),
+        promisifyRequest(store.put(floorData_0)),
+        swapAncestorFloorId(store, floorId_0, floorId_1),
+      ]);
+    } else if (floorData_1) {
+      // Handle case where only floorData_1 exists
+      floorData_1.floorId = floorId_0;
+      delete floorData_1.nonFloorParentInfo.component_1;
+      floorData_1.nonFloorParentInfo.component_0 =
+        splitterInfo.props.component_0;
 
-    await swapAncestorFloorId(store, floorId_0, floorId_1);
-  } else if (floorData_1) {
-    floorData_1.floorId = floorId_0;
-    delete floorData_1.nonFloorParentInfo.component_1;
-    floorData_1.nonFloorParentInfo.component_0 = splitterInfo.props.component_0;
-    await promisifyRequest(store.delete(floorId_1));
-    await promisifyRequest(store.put(floorData_1));
+      await Promise.all([
+        promisifyRequest(store.delete(floorId_1)),
+        promisifyRequest(store.put(floorData_1)),
+        swapAncestorFloorId(store, floorId_0, floorId_1),
+      ]);
+    }
 
-    await swapAncestorFloorId(store, floorId_0, floorId_1);
+    await promisifyTransaction(transaction);
+  } catch (error) {
+    transaction.abort();
+    throw error;
   }
-
-  await promisifyTransaction(transaction);
 };
 
 // NOTE: 'store.openCursor()'가 리턴하는 '객체'의 속성으로 'onsuccess'와 'onerror'가 있다.
@@ -162,7 +179,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
 //       상태 조작 부분이 제대로 이루어지지 않는 것으로 보인다.
 //
 //       해서 일단은 아래와 같이 원래의 방식대로 'onsuccess'와 'onerror'를 직접 사용해서 처리하도록 했다.
-//       한번 등록한 'onsuccess'와 'onerror' 핸들러가 '커서'가 끝날때까지 계속 재사용되는 구조로 보인다.
+//       한번 등록한 'onsuccess'와 'onerror' 핸들러가 '커서'가 끝날때까��� 계속 재사용되는 구조로 보인다.
 //
 // NOTE: '성능' 개선 가능성 포인트로 필요하다면,
 //       'IndexedDB'의 'transaction' 동작 방식에 대해서 좀 더 알아보는게 맞겠다.
