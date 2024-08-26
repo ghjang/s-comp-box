@@ -4,7 +4,7 @@
     fileExists,
     loadScript,
     loadClassFromModule,
-  } from "../common/util.js";
+  } from "../common/util.ts";
   import SCompInfo from "./SCompInfo.svelte";
   import Floor from "../Floor/Floor.svelte";
   import PopUp from "../PopUp/PopUp.svelte";

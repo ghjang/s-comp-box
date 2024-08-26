@@ -1,6 +1,6 @@
 import { getContext, setContext } from "svelte";
 import { Writable, writable, get } from "svelte/store";
-import { deepCopy, cDiffObj } from "../common/util.js";
+import { deepCopy, cDiffObj } from "../common/util";
 import { DataSink } from "../common/data/DataStore.js";
 import { ChildComponentInfo, FloorData } from "./types";
 import { loadFloor, removeFloor } from "./persistency";

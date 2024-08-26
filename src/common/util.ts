@@ -1,5 +1,5 @@
-export function fileExists(filePath) {
-  return new Promise((resolve, reject) => {
+export function fileExists(filePath: string): Promise<boolean> {
+  return new Promise((resolve) => {
     fetch(filePath, { method: "HEAD" })
       .then((response) => resolve(response.status !== 404))
       .catch(() => resolve(false));
@@ -7,14 +7,14 @@ export function fileExists(filePath) {
 }
 
 export function loadScript(
-  scriptPath,
-  ignoreIfNotFound = false,
-  isModule = true
-) {
+  scriptPath: string,
+  ignoreIfNotFound: boolean = false,
+  isModule: boolean = true
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const existingScript = document.head.querySelector(
       `script[src="${scriptPath}"]`
-    );
+    ) as HTMLScriptElement | null;
     if (existingScript) {
       resolve();
       return;
@@ -54,7 +54,7 @@ export function loadScript(
   });
 }
 
-export function loadClassFromModule(modulePath, className) {
+export function loadClassFromModule(modulePath: string, className: string): Promise<any> {
   return new Promise((resolve, reject) => {
     import(modulePath)
       .then((module) => {
@@ -83,7 +83,7 @@ export function loadClassFromModule(modulePath, className) {
   });
 }
 
-export function deepCopy(obj) {
+export function deepCopy<T>(obj: T): T {
   if (typeof structuredClone === "function") {
     // structuredClone이 지원되는 경우 (ECMAScript 2022부터 도입)
     return structuredClone(obj);
@@ -98,18 +98,18 @@ export function deepCopy(obj) {
   }
 }
 
-export function cLog(...args) {
+export function cLog(...args: any[]): void {
   const processedArgs = args.map((arg) =>
     typeof arg === "object" && arg !== null ? deepCopy(arg) : arg
   );
   console.log(...processedArgs);
 }
 
-export function diffObj(obj1, obj2, isRoot = true) {
+export function diffObj(obj1: any, obj2: any, isRoot: boolean = true): any {
   if (obj1 === obj2) return isRoot ? {} : undefined;
 
   if (Array.isArray(obj1) && Array.isArray(obj2)) {
-    const result = [];
+    const result: any[] = [];
     for (let i = 0; i < Math.max(obj1.length, obj2.length); i++) {
       const diff = diffObj(obj1[i], obj2[i], false);
       if (diff !== undefined) {
@@ -128,7 +128,7 @@ export function diffObj(obj1, obj2, isRoot = true) {
     return `${formatValue(obj1)} => ${formatValue(obj2)}`;
   }
 
-  const result = {};
+  const result: { [key: string]: any } = {};
   const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
 
   for (const key of keys) {
@@ -150,7 +150,7 @@ export function diffObj(obj1, obj2, isRoot = true) {
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-export function cDiffObj(obj1, obj2, message = "") {
+export function cDiffObj(obj1: any, obj2: any, message: string = ""): void {
   const diff = compareObjects(obj1, obj2);
   if (diff !== undefined) {
     console.log(message);
@@ -158,7 +158,7 @@ export function cDiffObj(obj1, obj2, message = "") {
   }
 }
 
-function compareObjects(obj1, obj2) {
+function compareObjects(obj1: any, obj2: any): any {
   if (obj1 === obj2) return undefined;
 
   if (
@@ -174,7 +174,7 @@ function compareObjects(obj1, obj2) {
     return compareArrays(obj1, obj2);
   }
 
-  const result = {};
+  const result: { [key: string]: any } = {};
   const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
 
   for (const key of keys) {
@@ -193,8 +193,8 @@ function compareObjects(obj1, obj2) {
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-function compareArrays(arr1, arr2) {
-  const result = {};
+function compareArrays(arr1: any[], arr2: any[]): any {
+  const result: { [key: number]: any } = {};
   const maxLength = Math.max(arr1.length, arr2.length);
 
   for (let i = 0; i < maxLength; i++) {
@@ -213,7 +213,7 @@ function compareArrays(arr1, arr2) {
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-function formatValue(value) {
+function formatValue(value: any): string {
   if (value === null) {
     return "null";
   } else if (value === undefined) {
