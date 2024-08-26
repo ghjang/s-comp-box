@@ -12,6 +12,7 @@ Some Svelte components are here:
 1. Floor
 1. marquee
 1. LaTeXDisplay: A display for LaTeX
+1. ListView
 1. Layout
    * FlexBox
       * Bubble
