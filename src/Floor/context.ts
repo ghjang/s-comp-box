@@ -1,20 +1,40 @@
 import { getContext, setContext } from "svelte";
-import { writable, get } from "svelte/store";
+import { Writable, writable, get } from "svelte/store";
 import { deepCopy, cDiffObj } from "../common/util.js";
-import { loadFloor, removeFloor } from "./persistency.js";
+import { DataSink } from "../common/data/DataStore.js";
+import { ChildComponentInfo, FloorData } from "./types";
+import { loadFloor, removeFloor } from "./persistency";
+
+interface TreeNode {
+  id: string;
+  name: string | null;
+  open: boolean;
+  children: TreeNode[];
+}
+
+interface ContextStore {
+  maxLevel: number;
+  updateReason: string | null;
+  targetFloorId: string | null;
+  dataSink: DataSink | null;
+  replaceIdMap: Map<string, string>;
+  designMode: boolean;
+  childComponentInfo: ChildComponentInfo | null;
+  componentTreeData: TreeNode[];
+}
 
 export class FloorContext {
-  #ctxName;
-  #props;
-  #contextStore;
-  #unsubscribe;
+  #ctxName: string;
+  #props: Record<string, any>;
+  #contextStore: Writable<ContextStore>;
+  #unsubscribe: () => void;
 
-  constructor(ctxName, props) {
+  constructor(ctxName: string, props: Record<string, any>) {
     this.#ctxName = ctxName;
     this.#props = props;
 
     if (props.floorLevel === 0) {
-      this.#contextStore = writable({
+      this.#contextStore = writable<ContextStore>({
         maxLevel: 0,
         updateReason: null,
         targetFloorId: null,
@@ -61,7 +81,7 @@ export class FloorContext {
     return get(this.#contextStore).designMode;
   }
 
-  updateDesignMode(designMode) {
+  updateDesignMode(designMode: boolean) {
     this.#props.designMode = designMode;
     if (this.#props.floorLevel === 0) {
       const ctx = get(this.#contextStore);
@@ -69,7 +89,7 @@ export class FloorContext {
     }
   }
 
-  highlight(targetFloorId) {
+  highlight(targetFloorId: string) {
     this.#contextStore.update((value) => {
       value.updateReason = "highlightFloor";
       value.targetFloorId = targetFloorId;
@@ -77,7 +97,7 @@ export class FloorContext {
     });
   }
 
-  removeComponent(targetFloorId) {
+  removeComponent(targetFloorId: string) {
     this.#contextStore.update((value) => {
       value.updateReason = "componentRemove";
       value.targetFloorId = targetFloorId;
@@ -85,7 +105,7 @@ export class FloorContext {
     });
   }
 
-  updateInvalidFloorIdInfo(newInvalidFloorId, orgFloodId) {
+  updateInvalidFloorIdInfo(newInvalidFloorId: string, orgFloodId: string) {
     this.#contextStore.update((value) => {
       value.updateReason = "updateInvalidFloorIdInfo";
       value.replaceIdMap.set(newInvalidFloorId, orgFloodId);
@@ -94,7 +114,10 @@ export class FloorContext {
   }
 
   // NOTE: 'SCompBox'의 '디자인 모드'에서 좌측의 '컴포넌트 트리' 표시를 위한 데이터를 업데이트한다.
-  updateChildComponentTreeData(childComponentInfo, debug = false) {
+  updateChildComponentTreeData(
+    childComponentInfo: ChildComponentInfo,
+    debug = false
+  ) {
     this.#contextStore.update((value) => {
       value.updateReason = "componentTreeChange";
       if (
@@ -104,6 +127,7 @@ export class FloorContext {
         value.componentTreeData = [
           {
             id: "floor-root",
+            name: null,
             open: true,
             children: [],
           },
@@ -156,7 +180,7 @@ export class FloorContext {
     ctx.replaceIdMap.clear();
   }
 
-  linkDataStore(dataSink) {
+  linkDataStore(dataSink: DataSink) {
     this.#contextStore.update((value) => {
       value.updateReason = "linkDataStore";
       value.dataSink = dataSink;
@@ -165,7 +189,7 @@ export class FloorContext {
   }
 
   // context: '#contextStore'에 저장된 '공유 컨텍스트 객체'
-  #updateFloorState(context) {
+  #updateFloorState(context: ContextStore) {
     if (context.updateReason === "componentTreeChange") {
       if (this.#props.floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
@@ -180,19 +204,20 @@ export class FloorContext {
       context.updateReason === "highlightFloor" &&
       context.targetFloorId
     ) {
+      const targetFloorId = context.targetFloorId;
       this.#props.dispatch("queryContainerInfo", {
-        infoCallback: async (containerInfo) => {
+        infoCallback: async (containerInfo: Record<string, any>) => {
           if (containerInfo.containerName === "Tab") {
             const curTabIndex = containerInfo.tabIndex;
-            const curFloorInfo = await loadFloor(context.targetFloorId);
-            const curFloorTabIndex = curFloorInfo.nonFloorParentInfo?.tabIndex;
+            const curFloorInfo = await loadFloor(targetFloorId);
+            const curFloorTabIndex = curFloorInfo?.nonFloorParentInfo?.tabIndex;
             if (curTabIndex === curFloorTabIndex) {
               containerInfo.ensureTabVisible(curTabIndex);
             }
           }
 
           this.#props.dispatch("highlightFloor", {
-            floorId: context.targetFloorId,
+            floorId: targetFloorId,
           });
         },
       });
@@ -209,13 +234,17 @@ export class FloorContext {
 
       context.replaceIdMap.clear();
     } else if (context.updateReason === "updateInvalidFloorIdInfo") {
-      let newInvalidFloorId = null;
-      let orgFloodId = null;
-      if (context.replaceIdMap.has(this.#props.floorId)) {
-        newInvalidFloorId = this.#props.floorId;
-        orgFloodId = context.replaceIdMap.get(newInvalidFloorId);
-        replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloodId);
-        this.#props.floorId = orgFloodId;
+      const newInvalidFloorId = this.#props.floorId;
+      if (context.replaceIdMap.has(newInvalidFloorId)) {
+        const orgFloorId = context.replaceIdMap.get(newInvalidFloorId);
+        if (orgFloorId) {
+          replaceNodeId(
+            context.componentTreeData,
+            newInvalidFloorId,
+            orgFloorId
+          );
+          this.#props.floorId = orgFloorId;
+        }
       }
     } else if (context.updateReason === "linkDataStore") {
       const dataSink = context.dataSink;
@@ -236,7 +265,11 @@ export class FloorContext {
 //=============================================================================
 // 'tree' 노드 중에 'id'가 'ancestorFloorId'인 노드를 찾아서 그 노드의 'children'에 'newFloorId'를 추가한다.
 // 리턴값은 'newFloorId'를 추가했는지 여부이다.
-function addNodeById(tree, ancestorFloorId, newFloorId) {
+function addNodeById(
+  tree: TreeNode[],
+  ancestorFloorId: string,
+  newFloorId: string
+) {
   for (const node of tree) {
     if (node.id === ancestorFloorId) {
       node.children.push({
@@ -258,7 +291,7 @@ function addNodeById(tree, ancestorFloorId, newFloorId) {
 }
 
 // 'tree' 노드 중에 'id'가 'floorId'인 노드를 찾아서 그 노드의 내용을 '리셋'한다.
-function resetNodeById(tree, id) {
+function resetNodeById(tree: TreeNode[], id: string) {
   for (const node of tree) {
     if (node.id === id) {
       node.name = null;
@@ -277,7 +310,12 @@ function resetNodeById(tree, id) {
 
 // 'tree' 노드 중에 'id'에 해당하는 노드의 'name' 정보를 업데이트한다.
 // 'childComponentInfo'는 'id'와 대응되는 '컴포넌트' 정보를 가지고 있다.
-function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
+function updateNodeById(
+  tree: TreeNode[],
+  id: string,
+  childComponentInfo: ChildComponentInfo,
+  isDesignMode: boolean
+) {
   for (const node of tree) {
     if (node.id === id) {
       let compName;
@@ -327,7 +365,7 @@ function updateNodeById(tree, id, childComponentInfo, isDesignMode) {
 }
 
 // 'tree' 전체를 순회하면서 'oldId'를 'newId'로 변경한다.
-function replaceNodeId(tree, oldId, newId) {
+function replaceNodeId(tree: TreeNode[], oldId: string, newId: string) {
   for (let i = 0; i < tree.length; ++i) {
     const node = tree[i];
     if (node.id === oldId) {
@@ -345,7 +383,10 @@ function replaceNodeId(tree, oldId, newId) {
 // excludeIdMap: NOTE: '스벨트' 컴포넌트의 동장 방식으로 인해 현재 '처림 시점' 제어가 쉽지 않은 상황이다.
 //                     일단은 돌아가는 임시 방법으로 도입한 것이다.
 //                     'excludeIdMap'에 포함된 'id'는 '삭제'하지 않도록 한다.
-function removeInvalidNode(treeRootData, excludeIdMap) {
+function removeInvalidNode(
+  treeRootData: TreeNode[],
+  excludeIdMap: Map<string, string>
+) {
   const floorRootElem = document.querySelector(
     "div.floor-container[data-floor-id='floor-root'][data-floor-level='0']"
   );
@@ -363,9 +404,14 @@ function removeInvalidNode(treeRootData, excludeIdMap) {
   const valueSet = new Set(excludeIdMap?.values());
   const excludeIds = new Set([...keySet, ...valueSet]);
 
-  removeInvalidNodeArrayElement(floorRootElem, treeRootData[0].children);
+  if (floorRootElem) {
+    removeInvalidNodeArrayElement(floorRootElem, treeRootData[0].children);
+  }
 
-  function removeInvalidNodeArrayElement(parentElem, treeData) {
+  function removeInvalidNodeArrayElement(
+    parentElem: Element,
+    treeData: TreeNode[]
+  ) {
     for (let i = 0; i < treeData.length; i++) {
       const node = treeData[i];
       const floorElem = parentElem.querySelector(
@@ -377,7 +423,7 @@ function removeInvalidNode(treeRootData, excludeIdMap) {
         treeData.splice(i, 1);
         i--;
       } else {
-        if (node.children.length > 0) {
+        if (floorElem && node.children.length > 0) {
           removeInvalidNodeArrayElement(floorElem, node.children);
         }
       }

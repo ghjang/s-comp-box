@@ -1,3 +1,4 @@
+import { FloorData } from "./types";
 import IndexedDBManager, {
   promisifyRequest,
   promisifyTransaction,
@@ -12,35 +13,48 @@ dbManager.addStoreConfig("floors", "floorId", [
   { name: "ancestorFloorId", keyPath: "ancestorFloorId", unique: false },
 ]);
 
-export const getFloorRecordCount = async () =>
-  await dbManager.getRecordCount("floors");
+export function getFloorRecordCount(): Promise<number> {
+  return dbManager.getRecordCount("floors");
+}
 
-export const loadFloor = async (floorId) =>
-  await dbManager.getData("floors", floorId);
+export function loadFloor(floorId: string): Promise<FloorData | undefined> {
+  return dbManager.getData("floors", floorId);
+}
 
-export const loadDescendentFloor = async (ancestorFloorId) =>
-  await dbManager.getDataByIndex("floors", "ancestorFloorId", ancestorFloorId);
+export function loadDescendentFloor(
+  ancestorFloorId: string
+): Promise<FloorData[]> {
+  return dbManager.getDataByIndex("floors", "ancestorFloorId", ancestorFloorId);
+}
 
-export const saveFloor = async (floor, overwrite = true) =>
-  await dbManager.saveData("floors", floor, null, overwrite);
+export function saveFloor(
+  floor: FloorData,
+  overwrite = true
+): Promise<IDBValidKey> {
+  return dbManager.saveData("floors", floor, null, overwrite);
+}
 
-export const removeFloor = async (floorId) => {
+export async function removeFloor(floorId: string): Promise<void> {
   await dbManager.deleteData("floors", floorId);
   const descendents = await loadDescendentFloor(floorId);
   for (const descendent of descendents) {
     await removeFloor(descendent.floorId);
   }
-};
+}
 
-export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
+export async function swapFloorData(
+  floorId_0: string,
+  floorId_1: string,
+  splitterInfo: { props: { component_0: any; component_1: any } }
+): Promise<void> {
   const db = await dbManager.getDatabase();
   const transaction = db.transaction("floors", "readwrite");
   const store = transaction.objectStore("floors");
 
   try {
     const [floorData_0, floorData_1] = await Promise.all([
-      promisifyRequest(store.get(floorId_0)),
-      promisifyRequest(store.get(floorId_1)),
+      promisifyRequest<FloorData>(store.get(floorId_0)),
+      promisifyRequest<FloorData>(store.get(floorId_1)),
     ]);
 
     if (floorData_0 && floorData_1) {
@@ -62,6 +76,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
     } else if (floorData_0) {
       // Handle case where only floorData_0 exists
       floorData_0.floorId = floorId_1;
+      floorData_0.nonFloorParentInfo = floorData_0.nonFloorParentInfo || {};
       delete floorData_0.nonFloorParentInfo.component_0;
       floorData_0.nonFloorParentInfo.component_1 =
         splitterInfo.props.component_1;
@@ -74,6 +89,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
     } else if (floorData_1) {
       // Handle case where only floorData_1 exists
       floorData_1.floorId = floorId_0;
+      floorData_1.nonFloorParentInfo = floorData_1.nonFloorParentInfo || {};
       delete floorData_1.nonFloorParentInfo.component_1;
       floorData_1.nonFloorParentInfo.component_0 =
         splitterInfo.props.component_0;
@@ -90,7 +106,7 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
     transaction.abort();
     throw error;
   }
-};
+}
 
 // NOTE: 'store.openCursor()'가 리턴하는 '객체'의 속성으로 'onsuccess'와 'onerror'가 있다.
 //       때문에 'promisifyRequest'를 사용할 수 있을 것 같아 보이지만, 커서의 경우 그렇게하면
@@ -108,12 +124,16 @@ export const swapFloorData = async (floorId_0, floorId_1, splitterInfo) => {
 //
 // NOTE: '성능' 개선 가능성 포인트로 필요하다면,
 //       'IndexedDB'의 'transaction' 동작 방식에 대해서 좀 더 알아보는게 맞겠다.
-async function swapAncestorFloorId(store, floorId_0, floorId_1) {
+async function swapAncestorFloorId(
+  store: IDBObjectStore,
+  floorId_0: string,
+  floorId_1: string
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const request = store.openCursor();
 
-    request.onsuccess = async (event) => {
-      const cursor = event.target.result;
+    request.onsuccess = async (event: Event) => {
+      const cursor = (event.target as IDBRequest).result;
 
       if (cursor) {
         const value = cursor.value;
@@ -132,13 +152,17 @@ async function swapAncestorFloorId(store, floorId_0, floorId_1) {
       }
     };
 
-    request.onerror = (event) => {
-      reject(event.target.error);
+    request.onerror = (event: Event) => {
+      if (event.target instanceof IDBRequest) {
+        reject(event.target.error);
+      } else {
+        reject(new Error("Unknown error"));
+      }
     };
   });
 }
 
-export const updateMenuItemsInProps = (obj, floorMenuItems) => {
+export function updateMenuItemsInProps(obj: any, floorMenuItems: any[]): any {
   if (obj === null || typeof obj !== "object") {
     return obj;
   }
@@ -159,9 +183,12 @@ export const updateMenuItemsInProps = (obj, floorMenuItems) => {
     }
   }
   return updatedObject;
-};
+}
 
-export const updateFloorChildComponentProps = async (floorId, props) => {
+export async function updateFloorChildComponentProps(
+  floorId: string,
+  props: Record<string, any>
+): Promise<void> {
   const db = await dbManager.getDatabase();
   const transaction = db.transaction("floors", "readwrite");
   const store = transaction.objectStore("floors");
@@ -177,4 +204,4 @@ export const updateFloorChildComponentProps = async (floorId, props) => {
   }
 
   await promisifyTransaction(transaction);
-};
+}

@@ -7,7 +7,7 @@
   import FloorChild from "./FloorChild.svelte";
   import { findClosestAncestor } from "../common/util.dom.js";
   import { restoreUnserializableProperties as restoreComponentClass } from "../common/serialization.js";
-  import { updateMenuItemsInProps } from "./persistency.js";
+  import { updateMenuItemsInProps } from "./persistency.ts";
 
   const dispatch = createEventDispatcher();
 

@@ -5,7 +5,7 @@
     restoreUnserializableProperties as restoreComponentClass,
     removeUnserializableProperties as cleanProps,
   } from "../common/serialization.js";
-  import { FloorContext } from "./context.js";
+  import { FloorContext } from "./context.ts";
   import {
     loadFloor,
     loadDescendentFloor,
@@ -13,7 +13,7 @@
     swapFloorData,
     updateMenuItemsInProps,
     updateFloorChildComponentProps as updateFloorProps,
-  } from "./persistency.js";
+  } from "./persistency.ts";
 
   const dispatch = createEventDispatcher();
 
@@ -113,7 +113,7 @@
       (updateCallback) => {
         updateCallback({ childComponentInfo });
         setChildComponentInfo();
-      }
+      },
     );
 
     function handleSplitterOrientationChanged(bubble) {
@@ -142,7 +142,7 @@
       loadChildComponentInfo();
     }
 
-    function handleSplitterPanelSizeChanged(bubble) {
+    async function handleSplitterPanelSizeChanged(bubble) {
       const detail = bubble.forwardingDetail;
       const { orientation, panel_0_length, splitterSize } = detail;
       if (childComponentInfo && panel_0_length) {
@@ -153,9 +153,9 @@
               ? splitterSize.width
               : splitterSize.height;
           const percent = (last_panel_0_length / splitterLength) * 100;
-          updateFloorProps(floorId, { panel_0_length: `${percent}%` });
+          await updateFloorProps(floorId, { panel_0_length: `${percent}%` });
         } else {
-          updateFloorProps(floorId, { panel_0_length });
+          await updateFloorProps(floorId, { panel_0_length });
         }
       }
     }
@@ -168,6 +168,7 @@
     }
   }
 
+  // NOTE: 'saveFloor' 함수는 'async' 함수이다. 이 문맥에서 'await' 해주지 않아도 큰 문제는 없어 보인다.
   function setChildComponentInfo() {
     context?.updateChildComponentTreeData(childComponentInfo);
 
@@ -203,26 +204,26 @@
     if (floorLevel === 0) {
       const floorData = await loadFloor(floorId);
       if (floorData) {
-        restoreComponentClass(floorData, componentScriptBasePath).then(
-          (restoredData) => {
-            const restoredChildInfo = updateMenuItemsInProps(
-              restoredData.childComponentInfo,
-              menuItems
-            );
-            childComponentInfo = restoredChildInfo;
-          }
+        const restoredData = await restoreComponentClass(
+          floorData,
+          componentScriptBasePath,
         );
+        const restoredChildInfo = updateMenuItemsInProps(
+          restoredData.childComponentInfo,
+          menuItems,
+        );
+        childComponentInfo = restoredChildInfo;
       }
     } else if (floorLevel > 0) {
       dispatch("queryContainerInfo", {
-        infoCallback: (containerInfo) => {
+        infoCallback: async (containerInfo) => {
           if (containerInfo.containerName === "Splitter") {
-            tryToLoadSplitterChildComponent(containerInfo);
+            await tryToLoadSplitterChildComponent(containerInfo);
           } else if (containerInfo.containerName === "Tab") {
-            tryToLoadTabChildComponent(containerInfo);
+            await tryToLoadTabChildComponent(containerInfo);
           } else {
             console.warn(
-              `unsupported containerName: ${containerInfo.containerName}`
+              `unsupported containerName: ${containerInfo.containerName}`,
             );
           }
         },
@@ -255,7 +256,7 @@
 
     if (floors.length < 0 || floors.length > 2) {
       console.warn(
-        `invalid splitter's direct descendent floor count: ${floors.length}`
+        `invalid splitter's direct descendent floor count: ${floors.length}`,
       );
       return;
     }
@@ -268,7 +269,7 @@
       // 즉 '저장 오류' 또는 '데이터 오류'인 경우는 무시한다.
       if (nonFloorParentInfo.containerName !== containerInfo.containerName) {
         console.warn(
-          `containerName is different: ${nonFloorParentInfo.containerName}, ${containerInfo.containerName}`
+          `containerName is different: ${nonFloorParentInfo.containerName}, ${containerInfo.containerName}`,
         );
         return false;
       }
@@ -290,7 +291,7 @@
 
     if (floors.length < 0) {
       console.warn(
-        `invalid tab's direct descendent floor count: ${floors.length}`
+        `invalid tab's direct descendent floor count: ${floors.length}`,
       );
       return;
     }
@@ -303,7 +304,7 @@
       // 즉 '저장 오류' 또는 '데이터 오류'인 경우는 무시한다.
       if (nonFloorParentInfo.containerName !== containerInfo.containerName) {
         console.warn(
-          `containerName is different: ${nonFloorParentInfo.containerName}, ${containerInfo.containerName}`
+          `containerName is different: ${nonFloorParentInfo.containerName}, ${containerInfo.containerName}`,
         );
         return false;
       }
