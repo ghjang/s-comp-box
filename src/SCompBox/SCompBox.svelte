@@ -319,3 +319,14 @@
     on:buttonClicked={handlePopUpButtonClicked}
   />
 {/if}
+
+<style>
+  :global(body) {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+  }
+</style>
