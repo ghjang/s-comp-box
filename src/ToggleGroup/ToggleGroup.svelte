@@ -129,13 +129,14 @@
 <style lang="scss">
   .loading-container {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    justify-content: flex-start; // 중앙 정렬에서 시작 정렬로 변경
+    align-items: center; // 세로 중앙 정렬
     width: 100%;
     height: 100%;
 
     &.vertical {
       min-height: 100px;
+      justify-content: center; // 세로 방향일 때는 중앙 정렬 유지
 
       .loading-text {
         writing-mode: vertical-lr;
@@ -145,6 +146,14 @@
       &.right .loading-text {
         transform: rotate(-180deg);
       }
+    }
+
+    &.left {
+      justify-content: flex-start;
+    }
+
+    &.right {
+      justify-content: flex-end;
     }
   }
 </style>
