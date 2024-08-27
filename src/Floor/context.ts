@@ -3,7 +3,12 @@ import { Writable, writable, get } from "svelte/store";
 import { deepCopy, cDiffObj } from "../common/util";
 import { DataSink } from "../common/data/DataStore.js";
 import { ChildComponentInfo } from "./types";
-import { loadFloor, removeFloor, getAncestorFloorId } from "./persistency";
+import {
+  loadFloor,
+  removeFloor,
+  getAncestorFloorId,
+  updateTabFloors,
+} from "./persistency";
 
 interface TreeNode {
   id: string;
@@ -106,6 +111,37 @@ export class FloorContext {
       value.updateReason = "componentRemove";
       value.targetFloorId = targetFloorId;
       return value;
+    });
+  }
+
+  /**
+   * 'Tab' 컴포넌트의 '탭에 설정된 Floor 컴포넌트'를 제거할 때 호출된다.
+   *
+   * @param targetFloorId 제거할 탭에 설정된 Floor 컴포넌트의 ID
+   * @param tabIndexUpdateInfo 탭 인덱스 업데이트 정보를 포함하는 객체
+   */
+  async removeTabComponent(
+    targetFloorId: string,
+    tabIndexUpdateInfo: Record<string, any>
+  ) {
+    const ancestorFloorId = await getAncestorFloorId(targetFloorId);
+
+    // NOTE: 'IndexedDB'에서 해당 컴포넌트 정보를 '삭제'한다.
+    //       '컴포넌트 트리 GUI'에서는 해당 컴포넌트를 리셋한다.
+    this.removeComponent(targetFloorId);
+
+    if (ancestorFloorId) {
+      await updateTabFloors(ancestorFloorId, tabIndexUpdateInfo);
+    }
+
+    // NOTE: '컴포넌트 트리 GUI'에서 해당 컴포넌트를 삭제한다.
+    //       'Splitter'의 경우와 같이 자시 컴포넌트 크기가 고정된 경우는
+    //       트리 노드를 리셋만 해주는 것이 맞다. 'Tab'의 경우는 삭제된
+    //       탭과 연계된 트리 노드를 삭제하는 것이 맞다.
+    const ctx = get(this.#contextStore);
+    removeNodeById(ctx.componentTreeData, targetFloorId);
+    this.#props.dispatch("componentTreeChanged", {
+      componentTreeData: ctx.componentTreeData,
     });
   }
 
@@ -243,6 +279,12 @@ export class FloorContext {
       this.#props.setChildComponentInfo(null);
 
       context.replaceIdMap.clear();
+
+      // '컴포넌트 트리 GUI'에서 해당 컴포넌트를 리셋한다.
+      resetNodeById(context.componentTreeData, this.#props.floorId);
+      this.#props.dispatch("componentTreeChanged", {
+        componentTreeData: context.componentTreeData,
+      });
     } else if (context.updateReason === "updateInvalidFloorIdInfo") {
       const newInvalidFloorId = this.#props.floorId;
       if (context.replaceIdMap.has(newInvalidFloorId)) {
@@ -324,7 +366,8 @@ function updateNodeById(
   tree: TreeNode[],
   id: string,
   childComponentInfo: ChildComponentInfo,
-  isDesignMode: boolean
+  isDesignMode: boolean,
+  debug = false
 ) {
   for (const node of tree) {
     if (node.id === id) {
@@ -352,7 +395,7 @@ function updateNodeById(
       }
 
       const compNodeName = childComponentInfo.componentNodeName || compName;
-      node.name = compNodeName;
+      node.name = debug ? `${id} => ${compNodeName}` : compNodeName;
       node.children = node.children ?? [];
 
       return true;
@@ -385,6 +428,22 @@ function replaceNodeId(tree: TreeNode[], oldId: string, newId: string) {
       replaceNodeId(node.children, oldId, newId);
     }
   }
+}
+
+// 'tree' 노드 중에 'id'가 'floorId'인 노드를 찾아서 그 노드를 삭제한다.
+// 리턴값은 'floorId'를 삭제했는지 여부이다. 'id'에 해당하는 노드는 1개만 존재한다고 가정한다.
+function removeNodeById(tree: TreeNode[], id: string) {
+  for (let i = 0; i < tree.length; ++i) {
+    const node = tree[i];
+    if (node.id === id) {
+      tree.splice(i, 1);
+      return true;
+    }
+    if (node.children.length > 0 && removeNodeById(node.children, id)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // 'TreeView'에 표시를 위해서 구성된 데이터 중에 DOM에서 '삭제'된 'Floor' 컴포넌트 데이터를 제거한다.

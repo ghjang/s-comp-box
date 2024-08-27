@@ -61,9 +61,8 @@
           // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
           callback({
             containerName: "Tab",
-            tabComponents,
+            tabLength: tabs.length,
             tabIndex: index,
-            selectedTabIndex,
             ancestorFloorId: findClosestAncestor(tabView, "floor-container")
               ?.dataset.floorId,
             ensureTabVisible: (tabIndex) => (selectedTabIndex = tabIndex),
@@ -154,12 +153,27 @@
   let popUpContent;
   let popUpButtonClickAction;
 
-  // 'Ctrl + 숫자' 키 입력을 통한 '탭' 선택, 'Ctrl + 1'은 '첫 번째 탭'을 의미함.
-  function handleKeyUp(event) {
-    const index = parseInt(event.key) - 1;
-    if (event.ctrlKey && index >= 0 && index < tabs.length) {
+  async function handleKeyUp(event) {
+    if (event.ctrlKey && event.code === "KeyN") {
+      // 'Ctrl + N' 키 입력을 통한 '탭' 추가
+      event.preventDefault();
+      event.stopPropagation();
+      await handleAddNewTab();
       tabView.focus();
-      selectedTabIndex = index;
+    } else if (event.ctrlKey && event.code === "KeyD") {
+      // 'Ctrl + D' 키 입력을 통한 현재 선택된 '탭' 삭제
+      event.preventDefault();
+      event.stopPropagation();
+      await handleDeleteCurrentTab();
+      tabView.focus();
+    } else {
+      // 'Ctrl + 숫자' 키 입력을 통한 '탭' 선택, 'Ctrl + 1'은 '첫 번째 탭'을 의미함.
+      const index = parseInt(event.key) - 1;
+      if (event.ctrlKey && index >= 0 && index < tabs.length) {
+        tabView.focus();
+        selectedTabIndex = index;
+        event.stopPropagation();
+      }
     }
   }
 
@@ -168,7 +182,7 @@
       return;
     }
 
-    // NOTE: 최소 1개의 탭은 있다.
+    // NOTE: 최소 1개의 '기본 템플릿 성격의 탭'은 있어야 한다.
     const firstTabComponent = tabComponents[0];
     if (!firstTabComponent) {
       return;
@@ -176,55 +190,12 @@
 
     menuItems = [];
 
-    // 'Floor' 컴포넌트를 이미 사용하고 있는 경우만 'Add New Tab' 메뉴 추가
-    if (typeof firstTabComponent.getComponentScriptBasePath == "function") {
-      const scriptBasePath = firstTabComponent.getComponentScriptBasePath();
-      const items = firstTabComponent.getMenuItems();
+    if (firstTabComponent instanceof Floor) {
       menuItems.push(
         {
           action: {
             text: "Add New Tab",
-            handler: async () => {
-              const newTabChildComponentInfo = {
-                label: `Tab ${tabs.length + 1}`,
-                component: Floor,
-                componentClassName: "Floor",
-                props: {
-                  componentScriptBasePath: scriptBasePath,
-                  menuItems: items,
-                },
-              };
-
-              popUpKind = "prompt";
-              popUpTitle = "Tab Name";
-              popUpUserInput = newTabChildComponentInfo.label;
-              popUpContent = "Input a New Tab Name:";
-              showPopUp = true;
-
-              return new Promise((resolve) => {
-                popUpButtonClickAction = (value, userInput) => {
-                  if (value === "ok") {
-                    newTabChildComponentInfo.label = userInput;
-                    tabs = [...tabs, newTabChildComponentInfo];
-
-                    selectedTabIndex = tabs.length - 1;
-
-                    dispatch("updateChildComponentInfo", {
-                      updateCallback: (childComponentInfo) => {
-                        const _childInfo =
-                          childComponentInfo.childComponentInfo;
-                        _childInfo.props.tabs.push(newTabChildComponentInfo);
-                        _childInfo.props.selectedTabIndex = selectedTabIndex;
-                      },
-                    });
-
-                    resolve(newTabChildComponentInfo);
-                  } else {
-                    resolve(null);
-                  }
-                };
-              });
-            },
+            handler: handleAddNewTab,
           },
         },
         {
@@ -246,6 +217,123 @@
     });
 
     contextMenu.showContextMenu(event, true, { parentBox: tabView });
+  }
+
+  function generateNewTabLabel(lastTabLabel) {
+    const match = lastTabLabel.match(/^(.*?)(\d+)$/);
+    if (match) {
+      const prefix = match[1];
+      const lastNumber = parseInt(match[2]);
+      return `${prefix}${lastNumber + 1}`;
+    }
+    return `${lastTabLabel} ${tabs.length + 1}`;
+  }
+
+  async function handleAddNewTab() {
+    if (!(tabComponents[0] instanceof Floor)) {
+      return;
+    }
+
+    const lastTabLabel = tabs[tabs.length - 1].label;
+    const newTabLabel = generateNewTabLabel(lastTabLabel);
+    const scriptBasePath = tabComponents[0].getComponentScriptBasePath();
+    const items = tabComponents[0].getMenuItems();
+
+    const newTabChildComponentInfo = {
+      label: newTabLabel,
+      component: Floor,
+      componentClassName: "Floor",
+      props: {
+        componentScriptBasePath: scriptBasePath,
+        menuItems: items,
+      },
+    };
+
+    popUpKind = "prompt";
+    popUpTitle = "Tab Name";
+    popUpUserInput = newTabChildComponentInfo.label;
+    popUpContent = "Input a New Tab Name:";
+    showPopUp = true;
+
+    return new Promise((resolve) => {
+      popUpButtonClickAction = (value, userInput) => {
+        if (value === "ok" && userInput && userInput.trim()) {
+          newTabChildComponentInfo.label = userInput;
+          tabs = [...tabs, newTabChildComponentInfo];
+
+          selectedTabIndex = tabs.length - 1;
+
+          dispatch("updateChildComponentInfo", {
+            updateCallback: (childComponentInfo) => {
+              const _childInfo = childComponentInfo.childComponentInfo;
+              _childInfo.props.tabs.push(newTabChildComponentInfo);
+              _childInfo.props.selectedTabIndex = selectedTabIndex;
+            },
+          });
+
+          resolve(newTabChildComponentInfo);
+        } else {
+          resolve(null);
+        }
+        showPopUp = false;
+      };
+    });
+  }
+
+  async function handleDeleteCurrentTab() {
+    if (tabs.length <= 1) {
+      // 마지막 탭은 삭제하지 않음
+      return;
+    }
+
+    const tabToDelete = tabs[selectedTabIndex];
+
+    popUpKind = "confirm";
+    popUpTitle = "Delete Tab";
+    popUpContent = `Are you sure you want to delete the tab "${tabToDelete.label}"?`;
+    showPopUp = true;
+
+    return new Promise((resolve) => {
+      popUpButtonClickAction = async (value) => {
+        if (value === "ok") {
+          const deletedTabIndex = selectedTabIndex;
+          const tabCompToDelete = tabComponents[selectedTabIndex];
+
+          const newTabs = tabs.filter((_, index) => index !== selectedTabIndex);
+          let newSelectedTabIndex = selectedTabIndex;
+
+          // 삭제 후 선택된 탭 인덱스 조정
+          if (selectedTabIndex >= newTabs.length) {
+            newSelectedTabIndex = newTabs.length - 1;
+          }
+
+          if (tabCompToDelete instanceof Floor) {
+            const tabIndexUpdateInfo = {
+              deletedTabIndex,
+              newTabLength: newTabs.length,
+              newSelectedTabIndex,
+            };
+            await tabCompToDelete.removeTabComponent(tabIndexUpdateInfo);
+          }
+
+          tabs = newTabs;
+          selectedTabIndex = newSelectedTabIndex;
+
+          dispatch("updateChildComponentInfo", {
+            updateCallback: (childComponentInfo) => {
+              const _childInfo = childComponentInfo.childComponentInfo;
+              _childInfo.props.tabs = tabs;
+              _childInfo.props.selectedTabIndex = selectedTabIndex;
+            },
+          });
+
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+        showPopUp = false;
+      };
+    });
   }
 
   async function handleMenuItemClicked(event) {
@@ -291,8 +379,16 @@
     </div>
 
     {#if tabs.length > 0}
-      {#each tabs as tab, index}
-        <div class="tab-content" class:selected={selectedTabIndex === index}>
+      <!--
+        NOTE: 'each'로 렌더링시 '키(이 경우 tab)'을 지정하지 않으면
+              '탭 삭제'를 하는 경우에 이전에 생성했던 (더이상 유효하지 않은) 탭 컨텐트가 나타날 수 있음.
+      -->
+      {#each tabs as tab, index (tab)}
+        <div
+          class="tab-content"
+          class:selected={selectedTabIndex === index}
+          data-tab-content-index={index}
+        >
           {#if tab.component}
             {@const props = tab.props || {}}
             <svelte:component

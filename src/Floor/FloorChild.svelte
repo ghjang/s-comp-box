@@ -81,6 +81,8 @@
   export const highlight = (targetFloorId) => context?.highlight(targetFloorId);
   export const removeComponent = (targetFloorId) =>
     context?.removeComponent(targetFloorId);
+  export const removeTabComponent = (targetFloorId, tabIndexUpdateInfo) =>
+    context?.removeTabComponent(targetFloorId, tabIndexUpdateInfo);
 
   export function tryToLinkDataSink(dataSink) {
     if (childComponent && childComponent.getDataStore) {

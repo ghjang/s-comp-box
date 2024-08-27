@@ -43,6 +43,10 @@
   export const getCurrentChildComponentInfo = () =>
     floorChild?.getChildComponentInfo();
 
+  export const removeComponent = () => floorChild?.removeComponent(floorId);
+  export const removeTabComponent = (tabIndexUpdateInfo) =>
+    floorChild?.removeTabComponent(floorId, tabIndexUpdateInfo);
+
   export const update = (focus = false) => floorChild?.update(focus);
 
   let contextMenu;

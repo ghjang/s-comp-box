@@ -212,3 +212,34 @@ export async function updateFloorChildComponentProps(
 
   await promisifyTransaction(transaction);
 }
+
+/*
+ * 'Tab' 컴포넌트의 '탭에 설정된 Floor 컴포넌트'를 제거후 남아 있는 탭과 연계된
+ * Floor 컴포넌트들에 저장된 탭 정보를 갱신한다.
+ *
+ * @param ancestorFloorId 제거한 탭의 상위 Floor 컴포넌트의 ID
+ * @param tabIndexUpdateInfo 탭 인덱스 업데이트 정보를 포함하는 객체
+ */
+export async function updateTabFloors(
+  ancestorFloorId: string,
+  tabIndexUpdateInfo: Record<string, any>
+): Promise<void> {
+  const deletedTabIndex = tabIndexUpdateInfo.deletedTabIndex;
+  const newTabLength = tabIndexUpdateInfo.newTabLength;
+
+  const tabDescendents = await loadDescendentFloor(ancestorFloorId);
+  for (const tabDescendent of tabDescendents) {
+    if (tabDescendent.nonFloorParentInfo) {
+      const tabIndex = tabDescendent.nonFloorParentInfo.tabIndex;
+      if (tabIndex > deletedTabIndex) {
+        tabDescendent.nonFloorParentInfo.tabIndex = tabIndex - 1;
+      }
+      tabDescendent.nonFloorParentInfo.tabLength = newTabLength;
+      await saveFloor(tabDescendent);
+    } else {
+      console.warn(
+        `'${tabDescendent.floorId}' floor has no nonFloorParentInfo.`
+      );
+    }
+  }
+}
