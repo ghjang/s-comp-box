@@ -308,22 +308,6 @@
         </div>
       {/each}
     {/if}
-
-    <!--
-      NOTE: 정의된 CSS 셀렉터 표현중에 '> div > .tab-content' 부분에 대해서 
-            '사용하지 않는 셀렉터' 경고가 나는 문제를 해결하기 위한 workaround임.
-            이 표현에서 중간의 명시적인 'div'는 위쪽에 사용된 컨테이너 컴포넌트 관련한 div를 지칭하는 것으로
-            이 'Tab.svelte' 소스 텍스트 상에서는 보이지 않아서 스벨트 컴파일러가 경고를 내는 것으로 보임.
-
-            '>' 표현을 사용한 셀렉터가 들어간 이유는 '중첩된 탭 컴포넌트 배치 구조'에서
-            잘못된 셀렉터가 선택되는 경우가 있어서임.
-     -->
-    <div
-      class="dummy-div-to-suppress-svelte-build-warning"
-      style="display: none"
-    >
-      <div class="tab-content"></div>
-    </div>
   </StackPanel>
 </div>
 
@@ -376,24 +360,24 @@
 
     &.top,
     &.bottom {
-      .tabs {
+      :global(> div > .tabs) {
         height: $tabs-length;
         width: 100%;
       }
 
-      > div > .tab-content {
+      :global(> div > .tab-content) {
         height: calc(100% - $tabs-length);
       }
     }
 
     &.left,
     &.right {
-      .tabs {
+      :global(> div > .tabs) {
         width: $tabs-length;
         height: 100%;
       }
 
-      > div > .tab-content {
+      :global(> div > .tab-content) {
         width: calc(100% - $tabs-length);
       }
     }
