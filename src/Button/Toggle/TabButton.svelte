@@ -8,6 +8,8 @@
   export let showDeleteButton = false;
 
   export let tabPosition = "top";
+  export let deleteButtonClick = (label, value) => {};
+  export const customEvents = ["tabDeleteButtonClicked"];
 
   const contextName = "toggle-group-context";
   const context = getContext(contextName);
@@ -29,6 +31,18 @@
   function isKorean(text) {
     return /[\u3131-\uD79D]/.test(text);
   }
+
+  function handleDeleteTabButtonClick(event) {
+    event.stopPropagation();
+
+    if (deleteButtonClick) {
+      deleteButtonClick(label, value);
+    } else {
+      // NOTE: 현재 이런 식으로 이벤트를 버블링해서 최종적으로 Tab.svelte에서 처리하는 방식은 구현되어 있지 않음.
+      //       TabButton을 감싸고 있는 컨테이너들이 여러개라서 일단 이 방식의 처리는 구현되지 않음.
+      dispatch("tabDeleteButtonClicked", { label, value });
+    }
+  }
 </script>
 
 <button
@@ -39,7 +53,9 @@
 >
   <span class={isKorean(label) ? "korean" : "english"}>{label}</span>
   {#if showDeleteButton && value === $context.activatedValue}
-    <button class="tab-delete-button">X</button>
+    <button class="tab-delete-button" on:click={handleDeleteTabButtonClick}
+      >X</button
+    >
   {/if}
 </button>
 

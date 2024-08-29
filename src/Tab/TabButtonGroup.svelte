@@ -39,6 +39,10 @@
         }
 
         itemCopy.showDeleteButton = showContentControl;
+        itemCopy.deleteButtonClick = (label, value) => {
+          const tabIndex = parseInt(value.split('-')[1]);
+          dispatch('tabDeleteButtonClicked', { label, tabIndex });
+        };
 
         tabItems.push(itemCopy);
       });

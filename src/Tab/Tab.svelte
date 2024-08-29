@@ -282,7 +282,7 @@
 
   async function handleDeleteCurrentTab() {
     if (tabs.length <= 1) {
-      // 마지막 탭은 삭제하지 않음
+      console.info("The last tab cannot be deleted.");
       return;
     }
 
@@ -336,6 +336,13 @@
     });
   }
 
+  function handleTabDeleteButtonClicked(event) {
+    const targetTabIndex = event.detail.tabIndex;
+    if (targetTabIndex === selectedTabIndex) {
+      handleDeleteCurrentTab();
+    }
+  }
+
   async function handleMenuItemClicked(event) {
     const { action } = event.detail;
     if (action && typeof action.handler === "function") {
@@ -376,6 +383,7 @@
         {tabPosition}
         {showContentControl}
         on:tabSelected={({ detail }) => (selectedTabIndex = detail.tabIndex)}
+        on:tabDeleteButtonClicked={handleTabDeleteButtonClicked}
       />
     </div>
 
