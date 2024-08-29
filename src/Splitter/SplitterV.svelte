@@ -9,6 +9,7 @@
 
   export let showContentControl = false;
   export let panel_0_length = "50%";
+  export let hideContentPanelWhenDragging = false;
 
   let panel_0;
   let panel_1;
@@ -17,12 +18,14 @@
   let ttbPanelCollapseButtonClicked = false;
   let resetTtbPanelCollapseButtonClicked = null;
   let lastNonZeroPanel0Height = panel_0_length;
+  let panel_0_min_height = panel_0_length;
+  let panel_0_max_height = panel_0_length;
   let splitterPanelLength = "auto";
 
   $: if (showContentControl) {
     resetTtbPanelCollapseButtonClicked = debounce(
       () => (ttbPanelCollapseButtonClicked = false),
-      300
+      300,
     );
     splitterPanelLength = "auto";
   } else {
@@ -30,8 +33,12 @@
     splitterPanelLength = "2px";
   }
 
-  $: if (panel_0_length !== "0%" && panel_0_length !== "0px") {
-    lastNonZeroPanel0Height = panel_0_length;
+  $: if (panel_0_length) {
+    if (panel_0_length !== "0%" && panel_0_length !== "0px") {
+      lastNonZeroPanel0Height = panel_0_length;
+    }
+    panel_0_min_height = panel_0_length;
+    panel_0_max_height = panel_0_length;
   }
 
   function onPanelSizeChanged(panelSizeInfo) {
@@ -62,7 +69,7 @@
       ttbPanelCollapseButtonClicked = true;
     } else if (direction === "btt") {
       topPanelCollapsed = true;
-      panel_0.style.height = "0%";
+      panel_0_length = "0px";
     } else {
       // do nothing
     }
@@ -94,7 +101,7 @@
         panel_1.style.height === "0%" ||
         panel_1.style.height === "0px")
     ) {
-      panel_0.style.height = lastNonZeroPanel0Height;
+      panel_0_length = lastNonZeroPanel0Height;
     }
   }
 
@@ -107,6 +114,8 @@
     class="content-panel content-panel-0"
     class:ttbPanelCollapseButtonClicked
     style:height={panel_0_length}
+    style:min-height={panel_0_min_height}
+    style:max-height={panel_0_max_height}
     use:resizeObserver={{ panel_1, onPanelSizeChanged, observePanel1: true }}
     use:styleObserver={onStyleChange}
   >
@@ -116,7 +125,12 @@
     {#if showContentControl}
       <div
         class="divider-grip-content panel-collapse"
-        use:dragGrip={{ direction: "vertical", panel_0, panel_1 }}
+        use:dragGrip={{
+          direction: "vertical",
+          panel_0,
+          panel_1,
+          hidePanel: hideContentPanelWhenDragging,
+        }}
       >
         {#if !topPanelCollapsed}
           <button
@@ -124,7 +138,7 @@
             on:mousedown|stopPropagation>▲</button
           >
         {/if}
-        {#if showContentControl.toggleOrientaionButton !== false}
+        {#if showContentControl.toggleOrientationButton !== false}
           <button
             on:click={() => handlePanelOrientationButtonClick()}
             on:mousedown|stopPropagation>↺</button
@@ -148,7 +162,12 @@
     {:else}
       <div
         class="divider-grip"
-        use:dragGrip={{ direction: "vertical", panel_0, panel_1 }}
+        use:dragGrip={{
+          direction: "vertical",
+          panel_0,
+          panel_1,
+          hidePanel: hideContentPanelWhenDragging,
+        }}
       ></div>
     {/if}
   </div>
@@ -170,6 +189,8 @@
     .content-panel-0 {
       &.ttbPanelCollapseButtonClicked {
         flex-grow: 1;
+        min-height: 0 !important;
+        max-height: none !important;
       }
     }
 
@@ -203,6 +224,7 @@
 
       &.bottomPanelCollapsed {
         display: none;
+        flex-grow: 0;
       }
     }
   }

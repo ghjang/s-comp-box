@@ -244,12 +244,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: min-content;
+      width: 100%;
       height: 100%;
+      padding-left: 2em;
+      padding-right: 2em;
       border: none;
 
       .note-staff {
-        width: min-content;
+        width: 100%;
         height: 100%;
         overflow: scroll !important;
         background-color: lightgray;

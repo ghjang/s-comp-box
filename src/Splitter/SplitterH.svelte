@@ -8,6 +8,7 @@
   const dispatch = createEventDispatcher();
 
   export let showContentControl = false;
+  export let hideContentPanelWhenDragging = false;
   export let panel_0_length = "50%";
 
   let panel_0;
@@ -17,12 +18,14 @@
   let ltrPanelCollapseButtonClicked = false; // '>' 버튼이 눌렸었는지 여부
   let resetLtrPanelCollapseButtonClicked = null;
   let lastNonZeroPanel0Width = panel_0_length;
+  let panel_0_min_width = panel_0_length;
+  let panel_0_max_width = panel_0_length;
   let splitterPanelLength = "auto";
 
   $: if (showContentControl) {
     resetLtrPanelCollapseButtonClicked = debounce(
       () => (ltrPanelCollapseButtonClicked = false),
-      300
+      300,
     );
     splitterPanelLength = "auto";
   } else {
@@ -30,8 +33,12 @@
     splitterPanelLength = "2px";
   }
 
-  $: if (panel_0_length !== "0%" && panel_0_length !== "0px") {
-    lastNonZeroPanel0Width = panel_0_length;
+  $: if (panel_0_length) {
+    if (panel_0_length !== "0%" && panel_0_length !== "0px") {
+      lastNonZeroPanel0Width = panel_0_length;
+    }
+    panel_0_min_width = panel_0_length;
+    panel_0_max_width = panel_0_length;
   }
 
   function onPanelSizeChanged(sizeInfo) {
@@ -74,7 +81,7 @@
   function handlePanelCollapseButtonClick(direction = "rtl") {
     if (direction === "rtl") {
       leftPanelCollapsed = true;
-      panel_0.style.width = "0%";
+      panel_0_length = "0px";
     } else if (direction === "ltr") {
       rightPanelCollapsed = true; // 'rightPanelCollapsed' 클래스 추가
       ltrPanelCollapseButtonClicked = true;
@@ -102,7 +109,7 @@
         panel_1.style.width === "0%" ||
         panel_1.style.width === "0px")
     ) {
-      panel_0.style.width = lastNonZeroPanel0Width;
+      panel_0_length = lastNonZeroPanel0Width;
     }
   }
 
@@ -115,6 +122,8 @@
     class="content-panel content-panel-0"
     class:ltrPanelCollapseButtonClicked
     style:width={panel_0_length}
+    style:min-width={panel_0_min_width}
+    style:max-width={panel_0_max_width}
     use:resizeObserver={{ panel_1, onPanelSizeChanged }}
     use:styleObserver={onStyleChange}
   >
@@ -124,7 +133,12 @@
     {#if showContentControl}
       <div
         class="divider-grip-content panel-collapse"
-        use:dragGrip={{ direction: "horizontal", panel_0, panel_1 }}
+        use:dragGrip={{
+          direction: "horizontal",
+          panel_0,
+          panel_1,
+          hidePanel: hideContentPanelWhenDragging,
+        }}
       >
         {#if !rightPanelCollapsed}
           <button
@@ -138,7 +152,7 @@
             on:mousedown|stopPropagation>⇄</button
           >
         {/if}
-        {#if showContentControl.toggleOrientaionButton !== false}
+        {#if showContentControl.toggleOrientationButton !== false}
           <button
             class="rotate-270"
             on:click={() => handlePanelOrientationButtonClick()}
@@ -156,7 +170,12 @@
     {:else}
       <div
         class="divider-grip"
-        use:dragGrip={{ direction: "horizontal", panel_0, panel_1 }}
+        use:dragGrip={{
+          direction: "horizontal",
+          panel_0,
+          panel_1,
+          hidePanel: hideContentPanelWhenDragging,
+        }}
       ></div>
     {/if}
   </div>
@@ -178,6 +197,8 @@
     .content-panel-0 {
       &.ltrPanelCollapseButtonClicked {
         flex-grow: 1;
+        min-width: 0 !important;
+        max-width: none !important;
       }
     }
 
@@ -211,6 +232,7 @@
 
       &.rightPanelCollapsed {
         display: none;
+        flex-grow: 0;
       }
     }
   }

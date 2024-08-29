@@ -60,7 +60,7 @@
   let popUpProps = {};
 
   let panelSize = {};
-  let showContentControl = { toggleOrientaionButton: false };
+  let showContentControl = { toggleOrientationButton: false };
 
   let highlighted = false;
 
@@ -231,6 +231,7 @@
         orientation="horizontal"
         {panel_0_length}
         {showContentControl}
+        hideContentPanelWhenDragging={designMode}
         on:panelSizeChanged={(e) => handlePanelSizeChanged(e)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
@@ -266,6 +267,7 @@
         orientation="horizontal"
         {panel_0_length}
         {showContentControl}
+        hideContentPanelWhenDragging={designMode}
         on:panelSizeChanged={(e) => (panelSize = e.detail)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("left")}
       >

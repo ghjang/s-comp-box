@@ -17,6 +17,7 @@
 
   export let orientation = "horizontal";
   export let showContentControl = false;
+  export let hideContentPanelWhenDragging = false;
 
   export let panel_0_length = "50%";
 
@@ -218,6 +219,7 @@
     {#if component_0.component && component_1.component}
       <SplitterH
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -239,6 +241,7 @@
     {:else if component_0.component}
       <SplitterH
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -255,6 +258,7 @@
     {:else if component_1.component}
       <SplitterH
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -271,6 +275,7 @@
     {:else}
       <SplitterH
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged
         on:panelSwapButtonClicked
@@ -284,6 +289,7 @@
     {#if component_0.component && component_1.component}
       <SplitterV
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -305,6 +311,7 @@
     {:else if component_0.component}
       <SplitterV
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -321,6 +328,7 @@
     {:else if component_1.component}
       <SplitterV
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged={handlePanelSizeChange}
         on:panelSwapButtonClicked={swapPanel}
@@ -337,6 +345,7 @@
     {:else}
       <SplitterV
         {showContentControl}
+        {hideContentPanelWhenDragging}
         {panel_0_length}
         on:panelSizeChanged
         on:panelSwapButtonClicked

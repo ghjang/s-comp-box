@@ -1,6 +1,7 @@
 export function dragGrip(node, initialParams) {
   let params = initialParams;
 
+  let isMouseDown = false;
   let isDragging = false;
   let startX, startY, startWidth, startHeight;
 
@@ -37,12 +38,22 @@ export function dragGrip(node, initialParams) {
       node.appendChild(layerDiv);
     }
 
+    // NOTE: 이 블럭에서 해제한 'min-width'와 'max-width' 설정값은 '마우스업' 이벤트후에
+    //       스벨트의 반응성 블럭 코드에 의해서 다시 설정된다.
     if (params.direction === "horizontal") {
       startX = event.clientX;
       startWidth = params.panel_0.offsetWidth;
+
+      // min-width와 max-width 설정값 해제
+      params.panel_0.style.minWidth = "0";
+      params.panel_0.style.maxWidth = "none";
     } else {
       startY = event.clientY;
       startHeight = params.panel_0.offsetHeight;
+
+      // min-height와 max-height 설정값 해제
+      params.panel_0.style.minHeight = "0";
+      params.panel_0.style.maxHeight = "none";
     }
 
     // '드래깅' 중에 패널 컨텐트 숨김
@@ -57,12 +68,23 @@ export function dragGrip(node, initialParams) {
       }
     }
 
-    isDragging = true;
+    isMouseDown = true;
+    isDragging = false;
   }
 
   function handleMousemove(event) {
-    if (!isDragging) {
+    if (!isMouseDown) {
       return;
+    }
+
+    if (!isDragging) {
+      const diffX = event.clientX - startX;
+      const diffY = event.clientY - startY;
+      if (Math.abs(diffX) > 0 || Math.abs(diffY) > 0) {
+        isDragging = true;
+      } else {
+        return;
+      }
     }
 
     if (params.useTopLevelLayerMouseMoveEventCapture !== false) {
@@ -92,18 +114,38 @@ export function dragGrip(node, initialParams) {
       }
     }
 
-    // 숨겼던 패널 컨텐트 복원
-    if (params.hidePanel) {
-      if (params.panel_0.firstElementChild) {
-        params.panel_0.firstElementChild.style.display = panel_0_display;
-        panel_0_display = null;
+    if (isMouseDown) {
+      if (isDragging) {
+        if (params.direction === "horizontal") {
+          const dx = event.clientX - startX;
+          params.panel_0.style.width = `${startWidth + dx}px`;
+        } else {
+          const dy = event.clientY - startY;
+          params.panel_0.style.height = `${startHeight + dy}px`;
+        }
       }
-      if (params.panel_1.firstElementChild) {
-        params.panel_1.firstElementChild.style.display = panel_1_display;
-        panel_1_display = null;
+
+      // 숨겼던 패널 컨텐트 복원
+      if (params.hidePanel) {
+        // NOTE: '모나코 에디터'와 같이 자체적으로 크기를 조절하려 시도하는 요소가 포함되어 있을 경우에
+        //       곧바로 패널 컨텐트를 복원하면 크기 조절이 제대로 이루어지지 않는 문제를 workaround함.
+        //
+        //       자식 컴포넌트에 'min-content, max-content'와 같은 크기 조절이 필요한 CSS 속성이
+        //       설정되어 있는 경우에 패널 크기 조절이 제대로 안될 수도 있다.
+        setTimeout(() => {
+          if (params.panel_0.firstElementChild) {
+            params.panel_0.firstElementChild.style.display = panel_0_display;
+            panel_0_display = null;
+          }
+          if (params.panel_1.firstElementChild) {
+            params.panel_1.firstElementChild.style.display = panel_1_display;
+            panel_1_display = null;
+          }
+        }, 250);
       }
     }
 
+    isMouseDown = false;
     isDragging = false;
   }
 
