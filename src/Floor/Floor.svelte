@@ -43,9 +43,9 @@
   export const getCurrentChildComponentInfo = () =>
     floorChild?.getChildComponentInfo();
 
-  export const removeComponent = () => floorChild?.removeComponent(floorId);
-  export const removeTabComponent = (tabIndexUpdateInfo) =>
-    floorChild?.removeTabComponent(floorId, tabIndexUpdateInfo);
+  export const resetFloor = () => floorChild?.resetFloor(floorId);
+  export const removeTabFloor = (tabIndexUpdateInfo) =>
+    floorChild?.removeTabFloor(floorId, tabIndexUpdateInfo);
 
   export const update = (focus = false) => floorChild?.update(focus);
 
@@ -160,7 +160,7 @@
   //       'floor-root'의 'Floor' 인스턴스에서만 호출되고 있다는 점을 기억할 것.
   async function handleTreeNodeRemove(event) {
     const targetFloorId = event.detail.id;
-    floorChild.removeComponent(targetFloorId);
+    floorChild.resetFloor(targetFloorId);
   }
 
   function handleHighlightFloor(event) {

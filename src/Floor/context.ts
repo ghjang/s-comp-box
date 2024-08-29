@@ -120,9 +120,9 @@ export class FloorContext {
     });
   }
 
-  removeComponent(targetFloorId: string) {
+  resetFloor(targetFloorId: string) {
     this.#contextStore.update((value) => {
-      value.updateReason = "componentRemove";
+      value.updateReason = "resetFloor";
       value.targetFloorId = targetFloorId;
       return value;
     });
@@ -134,7 +134,7 @@ export class FloorContext {
    * @param targetFloorId 제거할 탭에 설정된 Floor 컴포넌트의 ID
    * @param tabIndexUpdateInfo 탭 인덱스 업데이트 정보를 포함하는 객체
    */
-  async removeTabComponent(
+  async removeTabFloor(
     targetFloorId: string,
     tabIndexUpdateInfo: Record<string, any>
   ) {
@@ -142,7 +142,7 @@ export class FloorContext {
 
     // NOTE: 'IndexedDB'에서 해당 컴포넌트 정보를 '삭제'한다.
     //       '컴포넌트 트리 GUI'에서는 해당 컴포넌트를 리셋한다.
-    this.removeComponent(targetFloorId);
+    this.resetFloor(targetFloorId);
 
     if (ancestorFloorId) {
       await updateTabFloors(ancestorFloorId, tabIndexUpdateInfo);
@@ -304,7 +304,7 @@ export class FloorContext {
         },
       });
     } else if (
-      context.updateReason === "componentRemove" &&
+      context.updateReason === "resetFloor" &&
       context.targetFloorId &&
       context.targetFloorId === this.#props.floorId
     ) {

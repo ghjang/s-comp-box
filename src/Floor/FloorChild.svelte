@@ -81,10 +81,10 @@
   export const ensureVisible = (targetFloorId) =>
     context?.ensureVisible(targetFloorId);
   export const highlight = (targetFloorId) => context?.highlight(targetFloorId);
-  export const removeComponent = (targetFloorId) =>
-    context?.removeComponent(targetFloorId);
-  export const removeTabComponent = (targetFloorId, tabIndexUpdateInfo) =>
-    context?.removeTabComponent(targetFloorId, tabIndexUpdateInfo);
+  export const resetFloor = (targetFloorId) =>
+    context?.resetFloor(targetFloorId);
+  export const removeTabFloor = (targetFloorId, tabIndexUpdateInfo) =>
+    context?.removeTabFloor(targetFloorId, tabIndexUpdateInfo);
 
   export function tryToLinkDataSink(dataSink) {
     if (childComponent && childComponent.getDataStore) {

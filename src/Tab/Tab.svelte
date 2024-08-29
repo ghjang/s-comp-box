@@ -313,7 +313,7 @@
               newTabLength: newTabs.length,
               newSelectedTabIndex,
             };
-            await tabCompToDelete.removeTabComponent(tabIndexUpdateInfo);
+            await tabCompToDelete.removeTabFloor(tabIndexUpdateInfo);
           }
 
           tabs = newTabs;
