@@ -374,6 +374,7 @@
         {tabs}
         {selectedTabIndex}
         {tabPosition}
+        {showContentControl}
         on:tabSelected={({ detail }) => (selectedTabIndex = detail.tabIndex)}
       />
     </div>

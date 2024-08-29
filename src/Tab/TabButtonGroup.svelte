@@ -7,6 +7,7 @@
   export let tabs = [];
   export let selectedTabIndex = 0;
   export let tabPosition = "top";
+  export let showContentControl = false;
 
   let tabItems = [];
   let tabDirection = "horizontal";
@@ -36,6 +37,8 @@
         if (itemCopy.value === undefined) {
           itemCopy.value = `index-${index}`;
         }
+
+        itemCopy.showDeleteButton = showContentControl;
 
         tabItems.push(itemCopy);
       });

@@ -5,6 +5,7 @@
 
   export let label = "";
   export let value;
+  export let showDeleteButton = false;
 
   export let tabPosition = "top";
 
@@ -37,15 +38,20 @@
   on:click={() => handleToggleItemChanged("tabClicked")}
 >
   <span class={isKorean(label) ? "korean" : "english"}>{label}</span>
+  {#if showDeleteButton && value === $context.activatedValue}
+    <button class="tab-delete-button">X</button>
+  {/if}
 </button>
 
 <style lang="scss">
   $button-margin: 0.2em;
+  $background-color: #d0d0d0;
+  $selected-background-color: #b0b0b0;
 
   button {
     border: none;
     border-radius: 0;
-    background-color: #d0d0d0;
+    background-color: $background-color;
     font-size: 0.7em;
     user-select: none;
     white-space: nowrap;
@@ -58,8 +64,33 @@
     }
 
     &.selected {
-      background-color: #b0b0b0;
+      background-color: $selected-background-color;
       font-weight: bold;
+
+      &:has(.tab-delete-button) {
+        padding-right: 0.25em;
+      }
+
+      .tab-delete-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 0.2em;
+        margin-left: 0.3em;
+        margin-right: 0;
+        padding: 0;
+        width: 1.5em;
+        height: 1.5em;
+        background-color: transparent;
+        font-size: 0.7em;
+        user-select: none;
+        white-space: nowrap;
+
+        &:hover {
+          background-color: darken($background-color, 25%);
+        }
+      }
     }
 
     &.top {
