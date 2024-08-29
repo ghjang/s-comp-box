@@ -2,11 +2,12 @@ import { getContext, setContext } from "svelte";
 import { Writable, writable, get } from "svelte/store";
 import { deepCopy, cDiffObj } from "../common/util";
 import { DataSink } from "../common/data/DataStore.js";
-import { ChildComponentInfo } from "./types";
+import { ChildComponentInfo, FloorData } from "./types";
 import {
-  loadFloor,
-  removeFloor,
   getAncestorFloorId,
+  loadFloor,
+  loadAncestorFloors,
+  removeFloor,
   updateTabFloors,
 } from "./persistency";
 
@@ -26,6 +27,7 @@ interface ContextStore {
   replaceIdMap: Map<string, string>;
   designMode: boolean;
   childComponentInfo: ChildComponentInfo | null;
+  floorData: FloorData | null;
   componentTreeData: TreeNode[];
 }
 
@@ -49,6 +51,7 @@ export class FloorContext {
         replaceIdMap: new Map(),
         designMode: !!props.designMode,
         childComponentInfo: null,
+        floorData: null,
         componentTreeData: [
           {
             id: props.floorId,
@@ -94,6 +97,17 @@ export class FloorContext {
       const ctx = get(this.#contextStore);
       ctx.designMode = designMode;
     }
+  }
+
+  async ensureVisible(targetFloorId: string) {
+    const ancestorFloorData = await loadAncestorFloors(targetFloorId);
+    ancestorFloorData.forEach((floorData) => {
+      this.#contextStore.update((value) => {
+        value.updateReason = "ensureVisible";
+        value.floorData = floorData;
+        return value;
+      });
+    });
   }
 
   async highlight(targetFloorId: string) {
@@ -241,6 +255,27 @@ export class FloorContext {
         // do nothing
       }
     } else if (
+      context.updateReason === "ensureVisible" &&
+      context.floorData?.floorId === this.#props.floorId
+    ) {
+      if (context.floorData?.nonFloorParentInfo) {
+        const tabIndex = context.floorData.nonFloorParentInfo.tabIndex;
+
+        // '이 Floor' 컴포넌트의 DOM 트리 상에서의 부모가 'Tab' 컨테이너인 경우에
+        // 현재의 '이 Floor' 컴포넌트가 화면에 보이도록 한다.
+        if (tabIndex) {
+          this.#props.dispatch("queryContainerInfo", {
+            infoCallback: async (containerInfo: Record<string, any>) => {
+              if (containerInfo.containerName === "Tab") {
+                containerInfo.ensureTabVisible(tabIndex);
+              }
+            },
+          });
+        }
+      }
+
+      context.floorData = null;
+    } else if (
       context.updateReason === "highlightFloor" &&
       context.targetFloorId &&
       context.ancestorFloorId
@@ -262,6 +297,7 @@ export class FloorContext {
             }
           }
 
+          // NOTE: 'Floor' 컴포넌트의 영역이 하이라이트된다.
           this.#props.dispatch("highlightFloor", {
             floorId: targetFloorId,
           });

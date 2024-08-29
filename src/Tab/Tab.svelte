@@ -336,6 +336,11 @@
     });
   }
 
+  function handleTabSelected(event) {
+    const { tabIndex } = event.detail;
+    selectedTabIndex = tabIndex;
+  }
+
   function handleTabDeleteButtonClicked(event) {
     const targetTabIndex = event.detail.tabIndex;
     if (targetTabIndex === selectedTabIndex) {
@@ -382,7 +387,7 @@
         {selectedTabIndex}
         {tabPosition}
         {showContentControl}
-        on:tabSelected={({ detail }) => (selectedTabIndex = detail.tabIndex)}
+        on:tabSelected={handleTabSelected}
         on:tabDeleteButtonClicked={handleTabDeleteButtonClicked}
       />
     </div>

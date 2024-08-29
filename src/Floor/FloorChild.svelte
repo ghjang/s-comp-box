@@ -8,7 +8,7 @@
   import { FloorContext } from "./context.ts";
   import {
     loadFloor,
-    loadDescendentFloor,
+    loadDescendentFloors,
     saveFloor,
     swapFloorData,
     updateMenuItemsInProps,
@@ -78,6 +78,8 @@
     };
   }
 
+  export const ensureVisible = (targetFloorId) =>
+    context?.ensureVisible(targetFloorId);
   export const highlight = (targetFloorId) => context?.highlight(targetFloorId);
   export const removeComponent = (targetFloorId) =>
     context?.removeComponent(targetFloorId);
@@ -255,7 +257,7 @@
   }
 
   async function tryToLoadSplitterChildComponent(containerInfo) {
-    const floors = await loadDescendentFloor(ancestorFloorId);
+    const floors = await loadDescendentFloors(ancestorFloorId);
 
     if (floors.length < 0 || floors.length > 2) {
       console.warn(
@@ -290,7 +292,7 @@
   }
 
   async function tryToLoadTabChildComponent(containerInfo) {
-    const floors = await loadDescendentFloor(ancestorFloorId);
+    const floors = await loadDescendentFloors(ancestorFloorId);
 
     if (floors.length < 0) {
       console.warn(

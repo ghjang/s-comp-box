@@ -24,11 +24,44 @@ export async function getAncestorFloorId(
   return floorData?.ancestorFloorId || null;
 }
 
+export async function getAncestorFloorIds(floorId: string): Promise<string[]> {
+  let ancestorFloorIds = [];
+  let childFloorId = floorId;
+  let ancestorFloorId = await getAncestorFloorId(childFloorId);
+  while (ancestorFloorId) {
+    ancestorFloorIds.push(ancestorFloorId);
+    childFloorId = ancestorFloorId;
+    ancestorFloorId = await getAncestorFloorId(childFloorId);
+  }
+  return ancestorFloorIds;
+}
+
 export function loadFloor(floorId: string): Promise<FloorData | undefined> {
   return dbManager.getData("floors", floorId);
 }
 
-export function loadDescendentFloor(
+/**
+ * 주어진 floorId에 대한 모든 조상 Floor의 데이터를 로드한다.
+ * 
+ * @param floorId - 조상을 찾을 Floor의 ID
+ * @returns 조상 Floor들의 데이터 배열. 가장 가까운 조상부터 순서대로 삽입된다.
+ */
+export async function loadAncestorFloors(floorId: string): Promise<FloorData[]> {
+  let floorData: FloorData[] = [];
+  let childFloorId = floorId;
+  let ancestorFloorId = await getAncestorFloorId(childFloorId);
+  while (ancestorFloorId) {
+    const data = await loadFloor(ancestorFloorId);
+    if (data) {
+      floorData.push(data);
+    }
+    childFloorId = ancestorFloorId;
+    ancestorFloorId = await getAncestorFloorId(childFloorId);
+  }
+  return floorData;
+}
+
+export function loadDescendentFloors(
   ancestorFloorId: string
 ): Promise<FloorData[]> {
   return dbManager.getDataByIndex("floors", "ancestorFloorId", ancestorFloorId);
@@ -43,7 +76,7 @@ export function saveFloor(
 
 export async function removeFloor(floorId: string): Promise<void> {
   await dbManager.deleteData("floors", floorId);
-  const descendents = await loadDescendentFloor(floorId);
+  const descendents = await loadDescendentFloors(floorId);
   for (const descendent of descendents) {
     await removeFloor(descendent.floorId);
   }
@@ -227,7 +260,7 @@ export async function updateTabFloors(
   const deletedTabIndex = tabIndexUpdateInfo.deletedTabIndex;
   const newTabLength = tabIndexUpdateInfo.newTabLength;
 
-  const tabDescendents = await loadDescendentFloor(ancestorFloorId);
+  const tabDescendents = await loadDescendentFloors(ancestorFloorId);
   for (const tabDescendent of tabDescendents) {
     if (tabDescendent.nonFloorParentInfo) {
       const tabIndex = tabDescendent.nonFloorParentInfo.tabIndex;

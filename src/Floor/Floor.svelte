@@ -145,7 +145,9 @@
 
   function handleTreeNodeSelected(event) {
     const selectedNode = event.detail;
-    floorChild.highlight(selectedNode.id);
+    const targetFloorId = selectedNode.id;
+    floorChild.ensureVisible(targetFloorId);
+    floorChild.highlight(targetFloorId);
   }
 
   // NOTE: 현재 구현에서 'floor-root'의 'childComponentInfo'는 항상 'null'이다.
