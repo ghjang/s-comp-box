@@ -3,6 +3,7 @@
   import { writable, type Writable } from "svelte/store";
   import ComponentLoader from "../ComponentLoader/ComponentLoader.svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
+  import { ToggleGroupContext } from "./types";
 
   const dispatch = createEventDispatcher();
 
@@ -14,10 +15,6 @@
   export let trapFocus: boolean = false;
   export let defaultItemProps: Record<string, any> = {};
   export let items: Array<Record<string, any>> = [];
-
-  interface ToggleGroupContext {
-    activatedValue: any;
-  }
 
   const contextName = "toggle-group-context";
   const context: Writable<ToggleGroupContext> = initContext(contextName);

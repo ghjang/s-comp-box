@@ -1,10 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
   import type { Writable } from "svelte/store";
-
-  interface ToggleGroupContext {
-    activatedValue: any;
-  }
+  import { ToggleGroupContext } from "../../ToggleGroup/types";
 
   const dispatch = createEventDispatcher<{
     toggleItemChanged: { label: string; value: any };
