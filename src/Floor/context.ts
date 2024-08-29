@@ -7,7 +7,7 @@ import {
   getAncestorFloorId,
   loadFloor,
   loadAncestorFloors,
-  removeFloor,
+  resetFloor,
   updateTabFloors,
 } from "./persistency";
 
@@ -243,7 +243,7 @@ export class FloorContext {
   }
 
   // context: '#contextStore'에 저장된 '공유 컨텍스트 객체'
-  #updateFloorState(context: ContextStore) {
+  async #updateFloorState(context: ContextStore) {
     if (context.updateReason === "componentTreeChange") {
       if (this.#props.floorLevel === 0) {
         // NOTE: 'root floor'에서만 업데이트해주면 된다.
@@ -308,11 +308,11 @@ export class FloorContext {
       context.targetFloorId &&
       context.targetFloorId === this.#props.floorId
     ) {
-      // 'IndexedDB'에서 해당 컴포넌트 정보를 '삭제'한다.
-      removeFloor(this.#props.floorId);
+      // 'IndexedDB'에서 해당 컴포넌트 정보를 '리셋'한다.
+      const floorData = await resetFloor(this.#props.floorId);
 
-      // '화면'에서 해당 컴포넌트를 '제거'한다.
-      this.#props.setChildComponentInfo(null);
+      // '연계된 Floor 컴포넌트'에 설정된 자식 컴포넌트를 '제거'한다.
+      this.#props.setChildComponentInfo(floorData?.childComponentInfo);
 
       context.replaceIdMap.clear();
 

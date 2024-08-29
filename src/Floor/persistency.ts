@@ -42,11 +42,13 @@ export function loadFloor(floorId: string): Promise<FloorData | undefined> {
 
 /**
  * 주어진 floorId에 대한 모든 조상 Floor의 데이터를 로드한다.
- * 
+ *
  * @param floorId - 조상을 찾을 Floor의 ID
  * @returns 조상 Floor들의 데이터 배열. 가장 가까운 조상부터 순서대로 삽입된다.
  */
-export async function loadAncestorFloors(floorId: string): Promise<FloorData[]> {
+export async function loadAncestorFloors(
+  floorId: string
+): Promise<FloorData[]> {
   let floorData: FloorData[] = [];
   let childFloorId = floorId;
   let ancestorFloorId = await getAncestorFloorId(childFloorId);
@@ -72,6 +74,24 @@ export function saveFloor(
   overwrite = true
 ): Promise<IDBValidKey> {
   return dbManager.saveData("floors", floor, null, overwrite);
+}
+
+export async function resetFloor(floorId: string): Promise<FloorData | null> {
+  // '리셋' 대상 플로어의 자식 플로어들은 제거한다.
+  const descendents = await loadDescendentFloors(floorId);
+  for (const descendent of descendents) {
+    await removeFloor(descendent.floorId);
+  }
+
+  // '리셋' 대상 플로어 자체는 자식 컴포넌트 정보를 제거한다.
+  const floorData = await loadFloor(floorId);
+  if (floorData) {
+    floorData.childComponentInfo = { customElementName: "null" };
+    await saveFloor(floorData);
+    return floorData;
+  }
+
+  return null;
 }
 
 export async function removeFloor(floorId: string): Promise<void> {
