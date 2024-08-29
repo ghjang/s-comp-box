@@ -22,6 +22,8 @@
   let panel_0_max_width = panel_0_length;
   let splitterPanelLength = "auto";
 
+  const panelSizeUpdater = (newSize) => (panel_0_length = newSize);
+
   $: if (showContentControl) {
     resetLtrPanelCollapseButtonClicked = debounce(
       () => (ltrPanelCollapseButtonClicked = false),
@@ -137,33 +139,36 @@
           direction: "horizontal",
           panel_0,
           panel_1,
+          panelSizeUpdater,
           hidePanel: hideContentPanelWhenDragging,
         }}
       >
         {#if !rightPanelCollapsed}
           <button
-            on:click={() => handlePanelCollapseButtonClick("ltr")}
-            on:mousedown|stopPropagation>▶</button
+            on:click|stopPropagation={() =>
+              handlePanelCollapseButtonClick("ltr")}
+            on:pointerdown|stopPropagation>▶</button
           >
         {/if}
         {#if showContentControl.panelSwapButton !== false}
           <button
-            on:click={() => handlePanelSwapButtonClick()}
-            on:mousedown|stopPropagation>⇄</button
+            on:click|stopPropagation={() => handlePanelSwapButtonClick()}
+            on:pointerdown|stopPropagation>⇄</button
           >
         {/if}
         {#if showContentControl.toggleOrientationButton !== false}
           <button
             class="rotate-270"
-            on:click={() => handlePanelOrientationButtonClick()}
-            on:mousedown|stopPropagation>↺</button
+            on:click|stopPropagation={() => handlePanelOrientationButtonClick()}
+            on:pointerdown|stopPropagation>↺</button
           >
         {/if}
         {#if !leftPanelCollapsed}
           <button
             class="rotate-180"
-            on:click={() => handlePanelCollapseButtonClick("rtl")}
-            on:mousedown|stopPropagation>▶</button
+            on:click|stopPropagation={() =>
+              handlePanelCollapseButtonClick("rtl")}
+            on:pointerdown|stopPropagation>▶</button
           >
         {/if}
       </div>
@@ -174,6 +179,7 @@
           direction: "horizontal",
           panel_0,
           panel_1,
+          panelSizeUpdater,
           hidePanel: hideContentPanelWhenDragging,
         }}
       ></div>

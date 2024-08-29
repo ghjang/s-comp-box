@@ -22,6 +22,8 @@
   let panel_0_max_height = panel_0_length;
   let splitterPanelLength = "auto";
 
+  const panelSizeUpdater = (newSize) => (panel_0_length = newSize);
+
   $: if (showContentControl) {
     resetTtbPanelCollapseButtonClicked = debounce(
       () => (ttbPanelCollapseButtonClicked = false),
@@ -129,33 +131,36 @@
           direction: "vertical",
           panel_0,
           panel_1,
+          panelSizeUpdater,
           hidePanel: hideContentPanelWhenDragging,
         }}
       >
         {#if !topPanelCollapsed}
           <button
-            on:click={() => handlePanelCollapseButtonClick("btt")}
-            on:mousedown|stopPropagation>▲</button
+            on:click|stopPropagation={() =>
+              handlePanelCollapseButtonClick("btt")}
+            on:pointerdown|stopPropagation>▲</button
           >
         {/if}
         {#if showContentControl.toggleOrientationButton !== false}
           <button
-            on:click={() => handlePanelOrientationButtonClick()}
-            on:mousedown|stopPropagation>↺</button
+            on:click|stopPropagation={() => handlePanelOrientationButtonClick()}
+            on:pointerdown|stopPropagation>↺</button
           >
         {/if}
         {#if showContentControl.panelSwapButton !== false}
           <button
             class="rotate-90"
-            on:click={() => handlePanelSwapButtonClick()}
-            on:mousedown|stopPropagation>⇄</button
+            on:click|stopPropagation={() => handlePanelSwapButtonClick()}
+            on:pointerdown|stopPropagation>⇄</button
           >
         {/if}
         {#if !bottomPanelCollapsed}
           <button
             class="rotate-180"
-            on:click={() => handlePanelCollapseButtonClick("ttb")}
-            on:mousedown|stopPropagation>▲</button
+            on:click|stopPropagation={() =>
+              handlePanelCollapseButtonClick("ttb")}
+            on:pointerdown|stopPropagation>▲</button
           >
         {/if}
       </div>
@@ -166,6 +171,7 @@
           direction: "vertical",
           panel_0,
           panel_1,
+          panelSizeUpdater,
           hidePanel: hideContentPanelWhenDragging,
         }}
       ></div>
