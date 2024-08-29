@@ -1,21 +1,32 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
+  import type { Writable } from "svelte/store";
 
-  const dispatch = createEventDispatcher();
+  interface ToggleGroupContext {
+    activatedValue: any;
+  }
 
-  export let label = "";
-  export let value;
-  export let showDeleteButton = false;
+  const dispatch = createEventDispatcher<{
+    toggleItemChanged: { label: string; value: any };
+    tabClicked: { label: string; value: any };
+    tabDeleteButtonClicked: { label: string; value: any };
+  }>();
 
-  export let tabPosition = "top";
-  export let deleteButtonClick = (label, value) => {};
-  export const customEvents = ["tabDeleteButtonClicked"];
+  export let label: string = "";
+  export let value: any;
+  export let showDeleteButton: boolean = false;
+
+  export let tabPosition: "top" | "bottom" | "left" | "right" = "top";
+  export let deleteButtonClick:
+    | ((label: string, value: any) => void)
+    | undefined = undefined;
+  export const customEvents: string[] = ["tabDeleteButtonClicked"];
 
   const contextName = "toggle-group-context";
-  const context = getContext(contextName);
+  const context = getContext<Writable<ToggleGroupContext>>(contextName);
   $: updateTabButtonState($context);
 
-  function updateTabButtonState(context) {
+  function updateTabButtonState(context: ToggleGroupContext): void {
     if (!context) {
       throw new Error(
         `The component must be used below a <ToggleGroup> parent component.`,
@@ -23,23 +34,22 @@
     }
   }
 
-  async function handleToggleItemChanged(eventName) {
-    eventName = value ? "toggleItemChanged" : eventName;
-    dispatch(eventName, { label, value });
+  function handleToggleItemChanged(eventName: "tabClicked"): void {
+    if (value && eventName === "tabClicked") {
+      dispatch("toggleItemChanged", { label, value });
+    }
   }
 
-  function isKorean(text) {
+  function isKorean(text: string): boolean {
     return /[\u3131-\uD79D]/.test(text);
   }
 
-  function handleDeleteTabButtonClick(event) {
+  function handleDeleteTabButtonClick(event: MouseEvent): void {
     event.stopPropagation();
 
     if (deleteButtonClick) {
       deleteButtonClick(label, value);
     } else {
-      // NOTE: 현재 이런 식으로 이벤트를 버블링해서 최종적으로 Tab.svelte에서 처리하는 방식은 구현되어 있지 않음.
-      //       TabButton을 감싸고 있는 컨테이너들이 여러개라서 일단 이 방식의 처리는 구현되지 않음.
       dispatch("tabDeleteButtonClicked", { label, value });
     }
   }
