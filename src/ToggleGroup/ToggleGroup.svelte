@@ -5,7 +5,9 @@
   import StackPanel from "../Layout/StackPanel.svelte";
   import { ToggleGroupContext } from "./types";
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    toggleItemChanged: { value: any; itemIndex: number };
+  }>();
 
   export let activatedValue: any = null;
   export let direction: "vertical" | "horizontal" = "vertical";
