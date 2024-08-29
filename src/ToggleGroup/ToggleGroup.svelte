@@ -1,39 +1,40 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher, setContext } from "svelte";
-  import { writable } from "svelte/store";
+  import { writable, type Writable } from "svelte/store";
   import ComponentLoader from "../ComponentLoader/ComponentLoader.svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let activatedValue = null;
-  export let direction = "vertical";
-  export let reverse = false;
-  export let hAlign = "left";
-  export let vAlign = "top";
-  export let trapFocus = false;
-  export let defaultItemProps = {};
-  export let items = [];
+  export let activatedValue: any = null;
+  export let direction: "vertical" | "horizontal" = "vertical";
+  export let reverse: boolean = false;
+  export let hAlign: "left" | "center" | "right" = "left";
+  export let vAlign: "top" | "center" | "bottom" = "top";
+  export let trapFocus: boolean = false;
+  export let defaultItemProps: Record<string, any> = {};
+  export let items: Array<Record<string, any>> = [];
+
+  interface ToggleGroupContext {
+    activatedValue: any;
+  }
 
   const contextName = "toggle-group-context";
-  const context = initContext(contextName);
+  const context: Writable<ToggleGroupContext> = initContext(contextName);
   $: updateToggleGroupState($context);
 
-  function initContext(ctxtName) {
-    const context = writable({
+  function initContext(ctxtName: string): Writable<ToggleGroupContext> {
+    const context = writable<ToggleGroupContext>({
       activatedValue: null,
     });
     setContext(ctxtName, context);
     return context;
   }
 
-  function updateToggleGroupState(context) {}
+  function updateToggleGroupState(context: ToggleGroupContext): void {}
 
-  function handleToggleItemChanged(event) {
-    // NOTE: '토글 그룹'과 관련된 '자식 컴포넌트'에게 '토글 아이템 변경' 이벤트를 전달한다.
+  function handleToggleItemChanged(event: CustomEvent): void {
     $context.activatedValue = event.detail.value;
-
-    // 현재 '토글 그룹'에 활성화된 토글 아이템의 값을 설정한다.
     activatedValue = event.detail.value;
 
     dispatch("toggleItemChanged", {
@@ -42,11 +43,13 @@
     });
   }
 
-  let loader;
+  let loader: ComponentLoader;
   let isAllComponentsLoaded = false;
 
-  // NOTE: '스벨트 컴포넌트 클래스'가 포함된 스크립트를 찾아서 동적으로 로딩한다.
-  async function loadComponents(loader, targetItems) {
+  async function loadComponents(
+    loader: ComponentLoader,
+    targetItems: Array<Record<string, any>>,
+  ): Promise<void> {
     if (!loader) {
       return;
     }
@@ -66,7 +69,7 @@
     isAllComponentsLoaded = true;
   }
 
-  function renderComponents(targetItems) {
+  function renderComponents(targetItems: Array<Record<string, any>>): void {
     for (let i = 0; i < targetItems.length; ++i) {
       const item = targetItems[i];
 
