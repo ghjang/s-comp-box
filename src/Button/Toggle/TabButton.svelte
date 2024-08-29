@@ -51,8 +51,13 @@
   tabindex="-1"
   on:click={() => handleToggleItemChanged("tabClicked")}
 >
+  {#if showDeleteButton && value === $context.activatedValue && tabPosition === "left"}
+    <button class="tab-delete-button" on:click={handleDeleteTabButtonClick}
+      >X</button
+    >
+  {/if}
   <span class={isKorean(label) ? "korean" : "english"}>{label}</span>
-  {#if showDeleteButton && value === $context.activatedValue}
+  {#if showDeleteButton && value === $context.activatedValue && tabPosition !== "left"}
     <button class="tab-delete-button" on:click={handleDeleteTabButtonClick}
       >X</button
     >
@@ -83,8 +88,32 @@
       background-color: $selected-background-color;
       font-weight: bold;
 
-      &:has(.tab-delete-button) {
+      &.top:has(.tab-delete-button),
+      &.bottom:has(.tab-delete-button) {
         padding-right: 0.25em;
+
+        .tab-delete-button {
+          margin-left: 0.3em;
+          margin-right: 0;
+        }
+      }
+
+      &.left:has(.tab-delete-button) {
+        padding-top: 0.25em;
+
+        .tab-delete-button {
+          margin-bottom: 0.3em;
+          margin-top: 0;
+        }
+      }
+
+      &.right:has(.tab-delete-button) {
+        padding-bottom: 0.25em;
+
+        .tab-delete-button {
+          margin-top: 0.3em;
+          margin-bottom: 0;
+        }
       }
 
       .tab-delete-button {
@@ -93,8 +122,6 @@
         justify-content: center;
         border: none;
         border-radius: 0.2em;
-        margin-left: 0.3em;
-        margin-right: 0;
         padding: 0;
         width: 1.5em;
         height: 1.5em;
