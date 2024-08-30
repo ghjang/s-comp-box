@@ -16,7 +16,7 @@ export function addNodeById(
   tree: TreeNode[],
   ancestorFloorId: string,
   newFloorId: string
-) {
+): boolean {
   for (const node of tree) {
     if (node.id === ancestorFloorId) {
       node.children.push({
