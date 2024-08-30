@@ -266,7 +266,7 @@
       return;
     }
 
-    const floorData = floors.find((floor) => {
+    const splitterPanelFloorData = floors.find((floor) => {
       const nonFloorParentInfo = floor.nonFloorParentInfo;
 
       // 'IndexedDB'에 저장된 'nonFloorParentInfo'의 'containerName'이
@@ -288,7 +288,7 @@
       return hasComponent_0 || hasComponent_1;
     });
 
-    loadFloorChildComponent(floorData);
+    loadFloorChildComponent(splitterPanelFloorData);
   }
 
   async function tryToLoadTabChildComponent(containerInfo) {
@@ -301,7 +301,7 @@
       return;
     }
 
-    const floorData = floors.find((floor) => {
+    const tabFloorData = floors.find((floor) => {
       const nonFloorParentInfo = floor.nonFloorParentInfo;
 
       // 'IndexedDB'에 저장된 'nonFloorParentInfo'의 'containerName'이
@@ -318,7 +318,7 @@
       return nonFloorParentInfo.tabIndex === containerInfo.tabIndex;
     });
 
-    loadFloorChildComponent(floorData);
+    loadFloorChildComponent(tabFloorData);
   }
 
   onDestroy(() => context?.dispose());
