@@ -99,6 +99,9 @@ export function updateNodeById(
           ...childComponentInfo.props,
           showContentControl: isDesignMode,
         };
+        if (compName === "Splitter") {
+          childComponentInfo.props.showPanelResizingInfo = isDesignMode;
+        }
       }
 
       const compNodeName = childComponentInfo.componentNodeName || compName;
