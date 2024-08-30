@@ -231,7 +231,7 @@
         orientation="horizontal"
         {panel_0_length}
         {showContentControl}
-        hideContentPanelWhenDragging={designMode}
+        showPanelResizingInfo={designMode}
         on:panelSizeChanged={(e) => handlePanelSizeChanged(e)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("right")}
       >
@@ -267,7 +267,7 @@
         orientation="horizontal"
         {panel_0_length}
         {showContentControl}
-        hideContentPanelWhenDragging={designMode}
+        showPanelResizingInfo={designMode}
         on:panelSizeChanged={(e) => (panelSize = e.detail)}
         on:panelSwapButtonClicked={() => handlePanelSwapButtonClick("left")}
       >

@@ -8,7 +8,7 @@
   const dispatch = createEventDispatcher();
 
   export let showContentControl = false;
-  export let hideContentPanelWhenDragging = false;
+  export let showPanelResizingInfo = false;
   export let panel_0_length = "50%";
 
   let panel_0;
@@ -140,7 +140,7 @@
           panel_0,
           panel_1,
           panelSizeUpdater,
-          hidePanel: hideContentPanelWhenDragging,
+          showPanelResizingInfo,
         }}
       >
         {#if !rightPanelCollapsed}
@@ -180,7 +180,7 @@
           panel_0,
           panel_1,
           panelSizeUpdater,
-          hidePanel: hideContentPanelWhenDragging,
+          showPanelResizingInfo,
         }}
       ></div>
     {/if}

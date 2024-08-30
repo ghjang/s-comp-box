@@ -29,6 +29,11 @@ export function dragGrip(node, initialParams) {
     layerDiv.addEventListener("pointercancel", handlePointerUp);
     node.appendChild(layerDiv);
 
+    if (params.showPanelResizingInfo) {
+      addPanelBorder(params.panel_0);
+      addPanelBorder(params.panel_1);
+    }
+
     let newSize = null;
     if (params.direction === "horizontal") {
       startX = event.clientX;
@@ -73,6 +78,11 @@ export function dragGrip(node, initialParams) {
 
     event.stopPropagation();
 
+    if (params.showPanelResizingInfo) {
+      updatePanelSizeInfo(params.panel_0);
+      updatePanelSizeInfo(params.panel_1);
+    }
+
     const delta =
       params.direction === "horizontal"
         ? event.clientX - startX
@@ -96,6 +106,11 @@ export function dragGrip(node, initialParams) {
       layerDiv.remove();
     }
 
+    if (params.showPanelResizingInfo) {
+      removePanelBorder(params.panel_0);
+      removePanelBorder(params.panel_1);
+    }
+
     if (isPointerDown) {
       if (isDragging) {
         const delta =
@@ -110,7 +125,7 @@ export function dragGrip(node, initialParams) {
 
       // 숨겼던 패널 컨텐트 복원
       if (params.hidePanel) {
-        // NOTE: '모나코 에디터'와 같이 자체적으로 크기를 조절하려 시도하는 요소가 포함되어 있을 경우에
+        // NOTE: '모나코 에디터'와 같이 자체��으로 크기를 조절하려 시도하는 요소가 포함되어 있을 경우에
         //       곧바로 패널 컨텐트를 복원하면 크기 조절이 제대로 이루어지지 않는 문제를 workaround함.
         //
         //       자식 컴포넌트에 'min-content, max-content'와 같은 크기 조절이 필요한 CSS 속성이
@@ -130,6 +145,42 @@ export function dragGrip(node, initialParams) {
 
     isPointerDown = false;
     isDragging = false;
+  }
+
+  function addPanelBorder(panel) {
+    const originalPosition = getComputedStyle(panel).position;
+    if (originalPosition === "static") {
+      panel.style.setProperty("--original-position", "static");
+      panel.style.position = "relative";
+    } else {
+      panel.style.setProperty("--original-position", originalPosition);
+    }
+    panel.style.setProperty("--panel-border-color", "lightcoral");
+    panel.style.setProperty("--panel-border-width", "3px");
+    panel.style.setProperty("--panel-border-style", "solid");
+    updatePanelSizeInfo(panel);
+    panel.classList.add("s-comp-splitter-panel-with-border");
+  }
+
+  function updatePanelSizeInfo(panel) {
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
+    panel.style.setProperty("--panel-size-content", `"${width} x ${height}"`);
+  }
+
+  function removePanelBorder(panel) {
+    const originalPosition = panel.style.getPropertyValue(
+      "--original-position"
+    );
+    if (originalPosition) {
+      panel.style.position = originalPosition;
+    }
+    panel.style.removeProperty("--panel-border-color");
+    panel.style.removeProperty("--panel-border-width");
+    panel.style.removeProperty("--panel-border-style");
+    panel.style.removeProperty("--panel-size-content");
+    panel.style.removeProperty("--original-position");
+    panel.classList.remove("s-comp-splitter-panel-with-border");
   }
 
   node.addEventListener("pointerdown", handlePointerDown);
