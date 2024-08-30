@@ -22,7 +22,7 @@ import {
 
 interface ContextStore {
   maxLevel: number;
-  updateReason: string | null;
+  updateId: string | null;
   targetFloorId: string | null;
   ancestorFloorId: string | null;
   dataSink: DataSink | null;
@@ -46,7 +46,7 @@ export class FloorContext {
     if (props.floorLevel === 0) {
       this.#contextStore = writable<ContextStore>({
         maxLevel: 0,
-        updateReason: null,
+        updateId: null,
         targetFloorId: null,
         ancestorFloorId: null,
         dataSink: null,
@@ -74,7 +74,7 @@ export class FloorContext {
 
     if (props.floorLevel > 0) {
       this.#contextStore.update((value) => {
-        value.updateReason = "componentTreeChange";
+        value.updateId = "componentTreeChange";
         if (props.floorLevel > value.maxLevel) {
           value.maxLevel = props.floorLevel;
         }
@@ -105,7 +105,7 @@ export class FloorContext {
     const ancestorFloorData = await loadAncestorFloors(targetFloorId);
     ancestorFloorData.forEach((floorData) => {
       this.#contextStore.update((value) => {
-        value.updateReason = "ensureVisible";
+        value.updateId = "ensureVisible";
         value.floorData = floorData;
         return value;
       });
@@ -115,7 +115,7 @@ export class FloorContext {
   async highlight(targetFloorId: string) {
     const ancestorFloorId = await getAncestorFloorId(targetFloorId);
     this.#contextStore.update((value) => {
-      value.updateReason = "highlightFloor";
+      value.updateId = "highlightFloor";
       value.targetFloorId = targetFloorId;
       value.ancestorFloorId = ancestorFloorId;
       return value;
@@ -124,7 +124,7 @@ export class FloorContext {
 
   resetFloor(targetFloorId: string) {
     this.#contextStore.update((value) => {
-      value.updateReason = "resetFloor";
+      value.updateId = "resetFloor";
       value.targetFloorId = targetFloorId;
       return value;
     });
@@ -163,7 +163,7 @@ export class FloorContext {
 
   updateInvalidFloorIdInfo(newInvalidFloorId: string, orgFloodId: string) {
     this.#contextStore.update((value) => {
-      value.updateReason = "updateInvalidFloorIdInfo";
+      value.updateId = "updateInvalidFloorIdInfo";
       value.replaceIdMap.set(newInvalidFloorId, orgFloodId);
       return value;
     });
@@ -175,7 +175,7 @@ export class FloorContext {
     debug = false
   ) {
     this.#contextStore.update((value) => {
-      value.updateReason = "componentTreeChange";
+      value.updateId = "componentTreeChange";
       if (
         this.#props.floorLevel === 0 &&
         value.componentTreeData.length === 0
@@ -214,7 +214,7 @@ export class FloorContext {
 
   clearChildComponentTreeData() {
     this.#contextStore.update((value) => {
-      value.updateReason = "componentTreeChange";
+      value.updateId = "componentTreeChange";
       if (this.#props.floorLevel === 0) {
         value.componentTreeData = [];
       } else {
@@ -238,7 +238,7 @@ export class FloorContext {
 
   linkDataStore(dataSink: DataSink) {
     this.#contextStore.update((value) => {
-      value.updateReason = "linkDataStore";
+      value.updateId = "linkDataStore";
       value.dataSink = dataSink;
       return value;
     });
@@ -246,110 +246,147 @@ export class FloorContext {
 
   // context: '#contextStore'에 저장된 '공유 컨텍스트 객체'
   async #updateFloorState(context: ContextStore) {
-    if (context.updateReason === "componentTreeChange") {
-      if (this.#props.floorLevel === 0) {
-        // NOTE: 'root floor'에서만 업데이트해주면 된다.
-        removeInvalidNode(context.componentTreeData, context.replaceIdMap);
-        this.#props.dispatch("componentTreeChanged", {
-          componentTreeData: context.componentTreeData,
-        });
-      } else {
-        // do nothing
-      }
-    } else if (
-      context.updateReason === "ensureVisible" &&
-      context.floorData?.floorId === this.#props.floorId
-    ) {
-      if (context.floorData?.nonFloorParentInfo) {
-        const tabIndex = context.floorData.nonFloorParentInfo.tabIndex;
-
-        // '이 Floor' 컴포넌트의 DOM 트리 상에서의 부모가 'Tab' 컨테이너인 경우에
-        // 현재의 '이 Floor' 컴포넌트가 화면에 보이도록 한다.
-        if (tabIndex) {
-          this.#props.dispatch("queryContainerInfo", {
-            infoCallback: async (containerInfo: Record<string, any>) => {
-              if (containerInfo.containerName === "Tab") {
-                containerInfo.ensureTabVisible(tabIndex);
-              }
-            },
-          });
+    switch (context.updateId) {
+      case "componentTreeChange":
+        this.#handleComponentTreeChange(context);
+        break;
+      case "ensureVisible":
+        this.#handleEnsureVisible(context);
+        break;
+      case "highlightFloor":
+        this.#handleHighlightFloor(context);
+        break;
+      case "resetFloor":
+        this.#handleResetFloor(context);
+        break;
+      case "updateInvalidFloorIdInfo":
+        this.#handleUpdateInvalidFloorIdInfo(context);
+        break;
+      case "linkDataStore":
+        this.#handleLinkDataStore(context);
+        break;
+      default:
+        if (context.updateId) {
+          console.error(
+            `unhandled updateId: ${context.updateId}, floorId: ${
+              this.#props.floorId
+            }, targetFloorId: ${context.targetFloorId}`
+          );
+        } else {
+          // NOTE: 'updateId'가 'null'인 경우는 무시한다.
         }
-      }
+        break;
+    }
+  }
 
-      context.floorData = null;
-    } else if (
-      context.updateReason === "highlightFloor" &&
-      context.targetFloorId &&
-      context.ancestorFloorId
-    ) {
-      const targetFloorId = context.targetFloorId;
-      const targetAncestorFloorId = context.ancestorFloorId;
-      this.#props.dispatch("queryContainerInfo", {
-        infoCallback: async (containerInfo: Record<string, any>) => {
-          if (containerInfo.containerName === "Tab") {
-            const curTabAncestorFloorId = containerInfo.ancestorFloorId;
-            const curTabIndex = containerInfo.tabIndex;
-            const curFloorInfo = await loadFloor(targetFloorId);
-            const curFloorTabIndex = curFloorInfo?.nonFloorParentInfo?.tabIndex;
-            if (
-              targetAncestorFloorId === curTabAncestorFloorId &&
-              curTabIndex === curFloorTabIndex
-            ) {
-              containerInfo.ensureTabVisible(curTabIndex);
-            }
-          }
-
-          // NOTE: 'Floor' 컴포넌트의 영역이 하이라이트된다.
-          this.#props.dispatch("highlightFloor", {
-            floorId: targetFloorId,
-          });
-        },
-      });
-    } else if (
-      context.updateReason === "resetFloor" &&
-      context.targetFloorId &&
-      context.targetFloorId === this.#props.floorId
-    ) {
-      if (context.targetFloorId === "floor-root") {
-        await removeFloor(context.targetFloorId);
-        this.#props.setChildComponentInfo(null);
-      } else {
-        // 'IndexedDB'에서 해당 컴포넌트 정보를 '리셋'한다.
-        const floorData = await resetFloor(this.#props.floorId);
-
-        // '연계된 Floor 컴포넌트'에 설정된 자식 컴포넌트를 '제거'한다.
-        this.#props.setChildComponentInfo(floorData?.childComponentInfo);
-      }
-
-      context.replaceIdMap.clear();
-
-      // '컴포넌트 트리 GUI'에서 해당 컴포넌트를 리셋한다.
-      resetNodeById(context.componentTreeData, this.#props.floorId);
+  #handleComponentTreeChange(context: ContextStore) {
+    if (this.#props.floorLevel === 0) {
+      // NOTE: 'root floor'에서만 업데이트해주면 된다.
+      removeInvalidNode(context.componentTreeData, context.replaceIdMap);
       this.#props.dispatch("componentTreeChanged", {
         componentTreeData: context.componentTreeData,
       });
-    } else if (context.updateReason === "updateInvalidFloorIdInfo") {
-      const newInvalidFloorId = this.#props.floorId;
-      if (context.replaceIdMap.has(newInvalidFloorId)) {
-        const orgFloorId = context.replaceIdMap.get(newInvalidFloorId);
-        if (orgFloorId) {
-          replaceNodeId(
-            context.componentTreeData,
-            newInvalidFloorId,
-            orgFloorId
-          );
-          this.#props.floorId = orgFloorId;
-        }
-      }
-    } else if (context.updateReason === "linkDataStore") {
-      const dataSink = context.dataSink;
-      this.#props.dispatch("linkDataStore", { dataSink });
     } else {
-      /*
-            console.log(
-              `unhandled update reason: ${context.updateReason}, floorId: ${this.#props.floorId}, targetFloorId: ${context.targetFloorId}`
-            );
-            */
+      // do nothing
     }
+  }
+
+  #handleEnsureVisible(context: ContextStore) {
+    if (context.floorData?.floorId !== this.#props.floorId) {
+      return;
+    }
+
+    if (context.floorData?.nonFloorParentInfo) {
+      const tabIndex = context.floorData.nonFloorParentInfo.tabIndex;
+
+      // '이 Floor' 컴포넌트의 DOM 트리 상에서의 부모가 'Tab' 컨테이너인 경우에
+      // 현재의 '이 Floor' 컴포넌트가 화면에 보이도록 한다.
+      if (tabIndex) {
+        this.#props.dispatch("queryContainerInfo", {
+          infoCallback: async (containerInfo: Record<string, any>) => {
+            if (containerInfo.containerName === "Tab") {
+              containerInfo.ensureTabVisible(tabIndex);
+            }
+          },
+        });
+      }
+    }
+
+    context.floorData = null;
+  }
+
+  #handleHighlightFloor(context: ContextStore) {
+    const targetFloorId = context.targetFloorId;
+    const targetAncestorFloorId = context.ancestorFloorId;
+
+    if (!targetFloorId || !targetAncestorFloorId) {
+      return;
+    }
+
+    this.#props.dispatch("queryContainerInfo", {
+      infoCallback: async (containerInfo: Record<string, any>) => {
+        if (containerInfo.containerName === "Tab") {
+          const curTabAncestorFloorId = containerInfo.ancestorFloorId;
+          const curTabIndex = containerInfo.tabIndex;
+          const curFloorInfo = await loadFloor(targetFloorId);
+          const curFloorTabIndex = curFloorInfo?.nonFloorParentInfo?.tabIndex;
+          if (
+            targetAncestorFloorId === curTabAncestorFloorId &&
+            curTabIndex === curFloorTabIndex
+          ) {
+            containerInfo.ensureTabVisible(curTabIndex);
+          }
+        }
+
+        // NOTE: 'Floor' 컴포넌트의 영역이 하이라이트된다.
+        this.#props.dispatch("highlightFloor", {
+          floorId: targetFloorId,
+        });
+      },
+    });
+  }
+
+  async #handleResetFloor(context: ContextStore) {
+    if (
+      !context.targetFloorId ||
+      context.targetFloorId !== this.#props.floorId
+    ) {
+      return;
+    }
+
+    if (context.targetFloorId === "floor-root") {
+      await removeFloor(context.targetFloorId);
+      this.#props.setChildComponentInfo(null);
+    } else {
+      // 'IndexedDB'에서 해당 컴포넌트 정보를 '리셋'한다.
+      const floorData = await resetFloor(this.#props.floorId);
+
+      // '연계된 Floor 컴포넌트'에 설정된 자식 컴포넌트를 '제거'한다.
+      this.#props.setChildComponentInfo(floorData?.childComponentInfo);
+    }
+
+    context.replaceIdMap.clear();
+
+    // '컴포넌트 트리 GUI'에서 해당 컴포넌트를 리셋한다.
+    resetNodeById(context.componentTreeData, this.#props.floorId);
+    this.#props.dispatch("componentTreeChanged", {
+      componentTreeData: context.componentTreeData,
+    });
+  }
+
+  #handleUpdateInvalidFloorIdInfo(context: ContextStore) {
+    const newInvalidFloorId = this.#props.floorId;
+    if (context.replaceIdMap.has(newInvalidFloorId)) {
+      const orgFloorId = context.replaceIdMap.get(newInvalidFloorId);
+      if (orgFloorId) {
+        replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloorId);
+        this.#props.floorId = orgFloorId;
+      }
+    }
+  }
+
+  #handleLinkDataStore(context: ContextStore) {
+    const dataSink = context.dataSink;
+    this.#props.dispatch("linkDataStore", { dataSink });
   }
 }
