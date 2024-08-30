@@ -210,7 +210,9 @@
 
 <div class="note-box">
   <div class="note-item-group">
-    <div bind:this={noteStaff} class="note-staff"></div>
+    <div class="note-staff-wrapper">
+      <div bind:this={noteStaff} class="note-staff"></div>
+    </div>
     <div class="control-box">
       {#if abcParams.abcText && !isPlaying && enableMidiFileDownload}
         <button use:downloadMidiFile={{ abcjs, abcjsEditor }}
@@ -239,6 +241,7 @@
     width: 100%;
     height: 100%;
     border: none;
+    background-color: lightgray;
 
     .note-item-group {
       display: flex;
@@ -250,15 +253,32 @@
       padding-right: 2em;
       border: none;
 
-      .note-staff {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
+      .note-staff-wrapper {
         width: 100%;
-        height: 100%;
-        overflow: scroll !important;
-        background-color: lightgray;
+        height: 0;
+        flex-grow: 1;
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+
+        .note-staff {
+          max-width: 100%;
+          margin-top: 0.5em;
+          padding: 0.5em 1em 1em 1em;
+          border: 1px solid #d3d3d3;
+          background-color: #fff;
+          box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 10px rgba(0, 0, 0, 0.05);
+          border-radius: 4px;
+          transition: box-shadow 0.3s ease;
+
+          &:hover {
+            box-shadow:
+              0 4px 8px rgba(0, 0, 0, 0.15),
+              0 0 15px rgba(0, 0, 0, 0.1);
+          }
+        }
       }
 
       .control-box {
