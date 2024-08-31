@@ -13,8 +13,16 @@ import {
   updateTabFloors,
 } from "./persistency";
 
+type UpdateId =
+  | "componentTreeChange"
+  | "ensureVisible"
+  | "highlightFloor"
+  | "resetFloor"
+  | "updateInvalidFloorIdInfo"
+  | "linkDataStore";
+
 interface UpdateProps {
-  updateId: string | null;
+  updateId: UpdateId | null;
   targetFloorId: string | null;
   ancestorFloorId: string | null;
   dataSink: DataSink | null;
@@ -259,16 +267,12 @@ export class FloorContext {
       case "linkDataStore":
         this.#handleLinkDataStore(context);
         break;
+      case null:
+        // updateId가 null인 경우 처리
+        break;
       default:
-        if (updateProps.updateId) {
-          console.error(
-            `unhandled updateId: ${updateProps.updateId}, floorId: ${
-              this.#props.floorId
-            }, targetFloorId: ${updateProps.targetFloorId}`
-          );
-        } else {
-          // NOTE: 'updateId'가 'null'인 경우는 무시한다.
-        }
+        // 모든 케이스가 처리되었으므로 이 부분은 실행되지 않는다.
+        const _exhaustiveCheck: never = updateProps.updateId;
         break;
     }
   }

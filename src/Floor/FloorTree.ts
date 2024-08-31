@@ -112,6 +112,11 @@ function resetNodeById(tree: TreeNode[], id: string): boolean {
 }
 
 /**
+ * FIXME: 'childComponentInfo'를 인자로 넘겨서 처리하고 있는 부분 가능하면 제거할 것.
+ *
+ *        GUI 트리를 업데이트하는 것이 주목적인데, 이 메쏘드내에서 넘겨진 'childComponentInfo' 객체를
+ *        수정하는 것이 이해하기에 좋지 않아 보인다. 처리 방식을 가능하면 바꿀 것.
+ *
  * 'tree' 노드 중에 'id'에 해당하는 노드의 'name' 정보를 업데이트한다.
  * @param tree 트리 구조
  * @param id 업데이트할 노드의 ID
