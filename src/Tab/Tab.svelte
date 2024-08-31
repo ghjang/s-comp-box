@@ -360,7 +360,13 @@
     if (typeof popUpButtonClickAction === "function") {
       popUpButtonClickAction(value, userInput);
     }
-    showPopUp = false;
+
+    // NOTE: 탭버튼 그룹 우측의 '+'을 눌러서 나오는 '탭 추가' 팝업에서
+    //       탭이름 입력창에서 '엔터'를 눌렀을때 분명히 'showPopUp=false'로
+    //       설정이되지만 화면에서 팝업이 사라지지 않아서 workaround 처리함.
+    //       'await tick()'을 사용해보았지만 문제가 해결되지 않았고 아래와 같이
+    //       'setTimeout'를 사용한 경우에 문제가 해결되었음.
+    setTimeout(() => (showPopUp = false), 0);
   }
 </script>
 
@@ -389,6 +395,7 @@
         {showContentControl}
         on:tabSelected={handleTabSelected}
         on:tabDeleteButtonClicked={handleTabDeleteButtonClicked}
+        on:tabAddButtonClicked={handleAddNewTab}
       />
     </div>
 

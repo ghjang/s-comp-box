@@ -40,8 +40,8 @@
 
         itemCopy.showDeleteButton = showContentControl;
         itemCopy.deleteButtonClick = (label, value) => {
-          const tabIndex = parseInt(value.split('-')[1]);
-          dispatch('tabDeleteButtonClicked', { label, tabIndex });
+          const tabIndex = parseInt(value.split("-")[1]);
+          dispatch("tabDeleteButtonClicked", { label, tabIndex });
         };
 
         tabItems.push(itemCopy);
@@ -89,6 +89,10 @@
     detail.tabIndex = detail.itemIndex;
     dispatch("tabSelected", detail);
   }
+
+  function handleAddTabButtonClick() {
+    dispatch("tabAddButtonClicked");
+  }
 </script>
 
 <ToggleGroup
@@ -99,4 +103,33 @@
   items={tabItems}
   {activatedValue}
   on:toggleItemChanged={handleToggleItemChanged}
-/>
+>
+  {#if showContentControl}
+    <button
+      class="add-tab-button"
+      tabindex="-1"
+      on:click={handleAddTabButtonClick}>&#10133;</button
+    >
+  {/if}
+</ToggleGroup>
+
+<style lang="scss">
+  .add-tab-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    padding: 0.75em;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    font-size: 0.75em;
+    cursor: pointer;
+    outline: none;
+
+    &:hover {
+      background-color: darkgray;
+    }
+  }
+</style>
