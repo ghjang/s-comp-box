@@ -10,7 +10,8 @@ import {
   resetNodeById,
   removeInvalidNode,
   replaceNodeId,
-} from "./tree";
+  FloorTree,
+} from "./FloorTree";
 import {
   getAncestorFloorId,
   loadFloor,
@@ -30,7 +31,7 @@ interface ContextStore {
   designMode: boolean;
   childComponentInfo: ChildComponentInfo | null;
   floorData: FloorData | null;
-  componentTreeData: TreeNode[];
+  componentTreeData: FloorTree;
 }
 
 export class FloorContext {
@@ -54,14 +55,14 @@ export class FloorContext {
         designMode: !!props.designMode,
         childComponentInfo: null,
         floorData: null,
-        componentTreeData: [
+        componentTreeData: new FloorTree([
           {
             id: props.floorId,
             name: null,
             open: true,
             children: [],
           },
-        ],
+        ]),
       });
       setContext(ctxName, this.#contextStore);
     } else {
@@ -79,7 +80,7 @@ export class FloorContext {
           value.maxLevel = props.floorLevel;
         }
         const treeData = value.componentTreeData;
-        addNodeById(treeData, props.ancestorFloorId, props.floorId);
+        addNodeById(treeData.root, props.ancestorFloorId, props.floorId);
         return value;
       });
     }
@@ -155,9 +156,9 @@ export class FloorContext {
     //       트리 노드를 리셋만 해주는 것이 맞다. 'Tab'의 경우는 삭제된
     //       탭과 연계된 트리 노드를 삭제하는 것이 맞다.
     const ctx = get(this.#contextStore);
-    removeNodeById(ctx.componentTreeData, targetFloorId);
+    removeNodeById(ctx.componentTreeData.root, targetFloorId);
     this.#props.dispatch("componentTreeChanged", {
-      componentTreeData: ctx.componentTreeData,
+      componentTreeData: ctx.componentTreeData.root,
     });
   }
 
@@ -178,21 +179,21 @@ export class FloorContext {
       value.updateId = "componentTreeChange";
       if (
         this.#props.floorLevel === 0 &&
-        value.componentTreeData.length === 0
+        value.componentTreeData.root.length === 0
       ) {
-        value.componentTreeData = [
+        value.componentTreeData = new FloorTree([
           {
             id: "floor-root",
             name: null,
             open: true,
             children: [],
           },
-        ];
+        ]);
       }
 
       const beforeUpdate = debug ? deepCopy(value.componentTreeData) : null;
 
-      const treeData = value.componentTreeData;
+      const treeData = value.componentTreeData.root;
       updateNodeById(
         treeData,
         this.#props.floorId,
@@ -216,9 +217,9 @@ export class FloorContext {
     this.#contextStore.update((value) => {
       value.updateId = "componentTreeChange";
       if (this.#props.floorLevel === 0) {
-        value.componentTreeData = [];
+        value.componentTreeData = new FloorTree([]);
       } else {
-        const treeData = value.componentTreeData;
+        const treeData = value.componentTreeData.root;
         resetNodeById(treeData, this.#props.floorId);
       }
       return value;
@@ -282,9 +283,9 @@ export class FloorContext {
   #handleComponentTreeChange(context: ContextStore) {
     if (this.#props.floorLevel === 0) {
       // NOTE: 'root floor'에서만 업데이트해주면 된다.
-      removeInvalidNode(context.componentTreeData, context.replaceIdMap);
+      removeInvalidNode(context.componentTreeData.root, context.replaceIdMap);
       this.#props.dispatch("componentTreeChanged", {
-        componentTreeData: context.componentTreeData,
+        componentTreeData: context.componentTreeData.root,
       });
     } else {
       // do nothing
@@ -368,9 +369,9 @@ export class FloorContext {
     context.replaceIdMap.clear();
 
     // '컴포넌트 트리 GUI'에서 해당 컴포넌트를 리셋한다.
-    resetNodeById(context.componentTreeData, this.#props.floorId);
+    resetNodeById(context.componentTreeData.root, this.#props.floorId);
     this.#props.dispatch("componentTreeChanged", {
-      componentTreeData: context.componentTreeData,
+      componentTreeData: context.componentTreeData.root,
     });
   }
 
@@ -379,7 +380,11 @@ export class FloorContext {
     if (context.replaceIdMap.has(newInvalidFloorId)) {
       const orgFloorId = context.replaceIdMap.get(newInvalidFloorId);
       if (orgFloorId) {
-        replaceNodeId(context.componentTreeData, newInvalidFloorId, orgFloorId);
+        replaceNodeId(
+          context.componentTreeData.root,
+          newInvalidFloorId,
+          orgFloorId
+        );
         this.#props.floorId = orgFloorId;
       }
     }
