@@ -9,12 +9,21 @@ export function resizeObserver(panel_0, params) {
       const container = (
         panel_0 || panel_1
       ).parentElement.getBoundingClientRect();
-      const panelSizeInfo = {
-        container,
-        panel_0: panel_0.getBoundingClientRect(),
-        panel_1: panel_1?.getBoundingClientRect(),
-      };
-      onPanelSizeChanged?.(panelSizeInfo);
+
+      // NOTE: 패널이 화면에 보이는지 확인한다.
+      //       'Tab' 컴포넌트의 특정 탭에 'Splitter' 컴포넌트가 추가된 후에
+      //       스플리터가 추가된 탭이 아닌 다른 탭이 활성화 되었을때 등의 상황에서
+      //       잘못된 스플리터 크기 업데이트가 일어나지 않게 하기 위함이다.
+      const isVisible = container.width > 0 && container.height > 0;
+
+      if (isVisible) {
+        const panelSizeInfo = {
+          container,
+          panel_0: panel_0.getBoundingClientRect(),
+          panel_1: panel_1?.getBoundingClientRect(),
+        };
+        onPanelSizeChanged?.(panelSizeInfo);
+      }
     }
   }, debounceTime ?? 200); // 200ms debounce
 
