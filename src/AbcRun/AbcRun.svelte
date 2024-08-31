@@ -59,9 +59,9 @@
   //       나중이다. 실제 모나코 에디터 내부 인스턴스가 생성되는 'editorInit' 시점에 텍스트를
   //       로딩하도록 함.
   function handleEditorInit() {
-    if (abcText) {
+    editAreaAdaptor = new EditAreaAdaptor(editor);
+    if (typeof abcText === "string") {
       editor.setText(abcText);
-      editAreaAdaptor = new EditAreaAdaptor(editor);
       abcParams = { abcText, editAreaAdaptor };
       dataStore?.set(abcParams);
     }
@@ -107,7 +107,7 @@
     }
   }
 
-  function handleContentChange(event: any) {
+  function handleContentChange(event: CustomEvent<{ value: string }>) {
     abcText = event.detail.value;
     abcParams = { abcText };
     dataStore?.set({ ...abcParams, editAreaAdaptor });
@@ -116,7 +116,7 @@
     }
   }
 
-  function handleCursorPositionChange(event: any) {
+  function handleCursorPositionChange(event: CustomEvent<{ position: any }>) {
     abcParams = { position: event.detail.position };
     dataStore?.set({ ...abcParams, editAreaAdaptor });
   }
@@ -124,9 +124,7 @@
   onMount(() => {
     if (!abcText) {
       const savedAbcText = loadFromLocalStorage("abcText");
-      if (savedAbcText) {
-        abcText = savedAbcText;
-      }
+      abcText = savedAbcText ?? "";
     }
   });
 

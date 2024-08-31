@@ -6,7 +6,7 @@
 
   interface AbcParams {
     noTextEditor?: boolean;
-    abcText?: string;
+    abcText?: string | String;
     editAreaAdaptor?: any;
     position?: any;
   }
@@ -65,7 +65,10 @@
       editAreaAdaptor = params.editAreaAdaptor;
     }
 
-    if (params.abcText) {
+    if (
+      typeof params.abcText === "string" ||
+      params.abcText instanceof String
+    ) {
       if (editAreaAdaptor?.isStringAdaptor) {
         editAreaAdaptor.setString(params.abcText);
       }
@@ -191,6 +194,10 @@
       return;
     }
 
+    if (abcjsEditor?.tunes?.length === 0) {
+      return;
+    }
+
     if (needToInitSynth) {
       await synth.init({ visualObj: abcjsEditor.tunes[0] });
       await synth.prime();
@@ -214,17 +221,17 @@
       <div bind:this={noteStaff} class="note-staff"></div>
     </div>
     <div class="control-box">
-      {#if abcParams.abcText && !isPlaying && enableMidiFileDownload}
+      {#if !isPlaying && enableMidiFileDownload}
         <button use:downloadMidiFile={{ abcjs, abcjsEditor }}
           >Download MIDI</button
         >
       {/if}
-      {#if abcParams.abcText && !isPlaying && enablePdfFileDownload}
+      {#if !isPlaying && enablePdfFileDownload}
         <button use:downloadPdfFile={{ abcjs, abcjsEditor }}
           >Download PDF</button
         >
       {/if}
-      {#if abcParams.abcText && showPlayControl}
+      {#if showPlayControl}
         <button on:click={handlePlayButtonClick}
           >{isPlaying ? "Stop" : "Play"}</button
         >
@@ -266,12 +273,17 @@
           margin-top: 0.5em;
           padding: 0.5em 1em 1em 1em;
           border: 1px solid #d3d3d3;
-          background-color: #fff;
-          box-shadow:
-            0 2px 4px rgba(0, 0, 0, 0.1),
-            0 0 10px rgba(0, 0, 0, 0.05);
-          border-radius: 4px;
-          transition: box-shadow 0.3s ease;
+          background-color: transparent;
+
+          /* 악보 데이터가 렌더링된 경우에만 용지 디자인을 설정 */
+          &:has(> *) {
+            background-color: #fff;
+            box-shadow:
+              0 2px 4px rgba(0, 0, 0, 0.1),
+              0 0 10px rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
+            transition: box-shadow 0.3s ease;
+          }
 
           &:hover {
             box-shadow:
