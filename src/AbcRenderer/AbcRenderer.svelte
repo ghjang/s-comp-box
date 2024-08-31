@@ -221,27 +221,31 @@
       <div bind:this={noteStaff} class="note-staff"></div>
     </div>
     <div class="control-box">
-      {#if !isPlaying && enableMidiFileDownload}
-        <button use:downloadMidiFile={{ abcjs, abcjsEditor }}
-          >Download MIDI</button
-        >
-      {/if}
-      {#if !isPlaying && enablePdfFileDownload}
-        <button use:downloadPdfFile={{ abcjs, abcjsEditor }}
-          >Download PDF</button
-        >
-      {/if}
-      {#if showPlayControl}
-        <button on:click={handlePlayButtonClick}
-          >{isPlaying ? "Stop" : "Play"}</button
-        >
-      {/if}
+      <div class="button-group">
+        {#if !isPlaying && enableMidiFileDownload}
+          <button use:downloadMidiFile={{ abcjs, abcjsEditor }}>MIDI</button>
+        {/if}
+        {#if !isPlaying && enablePdfFileDownload}
+          <button use:downloadPdfFile={{ abcjs, abcjsEditor }}>PDF</button>
+        {/if}
+        {#if showPlayControl}
+          <button on:click={handlePlayButtonClick}>
+            {isPlaying ? "STOP" : "PLAY"}
+          </button>
+        {/if}
+      </div>
     </div>
   </div>
 </div>
 
 <style lang="scss">
+  $control-box-bg-color: rgb(240, 240, 240);
+  $control-box-opacity: 0.25;
+  $control-box-hover-opacity: 1;
+  $transition-duration: 0.3s;
+
   .note-box {
+    position: relative;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -271,6 +275,7 @@
         .note-staff {
           max-width: 100%;
           margin-top: 0.5em;
+          margin-bottom: 0.5em;
           padding: 0.5em 1em 1em 1em;
           border: 1px solid #d3d3d3;
           background-color: transparent;
@@ -283,29 +288,58 @@
               0 0 10px rgba(0, 0, 0, 0.05);
             border-radius: 2px;
             transition: box-shadow 0.3s ease;
-          }
 
-          &:hover {
-            box-shadow:
-              0 4px 8px rgba(0, 0, 0, 0.15),
-              0 0 15px rgba(0, 0, 0, 0.1);
+            &:hover {
+              box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.15),
+                0 0 15px rgba(0, 0, 0, 0.1);
+            }
           }
         }
       }
 
       .control-box {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: flex-end;
-        width: 100%;
-        margin-top: 0.5em;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        padding: 0.25em;
+        opacity: $control-box-opacity;
+        transition: opacity $transition-duration ease;
 
-        button {
-          margin-right: 0.25em;
+        &:hover {
+          opacity: $control-box-hover-opacity;
         }
 
-        button:last-child {
-          margin-right: 1.25em;
+        .button-group {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+
+          button {
+            margin-bottom: 0.5em;
+            width: 4em;
+            border: none;
+            background-color: $control-box-bg-color;
+            color: #333;
+            padding: 0.5em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color $transition-duration ease;
+
+            &:hover {
+              font-weight: bold;
+              outline: 1px solid darken($control-box-bg-color, 20%);
+              background-color: darken($control-box-bg-color, 15%);
+            }
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
         }
       }
     }
