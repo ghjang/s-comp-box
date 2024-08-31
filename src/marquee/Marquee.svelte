@@ -7,6 +7,8 @@
   export let direction = "rtl";
   export let duration = 3;
   export let debug = false;
+  export let color = "#f0f0f0";
+  export let fontSize = "2em";
 
   let container;
   let marquee;
@@ -56,6 +58,8 @@
     class:marquee-ltr={direction === "ltr"}
     class:marquee-ttb={direction === "ttb"}
     class:marquee-btt={direction === "btt"}
+    style:color
+    style:font-size={fontSize}
   >
     {#if text}
       {text}
@@ -65,76 +69,81 @@
   </div>
 </div>
 
-<style>
-  @keyframes marquee-rtl {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(-100%);
+<style lang="scss">
+  @mixin marquee-animation($direction) {
+    @keyframes marquee-#{$direction} {
+      @if $direction == rtl {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(-100%);
+        }
+      } @else if $direction == ltr {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(100%);
+        }
+      } @else if $direction == ttb {
+        from {
+          transform: translateY(-100%);
+        }
+        to {
+          transform: translateY(100%);
+        }
+      } @else if $direction == btt {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(-100%);
+        }
+      }
     }
   }
 
-  @keyframes marquee-ltr {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(100%);
-    }
-  }
-
-  @keyframes marquee-ttb {
-    from {
-      transform: translateY(-100%);
-    }
-    to {
-      transform: translateY(100%);
-    }
-  }
-
-  @keyframes marquee-btt {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(-100%);
-    }
-  }
+  @include marquee-animation(rtl);
+  @include marquee-animation(ltr);
+  @include marquee-animation(ttb);
+  @include marquee-animation(btt);
 
   .marquee-wrapper {
     overflow: hidden;
     white-space: nowrap;
   }
 
-  .marquee-rtl,
-  .marquee-ltr,
-  .marquee-ttb,
-  .marquee-btt {
+  %marquee-base {
     display: inline-block;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-fill-mode: forwards;
   }
 
-  .marquee-rtl {
-    animation-name: marquee-rtl;
-  }
+  .marquee {
+    &-rtl {
+      @extend %marquee-base;
+      animation-name: marquee-rtl;
+    }
 
-  .marquee-ltr {
-    animation-name: marquee-ltr;
-  }
+    &-ltr {
+      @extend %marquee-base;
+      animation-name: marquee-ltr;
+    }
 
-  .marquee-ttb,
-  .marquee-btt {
-    writing-mode: vertical-rl;
-  }
+    &-ttb,
+    &-btt {
+      @extend %marquee-base;
+      writing-mode: vertical-rl;
+    }
 
-  .marquee-btt {
-    animation-name: marquee-btt;
-  }
+    &-btt {
+      animation-name: marquee-btt;
+    }
 
-  .marquee-ttb {
-    animation-name: marquee-ttb;
+    &-ttb {
+      animation-name: marquee-ttb;
+    }
   }
 </style>
