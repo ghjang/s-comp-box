@@ -5,13 +5,56 @@
 
 import { TreeNode, ChildComponentInfo } from "./types";
 
-export class FloorTree {
-  root: TreeNode[];
+export default class FloorTree {
+  #root: TreeNode[];
 
   constructor(tree: TreeNode[]) {
-    this.root = tree;
+    this.#root = tree;
+  }
+
+  get root() {
+    return this.#root;
+  }
+
+  appendNewEmptyNode(ancestorFloorId: string, newFloorId: string) {
+    return addNodeById(this.#root, ancestorFloorId, newFloorId);
+  }
+
+  resetNode(id: string) {
+    return resetNodeById(this.#root, id);
+  }
+
+  updateNode(
+    id: string,
+    childComponentInfo: ChildComponentInfo,
+    isDesignMode: boolean,
+    debug = false
+  ) {
+    return updateNodeById(
+      this.#root,
+      id,
+      childComponentInfo,
+      isDesignMode,
+      debug
+    );
+  }
+
+  replaceNode(oldId: string, newId: string) {
+    return replaceNodeId(this.#root, oldId, newId);
+  }
+
+  removeNode(id: string) {
+    return removeNodeById(this.#root, id);
+  }
+
+  removeInvalidNode(excludeIdMap: Map<string, string>) {
+    return removeInvalidNode(this.#root, excludeIdMap);
   }
 }
+
+//=============================================================================
+// 이하 내부 구현 함수들
+//=============================================================================
 
 /**
  * 'tree' 노드 중에 'id'가 'ancestorFloorId'인 노드를 찾아서 그 노드의 'children'에 'newFloorId'를 추가한다.
@@ -20,7 +63,7 @@ export class FloorTree {
  * @param newFloorId 추가할 새 노드의 ID
  * @returns 새 노드를 추가했는지 여부
  */
-export function addNodeById(
+function addNodeById(
   tree: TreeNode[],
   ancestorFloorId: string,
   newFloorId: string
@@ -51,7 +94,7 @@ export function addNodeById(
  * @param id 리셋할 노드의 ID
  * @returns 노드를 리셋했는지 여부
  */
-export function resetNodeById(tree: TreeNode[], id: string): boolean {
+function resetNodeById(tree: TreeNode[], id: string): boolean {
   for (const node of tree) {
     if (node.id === id) {
       node.name = null;
@@ -77,7 +120,7 @@ export function resetNodeById(tree: TreeNode[], id: string): boolean {
  * @param debug 디버그 모드 여부
  * @returns 노드를 업데이트했는지 여부
  */
-export function updateNodeById(
+function updateNodeById(
   tree: TreeNode[],
   id: string,
   childComponentInfo: ChildComponentInfo,
@@ -124,7 +167,8 @@ export function updateNodeById(
         node.children,
         id,
         childComponentInfo,
-        isDesignMode
+        isDesignMode,
+        debug
       );
       if (found) {
         return true;
@@ -141,7 +185,7 @@ export function updateNodeById(
  * @param oldId 변경할 기존 ID
  * @param newId 새로운 ID
  */
-export function replaceNodeId(tree: TreeNode[], oldId: string, newId: string) {
+function replaceNodeId(tree: TreeNode[], oldId: string, newId: string) {
   for (let i = 0; i < tree.length; ++i) {
     const node = tree[i];
     if (node.id === oldId) {
@@ -159,7 +203,7 @@ export function replaceNodeId(tree: TreeNode[], oldId: string, newId: string) {
  * @param id 삭제할 노드의 ID
  * @returns 노드를 삭제했는지 여부
  */
-export function removeNodeById(tree: TreeNode[], id: string): boolean {
+function removeNodeById(tree: TreeNode[], id: string): boolean {
   for (let i = 0; i < tree.length; ++i) {
     const node = tree[i];
     if (node.id === id) {
@@ -178,7 +222,7 @@ export function removeNodeById(tree: TreeNode[], id: string): boolean {
  * @param treeRootData 트리 루트 데이터
  * @param excludeIdMap 제외할 ID 맵
  */
-export function removeInvalidNode(
+function removeInvalidNode(
   treeRootData: TreeNode[],
   excludeIdMap: Map<string, string>
 ) {
