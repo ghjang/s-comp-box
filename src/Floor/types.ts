@@ -16,10 +16,3 @@ export interface FloorData {
   childComponentInfo: ChildComponentInfo;
   [key: string]: any;
 }
-
-export interface TreeNode {
-  id: string;
-  name: string | null;
-  open: boolean;
-  children: TreeNode[];
-}
