@@ -8,7 +8,7 @@ export interface Component {
   customElementName?: string;
   description: string;
   props: CompProps;
-  name: string;
+  name?: string;
 }
 
 export interface MenuItem {

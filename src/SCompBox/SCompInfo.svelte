@@ -103,6 +103,7 @@
     const data: CustomElement[] = await response.json();
 
     let componentInfo: CustomElement[] = [
+      /*
       {
         customElementName: "s-floor",
         description: "Floor",
@@ -126,6 +127,7 @@
           tabs: [{ label: "New Tab" }],
         },
       },
+      */
     ];
 
     return [...componentInfo, ...data];

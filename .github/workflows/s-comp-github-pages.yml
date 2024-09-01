@@ -96,7 +96,9 @@ jobs:
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" \
             -e "s|href="/favicon.ico"|href="/s-comp/favicon.ico"|g" \
             -e "s|customElementConfigBasePath: '/s-comp/scripts/default'|customElementConfigBasePath: '/s-comp/config'|g" \
-            -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" {} \;
+            -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" \
+            -e "s|customElementConfigBasePath: \"/s-comp/scripts/default\"|customElementConfigBasePath: \"/s-comp/config\"|g" \
+            -e "s|customElementConfigBasePath=\"/s-comp/scripts/custom\"|customElementConfigBasePath=\"/s-comp/config\"|g" {} \;
 
       - name: Update GitHub Pages's index.html
         run: |
