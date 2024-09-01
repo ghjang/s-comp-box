@@ -122,10 +122,13 @@
   function handleKeydown(event) {
     if (event.key === "Escape") {
       event.preventDefault();
+      event.stopPropagation();
       handleButtonClick({ text: "esc", value: "cancel" });
     }
 
     if (event.key === "Enter" && event.target === promptInputElem) {
+      event.preventDefault();
+      event.stopPropagation();
       handleButtonClick({
         text: "Enter",
         value: "ok",

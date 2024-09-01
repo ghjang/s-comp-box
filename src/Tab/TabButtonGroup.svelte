@@ -90,7 +90,8 @@
     dispatch("tabSelected", detail);
   }
 
-  function handleAddTabButtonClick() {
+  function handleAddTabButtonClick(event) {
+    event.currentTarget.blur();
     dispatch("tabAddButtonClicked");
   }
 </script>

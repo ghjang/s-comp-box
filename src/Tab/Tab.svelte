@@ -7,6 +7,7 @@
   import TabButtonGroup from "./TabButtonGroup.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
+  import { PopUpManager } from "../PopUp/util";
   import { findClosestAncestor } from "../common/util.dom.js";
   import {
     CustomEventsRegister,
@@ -146,12 +147,8 @@
 
   let tabView;
 
-  let showPopUp = false;
-  let popUpKind;
-  let popUpTitle;
-  let popUpUserInput;
-  let popUpContent;
-  let popUpButtonClickAction;
+  const popUpManager = new PopUpManager();
+  const popUpStore = popUpManager.store;
 
   async function handleKeyUp(event) {
     if (event.ctrlKey && event.code === "KeyN") {
@@ -249,34 +246,35 @@
       },
     };
 
-    popUpKind = "prompt";
-    popUpTitle = "Tab Name";
-    popUpUserInput = newTabChildComponentInfo.label;
-    popUpContent = "Input a New Tab Name:";
-    showPopUp = true;
-
     return new Promise((resolve) => {
-      popUpButtonClickAction = (value, userInput) => {
-        if (value === "ok" && userInput && userInput.trim()) {
-          newTabChildComponentInfo.label = userInput;
-          tabs = [...tabs, newTabChildComponentInfo];
+      popUpManager.show({
+        kind: "prompt",
+        title: "Tab Name",
+        content: "Input a New Tab Name:",
+        userInput: newTabChildComponentInfo.label,
+        onConfirm: (userInput) => {
+          if (userInput && userInput.trim()) {
+            newTabChildComponentInfo.label = userInput;
+            tabs = [...tabs, newTabChildComponentInfo];
+            selectedTabIndex = tabs.length - 1;
 
-          selectedTabIndex = tabs.length - 1;
+            dispatch("updateChildComponentInfo", {
+              updateCallback: (childComponentInfo) => {
+                const _childInfo = childComponentInfo.childComponentInfo;
+                _childInfo.props.tabs.push(newTabChildComponentInfo);
+                _childInfo.props.selectedTabIndex = selectedTabIndex;
+              },
+            });
 
-          dispatch("updateChildComponentInfo", {
-            updateCallback: (childComponentInfo) => {
-              const _childInfo = childComponentInfo.childComponentInfo;
-              _childInfo.props.tabs.push(newTabChildComponentInfo);
-              _childInfo.props.selectedTabIndex = selectedTabIndex;
-            },
-          });
-
-          resolve(newTabChildComponentInfo);
-        } else {
+            resolve(newTabChildComponentInfo);
+          } else {
+            resolve(null);
+          }
+        },
+        onCancel: () => {
           resolve(null);
-        }
-        showPopUp = false;
-      };
+        },
+      });
     });
   }
 
@@ -288,21 +286,18 @@
 
     const tabToDelete = tabs[selectedTabIndex];
 
-    popUpKind = "confirm";
-    popUpTitle = "Delete Tab";
-    popUpContent = `Are you sure you want to delete the tab "${tabToDelete.label}"?`;
-    showPopUp = true;
-
     return new Promise((resolve) => {
-      popUpButtonClickAction = async (value) => {
-        if (value === "ok") {
+      popUpManager.show({
+        kind: "confirm",
+        title: "Delete Tab",
+        content: `Are you sure you want to delete the tab "${tabToDelete.label}"?`,
+        onConfirm: async () => {
           const deletedTabIndex = selectedTabIndex;
           const tabCompToDelete = tabComponents[selectedTabIndex];
 
           const newTabs = tabs.filter((_, index) => index !== selectedTabIndex);
           let newSelectedTabIndex = selectedTabIndex;
 
-          // 삭제 후 선택된 탭 인덱스 조정
           if (selectedTabIndex >= newTabs.length) {
             newSelectedTabIndex = newTabs.length - 1;
           }
@@ -328,11 +323,11 @@
           });
 
           resolve(true);
-        } else {
+        },
+        onCancel: () => {
           resolve(false);
-        }
-        showPopUp = false;
-      };
+        },
+      });
     });
   }
 
@@ -353,20 +348,6 @@
     if (action && typeof action.handler === "function") {
       await action.handler();
     }
-  }
-
-  function handlePopUpButtonClicked(event) {
-    const { value, userInput } = event.detail;
-    if (typeof popUpButtonClickAction === "function") {
-      popUpButtonClickAction(value, userInput);
-    }
-
-    // NOTE: 탭버튼 그룹 우측의 '+'을 눌러서 나오는 '탭 추가' 팝업에서
-    //       탭이름 입력창에서 '엔터'를 눌렀을때 분명히 'showPopUp=false'로
-    //       설정이되지만 화면에서 팝업이 사라지지 않아서 workaround 처리함.
-    //       'await tick()'을 사용해보았지만 문제가 해결되지 않았고 아래와 같이
-    //       'setTimeout'를 사용한 경우에 문제가 해결되었음.
-    setTimeout(() => (showPopUp = false), 0);
   }
 </script>
 
@@ -436,13 +417,13 @@
   />
 {/if}
 
-{#if showPopUp}
+{#if $popUpStore}
   <PopUp
-    kind={popUpKind}
-    title={popUpTitle}
-    content={popUpContent}
-    userInput={popUpUserInput}
-    on:buttonClicked={handlePopUpButtonClicked}
+    kind={$popUpStore.kind}
+    title={$popUpStore.title}
+    content={$popUpStore.content}
+    userInput={$popUpStore.userInput}
+    on:buttonClicked={(e) => popUpManager.handleButtonClicked(e)}
   />
 {/if}
 
