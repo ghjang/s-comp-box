@@ -9,6 +9,7 @@
   import SCompInfo from "./SCompInfo.svelte";
   import Floor from "../Floor/Floor.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
+  import { PopUpManager } from "../PopUp/util";
   import { CompProps, MenuItem, ComponentInfo } from "./types";
 
   export let compProps: CompProps = {};
@@ -23,14 +24,8 @@
   let panel_0_length = "20%";
   let treeViewSlot: "left" | "right" = "left";
 
-  let showPopUp = false;
-  let popUpKind: string;
-  let popUpTitle: string;
-  let popUpContent: string;
-  let popUpUserInput: string;
-  let popUpButtonClickAction:
-    | ((value: string, userInput: string) => void)
-    | null = null;
+  const popUpManager = new PopUpManager();
+  const popUpStore = popUpManager.store;
 
   let sCompInfo: SCompInfo;
 
@@ -185,24 +180,23 @@
               };
 
               if (comp.componentClassName === "Tab") {
-                popUpKind = "prompt";
-                popUpTitle = "Tab Name";
-                popUpContent = "Input a New Tab Name:";
-                popUpUserInput = componentInfo.props.tabs[0].label;
-                showPopUp = true;
-
                 return new Promise<ComponentInfo | null>((resolve) => {
-                  popUpButtonClickAction = (value, userInput) => {
-                    if (value === "ok") {
+                  popUpManager.show({
+                    kind: "prompt",
+                    title: "Tab Name",
+                    content: "Input a New Tab Name:",
+                    userInput: componentInfo.props.tabs[0].label,
+                    onConfirm: (userInput) => {
                       componentInfo.props.tabs = [
                         { ...componentInfo.props.tabs[0] },
                       ];
                       componentInfo.props.tabs[0].label = userInput;
                       resolve(componentInfo);
-                    } else {
+                    },
+                    onCancel: () => {
                       resolve(null);
-                    }
-                  };
+                    },
+                  });
                 });
               } else if (typeof componentInfo.props.preAction === "function") {
                 const preAction = componentInfo.props.preAction;
@@ -233,21 +227,20 @@
                 delete componentInfo.props.preAction;
 
                 if (type === "prompt") {
-                  popUpKind = "prompt";
-                  popUpTitle = rest.title;
-                  popUpContent = rest.content;
-                  popUpUserInput = componentInfo.props[targetProp];
-                  showPopUp = true;
-
                   return new Promise<ComponentInfo | null>((resolve) => {
-                    popUpButtonClickAction = (value, userInput) => {
-                      if (value === "ok") {
+                    popUpManager.show({
+                      kind: "prompt",
+                      title: rest.title,
+                      content: rest.content,
+                      userInput: componentInfo.props[targetProp],
+                      onConfirm: (userInput) => {
                         componentInfo.props[targetProp] = userInput;
                         resolve(componentInfo);
-                      } else {
+                      },
+                      onCancel: () => {
                         resolve(null);
-                      }
-                    };
+                      },
+                    });
                   });
                 } else {
                   console.error("Invalid preAction type:", type);
@@ -334,14 +327,6 @@
     saveSettings(settings);
   }
 
-  function handlePopUpButtonClicked(event: CustomEvent) {
-    const { value, userInput } = event.detail;
-    if (typeof popUpButtonClickAction === "function") {
-      popUpButtonClickAction(value, userInput);
-    }
-    showPopUp = false;
-  }
-
   onMount(() => {
     document.addEventListener("keydown", handleKeyDown);
     restoreSettings();
@@ -370,13 +355,13 @@
   <div>Loading...</div>
 {/if}
 
-{#if showPopUp}
+{#if $popUpStore}
   <PopUp
-    kind={popUpKind}
-    title={popUpTitle}
-    content={popUpContent}
-    userInput={popUpUserInput}
-    on:buttonClicked={handlePopUpButtonClicked}
+    kind={$popUpStore.kind}
+    title={$popUpStore.title}
+    content={$popUpStore.content}
+    userInput={$popUpStore.userInput}
+    on:buttonClicked={(e) => popUpManager.handleButtonClicked(e)}
   />
 {/if}
 
