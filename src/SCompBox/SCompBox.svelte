@@ -1,36 +1,38 @@
-<script>
+<script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import {
     isAsyncFunction,
     fileExists,
     loadScript,
     loadClassFromModule,
-  } from "../common/util.ts";
+  } from "../common/util";
   import SCompInfo from "./SCompInfo.svelte";
   import Floor from "../Floor/Floor.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
+  import { CompProps, MenuItem, ComponentInfo } from "./types";
 
-  export let compProps = {};
-  export let customElementConfigBasePath;
+  export let compProps: CompProps = {};
+  export let customElementConfigBasePath: string;
+  export let compJsBundleBasePath: string;
+  export let customCompJsBundleBasePath: string;
 
-  export let compJsBundleBasePath;
-  export let customCompJsBundleBasePath;
-
-  let menuItems = [];
+  let menuItems: MenuItem[] = [];
   let isMenuItemsLoaded = false;
 
   let designMode = true;
   let panel_0_length = "20%";
-  let treeViewSlot = "left";
+  let treeViewSlot: "left" | "right" = "left";
 
   let showPopUp = false;
-  let popUpKind;
-  let popUpTitle;
-  let popUpContent;
-  let popUpUserInput;
-  let popUpButtonClickAction;
+  let popUpKind: string;
+  let popUpTitle: string;
+  let popUpContent: string;
+  let popUpUserInput: string;
+  let popUpButtonClickAction:
+    | ((value: string, userInput: string) => void)
+    | null = null;
 
-  let sCompInfo;
+  let sCompInfo: SCompInfo;
 
   $: if (sCompInfo) {
     // NOTE; 아래 비동기 코드에서 채워질 'menuItems' 배열 참조를 넘긴다.
@@ -78,18 +80,20 @@
       });
   }
 
-  // FIXME: 현재 '탑 레벨' 메뉴에서만 '컴포넌트 설정'이 있는 것을 가정하고 있다.
-  async function loadCustomElementsInfo(customContainers, customElements) {
+  async function loadCustomElementsInfo(
+    customContainers: any[],
+    customElements: any[],
+  ): Promise<MenuItem[]> {
     const divider = { divider: { style: "" } };
     const items = [...customContainers, divider, ...customElements];
-    const _menuItems = [];
+    const _menuItems: MenuItem[] = [];
 
     for (const item of items) {
       if (item.divider || item.link || item.popup || item.subMenu) {
         _menuItems.push(item);
       } else if (item.component) {
         const comp = item.component;
-        let props = comp.props || {};
+        let props: CompProps = comp.props || {};
 
         if (comp.componentClass || comp.componentClassName) {
           // 설정에서 직접 '컴포넌트 클래스 생성자'나 '컴포넌트 이름 문자열' 지정한 경우
@@ -163,8 +167,8 @@
             comp,
           );
           throw new Error(
-            "No proper component class or custom element name: ",
-            comp,
+            "No proper component class or custom element name: " +
+              JSON.stringify(comp),
           );
         }
 
@@ -172,7 +176,7 @@
           action: {
             text: comp.description,
             handler: async () => {
-              const componentInfo = {
+              const componentInfo: ComponentInfo = {
                 componentClass: comp.componentClass,
                 componentClassName: comp.componentClassName,
                 customElementName: comp.customElementName,
@@ -187,7 +191,7 @@
                 popUpUserInput = componentInfo.props.tabs[0].label;
                 showPopUp = true;
 
-                return new Promise((resolve) => {
+                return new Promise<ComponentInfo | null>((resolve) => {
                   popUpButtonClickAction = (value, userInput) => {
                     if (value === "ok") {
                       componentInfo.props.tabs = [
@@ -206,8 +210,11 @@
 
                 if (isAsyncFunction(preAction)) {
                   return preAction(componentInfo)
-                    .then((updatedComponentInfo) => updatedComponentInfo)
-                    .catch((error) => {
+                    .then(
+                      (updatedComponentInfo: ComponentInfo | null) =>
+                        updatedComponentInfo,
+                    )
+                    .catch((error: Error) => {
                       console.error("error while executing preAction:", error);
                       return null;
                     });
@@ -232,7 +239,7 @@
                   popUpUserInput = componentInfo.props[targetProp];
                   showPopUp = true;
 
-                  return new Promise((resolve) => {
+                  return new Promise<ComponentInfo | null>((resolve) => {
                     popUpButtonClickAction = (value, userInput) => {
                       if (value === "ok") {
                         componentInfo.props[targetProp] = userInput;
@@ -257,7 +264,7 @@
     return _menuItems;
   }
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     if (
       event.ctrlKey &&
       event.metaKey &&
@@ -273,12 +280,19 @@
     }
   }
 
-  function loadSettings() {
+  interface Settings {
+    designMode?: boolean;
+    panel_0_length?: string;
+    treeViewSlot?: "left" | "right";
+    splitterSize?: { width: number };
+  }
+
+  function loadSettings(): Settings {
     const settings = localStorage.getItem("SCompBox_settings");
     return settings ? JSON.parse(settings) : {};
   }
 
-  function saveSettings(settings) {
+  function saveSettings(settings: Settings) {
     localStorage.setItem("SCompBox_settings", JSON.stringify(settings));
   }
 
@@ -312,7 +326,7 @@
     saveSettings(settings);
   }
 
-  function handleDesignModeLayoutChanged(event) {
+  function handleDesignModeLayoutChanged(event: CustomEvent) {
     const settings = loadSettings();
     settings.treeViewSlot = event.detail.treeViewSlot ?? treeViewSlot;
     settings.splitterSize = event.detail.splitterSize ?? null;
@@ -320,7 +334,7 @@
     saveSettings(settings);
   }
 
-  function handlePopUpButtonClicked(event) {
+  function handlePopUpButtonClicked(event: CustomEvent) {
     const { value, userInput } = event.detail;
     if (typeof popUpButtonClickAction === "function") {
       popUpButtonClickAction(value, userInput);
