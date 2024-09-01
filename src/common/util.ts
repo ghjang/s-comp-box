@@ -1,3 +1,7 @@
+export function isAsyncFunction(func: any): boolean {
+  return func.constructor?.name === "AsyncFunction";
+}
+
 export function fileExists(filePath: string): Promise<boolean> {
   return new Promise((resolve) => {
     fetch(filePath, { method: "HEAD" })

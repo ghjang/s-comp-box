@@ -14,7 +14,7 @@ const sCompBox = new SCompBox({
                 editorResourcePath: "/vendor/monaco-editor/browser-rollup-custom/dist"
             },
             Marquee: {
-                text: 'Hello, Marquee!'
+                text: 'Hello, SCompBox!'
             },
             PyRun: {
                 pyodideIndexURL: "/build/dist/vendor/pyodide",

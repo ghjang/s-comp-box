@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import {
+    isAsyncFunction,
     fileExists,
     loadScript,
     loadClassFromModule,
@@ -199,6 +200,51 @@
                     }
                   };
                 });
+              } else if (typeof componentInfo.props.preAction === "function") {
+                const preAction = componentInfo.props.preAction;
+                delete componentInfo.props.preAction;
+
+                if (isAsyncFunction(preAction)) {
+                  return preAction(componentInfo)
+                    .then((updatedComponentInfo) => updatedComponentInfo)
+                    .catch((error) => {
+                      console.error("error while executing preAction:", error);
+                      return null;
+                    });
+                } else {
+                  try {
+                    const result = preAction(componentInfo);
+                    return result;
+                  } catch (error) {
+                    console.error("error while executing preAction:", error);
+                    return null;
+                  }
+                }
+              } else if (typeof componentInfo.props.preAction === "object") {
+                const { type, targetProp, ...rest } =
+                  componentInfo.props.preAction;
+                delete componentInfo.props.preAction;
+
+                if (type === "prompt") {
+                  popUpKind = "prompt";
+                  popUpTitle = rest.title;
+                  popUpContent = rest.content;
+                  popUpUserInput = componentInfo.props[targetProp];
+                  showPopUp = true;
+
+                  return new Promise((resolve) => {
+                    popUpButtonClickAction = (value, userInput) => {
+                      if (value === "ok") {
+                        componentInfo.props[targetProp] = userInput;
+                        resolve(componentInfo);
+                      } else {
+                        resolve(null);
+                      }
+                    };
+                  });
+                } else {
+                  console.error("Invalid preAction type:", type);
+                }
               }
 
               return componentInfo;

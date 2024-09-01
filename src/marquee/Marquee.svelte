@@ -1,7 +1,7 @@
 <svelte:options customElement="s-marquee" />
 
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
 
   export let text = "";
   export let direction = "rtl";
@@ -16,12 +16,25 @@
 
   let observer;
 
-  function enableDebug(debug, container, marquee) {
-    container && (container.style.border = debug ? "1px solid black" : "");
-    marquee && (marquee.style.border = debug ? "1px solid red" : "");
+  let prevText = text;
+
+  $: if (text !== prevText && marquee) {
+    prevText = text;
+    tick().then(() => {
+      const { width, height } = marquee.getBoundingClientRect();
+      if (width > 0 && height > 0) {
+        setAnimation();
+      } else {
+        setupObserver();
+      }
+    });
   }
 
-  function setAnimation() {
+  async function setAnimation() {
+    if (!marquee || !container) return;
+
+    await tick();
+
     const { width, height } = marquee.getBoundingClientRect();
     container.style.width = `${width}px`;
     container.style.height = `${height}px`;
@@ -30,11 +43,8 @@
     marquee.style.animationDuration = `${animationDuration}s`;
   }
 
-  onMount(() => {
-    const { width, height } = marquee.getBoundingClientRect();
-    if (width > 0 && height > 0) {
-      setAnimation();
-    } else {
+  function setupObserver() {
+    if (!observer) {
       observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setAnimation();
@@ -43,6 +53,25 @@
         }
       });
       observer.observe(container);
+    }
+  }
+
+  function enableDebug(isDebug, container, marquee) {
+    if (isDebug && container && marquee) {
+      container.style.border = "1px solid red";
+      marquee.style.border = "1px solid blue";
+    } else if (container && marquee) {
+      container.style.border = "none";
+      marquee.style.border = "none";
+    }
+  }
+
+  onMount(() => {
+    const { width, height } = marquee.getBoundingClientRect();
+    if (width > 0 && height > 0) {
+      setAnimation();
+    } else {
+      setupObserver();
     }
   });
 
