@@ -1,22 +1,22 @@
 <svelte:options customElement="s-marquee" />
 
-<script>
+<script lang="ts">
   import { onMount, onDestroy, tick } from "svelte";
 
-  export let text = "";
-  export let direction = "rtl";
-  export let duration = 3;
-  export let debug = false;
-  export let color = "#f0f0f0";
-  export let fontSize = "2em";
+  export let text: string = "";
+  export let direction: "rtl" | "ltr" | "ttb" | "btt" = "rtl";
+  export let duration: number = 3;
+  export let debug: boolean = false;
+  export let color: string = "#f0f0f0";
+  export let fontSize: string = "2em";
 
-  let container;
-  let marquee;
-  let animationDuration;
+  let container: HTMLDivElement;
+  let marquee: HTMLDivElement;
+  let animationDuration: number;
 
-  let observer;
+  let observer: IntersectionObserver | null = null;
 
-  let prevText = text;
+  let prevText: string = text;
 
   $: if (text !== prevText && marquee) {
     prevText = text;
@@ -30,7 +30,7 @@
     });
   }
 
-  async function setAnimation() {
+  async function setAnimation(): Promise<void> {
     if (!marquee || !container) return;
 
     await tick();
@@ -43,12 +43,12 @@
     marquee.style.animationDuration = `${animationDuration}s`;
   }
 
-  function setupObserver() {
+  function setupObserver(): void {
     if (!observer) {
       observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setAnimation();
-          observer.disconnect();
+          observer?.disconnect();
           observer = null;
         }
       });
@@ -56,7 +56,11 @@
     }
   }
 
-  function enableDebug(isDebug, container, marquee) {
+  function enableDebug(
+    isDebug: boolean,
+    container: HTMLDivElement | undefined,
+    marquee: HTMLDivElement | undefined,
+  ): void {
     if (isDebug && container && marquee) {
       container.style.border = "1px solid red";
       marquee.style.border = "1px solid blue";
