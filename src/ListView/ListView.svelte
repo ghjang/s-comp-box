@@ -1,13 +1,34 @@
 <script lang="ts">
+  import { camelToKebab } from "../common/util";
+
+  type StyleProps = Record<string, string>;
+
   type Header = {
     displayNames?: string[];
     fieldNames: string[];
+    style?: StyleProps | StyleProps[];
   };
 
-  export let items: any[] = [];
-  export let header: Header;
+  type Row = {
+    style?: StyleProps;
+    [key: string]: any;
+  };
 
-  function getValue(item: any, field: string): string {
+  export let header: Header = {
+    fieldNames: [],
+  };
+  export let items: Row[] = [];
+
+  export let defaultHeaderStyle: StyleProps = {
+    fontWeight: "bold",
+    fontFamily: "'Noto Sans KR', sans-serif",
+  };
+
+  export let defaultBodyStyle: StyleProps | StyleProps[] = {
+    fontFamily: "'Noto Sans KR', sans-serif",
+  };
+
+  function getValue(item: Row, field: string): any {
     return item[field] || "";
   }
 
@@ -34,20 +55,79 @@
     header.fieldNames.map(
       (field) => field.charAt(0).toUpperCase() + field.slice(1),
     );
+
+  $: if (header.style) {
+    if (
+      Array.isArray(header.style) &&
+      header.style.length !== header.fieldNames.length
+    ) {
+      throw new Error("styles는 반드시 fieldNames와 길이가 같아야 합니다.");
+    }
+  }
+
+  $: if (defaultBodyStyle) {
+    if (
+      Array.isArray(defaultBodyStyle) &&
+      defaultBodyStyle.length !== header.fieldNames.length
+    ) {
+      throw new Error(
+        "defaultBodyStyle는 반드시 fieldNames와 길이가 같아야 합니다.",
+      );
+    }
+  }
+
+  function getColumnStyle(index: number): StyleProps {
+    if (!header.style) return {};
+    if (Array.isArray(header.style)) {
+      return header.style[index] || {};
+    }
+    return header.style;
+  }
+
+  function getStyleString(style: StyleProps): string {
+    return Object.entries(style)
+      .map(([key, value]) => `${camelToKebab(key)}:${value}`)
+      .join(";");
+  }
+
+  function getHeaderColumnStyle(index: number): string {
+    const style = { ...defaultHeaderStyle, ...getColumnStyle(index) };
+    return getStyleString(style);
+  }
+
+  function getBodyColumnStyle(
+    item: Row,
+    index: number,
+    fieldName: string,
+  ): string {
+    const defaultStyle = Array.isArray(defaultBodyStyle)
+      ? defaultBodyStyle[index] ?? {}
+      : defaultBodyStyle;
+    const styleFieldName = `${fieldName}Style`;
+    const style = { ...defaultStyle, ...(item[styleFieldName] ?? {}) };
+    return getStyleString(style);
+  }
 </script>
 
 <div class="list-view">
   <div class="list-header">
-    {#each displayNames as displayName}
-      <div class="header-cell">{displayName}</div>
+    {#each displayNames as displayName, index}
+      <div class="header-cell" style={getHeaderColumnStyle(index)}>
+        {displayName}
+      </div>
     {/each}
   </div>
 
   <div class="list-body">
     {#each items as item}
       <div class="list-row">
-        {#each header.fieldNames as fieldName}
-          <div class="list-cell">{getValue(item, fieldName)}</div>
+        {#each header.fieldNames as fieldName, index}
+          <div
+            class="list-cell"
+            style={getBodyColumnStyle(item, index, fieldName)}
+          >
+            {getValue(item, fieldName)}
+          </div>
         {/each}
       </div>
     {/each}

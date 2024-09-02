@@ -71,12 +71,19 @@ const testItems = [
     age: 36,
     email: "han@example.com",
     department: "디자인팀",
+    departmentStyle: {
+      color: "red",
+    },
   },
 ];
 
 const testHeader = {
   displayNames: ["ID", "이름", "나이", "이메일", "부서"],
   fieldNames: ["id", "name", "age", "email", "department"],
+  style: {
+    fontWeight: "bold",
+    fontFamily: "'Noto Sans KR', sans-serif",
+  },
 };
 
 const listView = new ListView({

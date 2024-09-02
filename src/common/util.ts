@@ -1,3 +1,8 @@
+// ex.) fontWeight -> font-weight
+export function camelToKebab(str: string): string {
+  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
 export function isAsyncFunction(func: any): boolean {
   return func.constructor?.name === "AsyncFunction";
 }
@@ -58,7 +63,10 @@ export function loadScript(
   });
 }
 
-export function loadClassFromModule(modulePath: string, className: string): Promise<any> {
+export function loadClassFromModule(
+  modulePath: string,
+  className: string
+): Promise<any> {
   return new Promise((resolve, reject) => {
     import(modulePath)
       .then((module) => {
