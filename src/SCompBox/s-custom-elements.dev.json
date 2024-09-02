@@ -1,97 +1,97 @@
 [
-    {
-        "component": {
-            "name": "AbcRun",
-            "componentClassName": "AbcRun",
-            "description": "AbcRun",
-            "props": {
-                "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
-                "autoSave": true,
-                "showPlayControl": true,
-                "enableMidiFileDownload": true,
-                "enablePdfFileDownload": true
-            }
-        }
-    },
-    {
-        "component": {
-            "name": "AbcRun",
-            "componentClassName": "AbcRun",
-            "description": "Abc Editor",
-            "props": {
-                "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
-                "autoSave": false,
-                "noRenderer": true
-            }
-        }
-    },
-    {
-        "component": {
-            "name": "AbcRenderer",
-            "componentClassName": "AbcRenderer",
-            "description": "Abc Render",
-            "props": {}
-        }
-    },
-    {
-        "divider": {
-            "style": {}
-        }
-    },
-    {
-        "component": {
-            "name": "Marquee",
-            "customElementName": "s-marquee",
-            "description": "Marquee",
-            "props": {
-                "text": "Hello Marquee!"
-            }
-        }
-    },
-    {
-        "component": {
-            "name": "PyRun",
-            "componentClassName": "PyRun",
-            "description": "PyRun",
-            "props": {
-                "pyodideIndexURL": "/build/dev/vendor/pyodide",
-                "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
-                "code": "print(\"Hello Python!\")"
-            }
-        }
-    },
-    {
-        "divider": {
-            "style": {}
-        }
-    },
-    {
-        "subMenu": {
-            "text": "About",
-            "items": [
-                {
-                    "link": {
-                        "text": "s-comp GitHub repository",
-                        "url": "https://github.com/ghjang/s-comp",
-                        "target": "_blank"
-                    }
-                },
-                {
-                    "link": {
-                        "text": "s-comp Component Unit Test",
-                        "url": "/test/s-comp.html",
-                        "target": "_blank"
-                    }
-                },
-                {
-                    "popup": {
-                        "text": "What's this?",
-                        "kind": "info",
-                        "title": "About s-comp",
-                        "content": "s-comp is a collection of custom elements that are built with Svelte."
-                    }
-                }
-            ]
-        }
+  {
+    "component": {
+      "name": "AbcRun",
+      "componentClassName": "AbcRun",
+      "description": "AbcRun",
+      "props": {
+        "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
+        "autoSave": true,
+        "showPlayControl": true,
+        "enableMidiFileDownload": true,
+        "enablePdfFileDownload": true
+      }
     }
+  },
+  {
+    "component": {
+      "name": "AbcRun",
+      "componentClassName": "AbcRun",
+      "description": "Abc Editor",
+      "props": {
+        "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
+        "autoSave": false,
+        "noRenderer": true
+      }
+    }
+  },
+  {
+    "component": {
+      "name": "AbcRenderer",
+      "componentClassName": "AbcRenderer",
+      "description": "Abc Render",
+      "props": {}
+    }
+  },
+  {
+    "divider": {
+      "style": {}
+    }
+  },
+  {
+    "component": {
+      "name": "Marquee",
+      "customElementName": "s-marquee",
+      "description": "Marquee",
+      "props": {
+        "text": "Hello Marquee!"
+      }
+    }
+  },
+  {
+    "component": {
+      "name": "PyRun",
+      "componentClassName": "PyRun",
+      "description": "PyRun",
+      "props": {
+        "pyodideIndexURL": "/build/dev/vendor/pyodide",
+        "editorResourcePath": "/vendor/monaco-editor/browser-rollup/custom/dist",
+        "code": "print(\"Hello Python!\")"
+      }
+    }
+  },
+  {
+    "divider": {
+      "style": {}
+    }
+  },
+  {
+    "subMenu": {
+      "text": "About",
+      "items": [
+        {
+          "link": {
+            "text": "s-comp GitHub repository",
+            "url": "https://github.com/ghjang/s-comp",
+            "target": "_blank"
+          }
+        },
+        {
+          "link": {
+            "text": "s-comp Component Unit Test",
+            "url": "/test/s-comp.html",
+            "target": "_blank"
+          }
+        },
+        {
+          "popup": {
+            "text": "What's this?",
+            "kind": "info",
+            "title": "About s-comp",
+            "content": "s-comp is a collection of custom elements that are built with Svelte."
+          }
+        }
+      ]
+    }
+  }
 ]
