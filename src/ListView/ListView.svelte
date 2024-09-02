@@ -18,15 +18,17 @@
     fieldNames: [],
   };
   export let items: Row[] = [];
-
   export let defaultHeaderStyle: StyleProps = {
     fontWeight: "bold",
     fontFamily: "'Noto Sans KR', sans-serif",
+    backgroundColor: "#f0f0f0",
+    textAlign: "center",
   };
-
   export let defaultBodyStyle: StyleProps | StyleProps[] = {
     fontFamily: "'Noto Sans KR', sans-serif",
   };
+  export let enableColumnResize: boolean = true;
+  export let alternatingRowColor: string | null = "#f8f8f8";
 
   function getValue(item: Row, field: string): any {
     return item[field] || "";
@@ -107,63 +109,221 @@
     const style = { ...defaultStyle, ...(item[styleFieldName] ?? {}) };
     return getStyleString(style);
   }
+
+  let columnWidths: number[] = [];
+
+  // 초기 컬럼 너비 설정
+  $: {
+    const totalWidth = 100;
+    const columnCount = header.fieldNames.length;
+    const defaultColumnWidth = totalWidth / columnCount;
+    columnWidths = header.fieldNames.map(() => defaultColumnWidth);
+  }
+
+  function startResize(index: number) {
+    return (e: MouseEvent) => {
+      e.preventDefault();
+      const startX = e.pageX;
+      const startWidths = [...columnWidths];
+      const tableWidth =
+        document.querySelector(".list-view table")?.clientWidth || 1;
+
+      function onMouseMove(e: MouseEvent) {
+        const diff = e.pageX - startX;
+        const percentDiff = (diff / tableWidth) * 100;
+
+        let newLeftWidth = Math.max(10, startWidths[index] + percentDiff);
+        let newRightWidth = Math.max(10, startWidths[index + 1] - percentDiff);
+
+        // 전체 너비를 유지하기 위해 조정
+        const totalNewWidth = newLeftWidth + newRightWidth;
+        const totalOriginalWidth = startWidths[index] + startWidths[index + 1];
+        const scale = totalOriginalWidth / totalNewWidth;
+
+        newLeftWidth *= scale;
+        newRightWidth *= scale;
+
+        columnWidths[index] = newLeftWidth;
+        columnWidths[index + 1] = newRightWidth;
+
+        columnWidths = [...columnWidths]; // 반응성 트리거
+      }
+
+      function onMouseUp() {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      }
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    };
+  }
 </script>
 
-<div class="list-view">
-  <div class="list-header">
-    {#each displayNames as displayName, index}
-      <div class="header-cell" style={getHeaderColumnStyle(index)}>
-        {displayName}
-      </div>
-    {/each}
-  </div>
-
-  <div class="list-body">
-    {#each items as item}
-      <div class="list-row">
-        {#each header.fieldNames as fieldName, index}
-          <div
-            class="list-cell"
-            style={getBodyColumnStyle(item, index, fieldName)}
-          >
-            {getValue(item, fieldName)}
-          </div>
+<div
+  class="list-view"
+  class:resizable={enableColumnResize}
+  class:alternating={alternatingRowColor !== null}
+  style="--alternating-row-color: {alternatingRowColor || 'transparent'}"
+>
+  <table>
+    <colgroup>
+      {#each columnWidths as width, i}
+        <col style="width: {width}%;" />
+      {/each}
+    </colgroup>
+    <thead>
+      <tr>
+        {#each displayNames as displayName, index}
+          <th style={getHeaderColumnStyle(index)}>
+            {displayName}
+            {#if enableColumnResize && index < displayNames.length - 1}
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <div class="resizer" on:mousedown={startResize(index)}></div>
+            {/if}
+          </th>
         {/each}
-      </div>
-    {/each}
-  </div>
+      </tr>
+    </thead>
+    <tbody>
+      {#each items as item, index (item.id ?? index)}
+        <tr>
+          {#each header.fieldNames as fieldName, fieldIndex}
+            <td style={getBodyColumnStyle(item, fieldIndex, fieldName)}>
+              {getValue(item, fieldName)}
+            </td>
+          {/each}
+        </tr>
+      {/each}
+    </tbody>
+  </table>
 </div>
 
 <style lang="scss">
+  $border-color: #ccc;
+  $header-bg-color: #f0f0f0;
+  $header-gradient-start: #f8f8f8;
+  $header-gradient-end: #e8e8e8;
+  $row-even-bg-color: #f8f8f8;
+  $row-hover-bg-color: #e8e8e8;
+  $resizer-color: #a0a0a0;
+  $resizer-active-color: #606060;
+  $cell-padding: 8px;
+  $resizer-width: 1px;
+  $resizer-hover-width: 3px;
+  $resizer-hover-color: #4a90e2;
+
   .list-view {
-    border: 1px solid #ccc;
+    border: 1px solid $border-color;
+    overflow-x: auto;
 
-    .list-header {
-      display: flex;
-      background-color: #f0f0f0;
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    th,
+    td {
+      padding: $cell-padding;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    th {
+      position: relative;
+      background-color: $header-bg-color;
       font-weight: bold;
+      border-bottom: 1px solid $border-color;
+      box-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+      background-image: linear-gradient(
+        to bottom,
+        $header-gradient-start,
+        $header-gradient-end
+      );
+    }
 
-      .header-cell {
-        padding: 8px;
-        flex: 1;
+    &.resizable {
+      th:not(:last-child),
+      td:not(:last-child) {
+        border-right: 1px solid lighten($border-color, 10%);
+      }
+
+      th:not(:last-child) {
+        padding-right: $cell-padding;
       }
     }
 
-    .list-body {
-      max-height: 400px;
-      overflow-y: auto;
+    th {
+      &:hover .resizer {
+        opacity: 1;
+      }
+    }
 
-      .list-row {
-        display: flex;
-        border-bottom: 1px solid #eee;
+    /*
+     NOTE: 원래 '리싸이저'를 호버링시에 화면에 표시하도록 했었다.
+           헌데 현재의 CSS 설정에서 아래와 같이 'right: -2px'로 설정하면
+           지정한 생색의 리싸이저가 보이지는 않지만 컬럼 리싸이징은 제대로 된다.
+           리싸이저 위치가 완전히 컬럼 구분 수직선과 일치하지는 않지만 크게 이상해보이지는 않는다.
+    */
+    .resizer {
+      position: absolute;
+      right: -2px;
+      top: 0;
+      height: 100%;
+      width: $resizer-hover-width;
+      background: transparent;
+      cursor: col-resize;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.2s ease;
 
-        .list-cell {
-          padding: 8px;
-          flex: 1;
+      &::after {
+        content: "";
+        position: absolute;
+        left: 1px;
+        top: 0;
+        height: 100%;
+        width: $resizer-width;
+        background: $resizer-color;
+        opacity: 0.3;
+        transition:
+          opacity 0.2s ease,
+          width 0.2s ease,
+          background-color 0.2s ease;
+      }
+
+      &:hover::after,
+      &:active::after {
+        opacity: 1;
+        width: $resizer-hover-width;
+        background-color: $resizer-hover-color;
+      }
+    }
+
+    tbody {
+      tr {
+        &:nth-child(even) {
+          background-color: var(--alternating-row-color);
         }
 
-        &:last-child {
-          border-bottom: none;
+        &:hover {
+          background-color: $row-hover-bg-color !important;
+        }
+      }
+    }
+
+    &.alternating {
+      tbody {
+        tr {
+          &:nth-child(even) {
+            background-color: var(--alternating-row-color);
+          }
         }
       }
     }
