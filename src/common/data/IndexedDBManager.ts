@@ -163,6 +163,92 @@ export default class IndexedDBManager {
       this.db = null;
     }
   }
+
+  static async getStoreInfo(
+    dbName: string,
+    version: number,
+    storeName: string
+  ): Promise<{
+    keyPath: string;
+    indexes: { name: string; keyPath: string | string[]; unique: boolean }[];
+    recordCount: number;
+  } | null> {
+    return new Promise((resolve, reject) => {
+      const request: IDBOpenDBRequest = indexedDB.open(dbName, version);
+
+      request.onerror = (event: Event) =>
+        reject((event.target as IDBOpenDBRequest).error);
+
+      request.onsuccess = (event: Event) => {
+        const db: IDBDatabase = (event.target as IDBOpenDBRequest).result;
+        if (db.objectStoreNames.contains(storeName)) {
+          const transaction = db.transaction(storeName, "readonly");
+          const store = transaction.objectStore(storeName);
+          const indexes = Array.from(store.indexNames).map((indexName) => {
+            const index = store.index(indexName);
+            return {
+              name: index.name,
+              keyPath: index.keyPath,
+              unique: index.unique,
+            };
+          });
+
+          const countRequest = store.count();
+          countRequest.onerror = (event: Event) =>
+            reject((event.target as IDBRequest).error);
+          countRequest.onsuccess = (event: Event) => {
+            resolve({
+              keyPath: store.keyPath as string,
+              indexes,
+              recordCount: (event.target as IDBRequest).result,
+            });
+            db.close();
+          };
+        } else {
+          resolve(null);
+          db.close();
+        }
+      };
+
+      request.onupgradeneeded = () => {
+        resolve(null);
+      };
+    });
+  }
+
+  static async getAllData<T>(
+    dbName: string,
+    version: number,
+    storeName: string
+  ): Promise<T[]> {
+    return new Promise((resolve, reject) => {
+      const request: IDBOpenDBRequest = indexedDB.open(dbName, version);
+
+      request.onerror = (event: Event) =>
+        reject((event.target as IDBOpenDBRequest).error);
+
+      request.onsuccess = (event: Event) => {
+        const db: IDBDatabase = (event.target as IDBOpenDBRequest).result;
+        if (db.objectStoreNames.contains(storeName)) {
+          const transaction = db.transaction(storeName, "readonly");
+          const store = transaction.objectStore(storeName);
+          const getAllRequest = store.getAll();
+
+          getAllRequest.onerror = (event: Event) =>
+            reject((event.target as IDBRequest).error);
+          getAllRequest.onsuccess = (event: Event) =>
+            resolve((event.target as IDBRequest).result);
+        } else {
+          resolve([]);
+        }
+        db.close();
+      };
+
+      request.onupgradeneeded = () => {
+        resolve([]);
+      };
+    });
+  }
 }
 
 export const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> => {

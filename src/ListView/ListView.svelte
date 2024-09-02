@@ -1,18 +1,7 @@
 <script lang="ts">
   import { camelToKebab } from "../common/util";
-
-  type StyleProps = Record<string, string>;
-
-  type Header = {
-    displayNames?: string[];
-    fieldNames: string[];
-    style?: StyleProps | StyleProps[];
-  };
-
-  type Row = {
-    style?: StyleProps;
-    [key: string]: any;
-  };
+  import IndexedDBManager from "../common/data/IndexedDBManager";
+  import { Store, Header, Row, StyleProps } from "./types";
 
   export let header: Header = {
     fieldNames: [],
@@ -29,16 +18,21 @@
   };
   export let enableColumnResize: boolean = true;
   export let alternatingRowColor: string | null = "#f8f8f8";
+  export let capitalizeHeaders: boolean = true;
+
+  export let store: Store | null = null;
+
+  // 'ListView'의 최대 높이
+  export let maxHeight = "none";
+
+  // 'ListView'의 테이블 레이아웃
+  // ; 'fixed'로 설정하면 '넓이'가 '부모 요소'의 넓이에 맞추어 고정된다.
+  //   '수평 스크롤'이 생성되지 않고 넓이가 딱 맞아 떨어진다.
+  //   이때 '테이블 셀'내의 컨텐트는 현재 설정에서 자동으로 줄어들어 표시된다.
+  export let tableLayout: "auto" | "fixed" | "inherit" = "fixed";
 
   function getValue(item: Row, field: string): any {
     return item[field] || "";
-  }
-
-  // fieldNames가 없거나 비어있으면 에러를 발생시킨다.
-  $: if (!header.fieldNames || header.fieldNames.length === 0) {
-    throw new Error(
-      "fieldNames는 반드시 지정되어야 하며, 최소 1개 이상의 열을 포함해야 합니다.",
-    );
   }
 
   // displayNames가 지정되었지만 fieldNames와 길이가 다른 경우 에러를 발생시킨다.
@@ -54,8 +48,10 @@
   // displayNames가 없는 경우 fieldNames를 기반으로 자동 생성시킨다.
   $: displayNames =
     header.displayNames ||
-    header.fieldNames.map(
-      (field) => field.charAt(0).toUpperCase() + field.slice(1),
+    header.fieldNames.map((field) =>
+      capitalizeHeaders
+        ? field.charAt(0).toUpperCase() + field.slice(1)
+        : field,
     );
 
   $: if (header.style) {
@@ -158,6 +154,38 @@
       window.addEventListener("mouseup", onMouseUp);
     };
   }
+
+  async function fetchStoreInfo(store: Store) {
+    const storeInfo = await IndexedDBManager.getStoreInfo(
+      store.dbName,
+      store.dbVersion,
+      store.storeName,
+    );
+    if (!storeInfo) {
+      throw new Error("Store not found");
+    }
+    store.keyPath = storeInfo.keyPath;
+    store.indexes = storeInfo.indexes;
+    store.recordCount = storeInfo.recordCount;
+  }
+
+  async function fetchStoreAllData(store: Store) {
+    const data = await IndexedDBManager.getAllData(
+      store.dbName,
+      store.dbVersion,
+      store.storeName,
+    );
+    if (data.length > 0) {
+      header.fieldNames = Object.keys(data[0] as object);
+      capitalizeHeaders = false;
+      displayNames = header.fieldNames;
+      items = data as Row[];
+    }
+  }
+
+  $: if (store) {
+    fetchStoreInfo(store).then(() => fetchStoreAllData(store));
+  }
 </script>
 
 <div
@@ -165,8 +193,9 @@
   class:resizable={enableColumnResize}
   class:alternating={alternatingRowColor !== null}
   style="--alternating-row-color: {alternatingRowColor || 'transparent'}"
+  style:max-height={maxHeight}
 >
-  <table>
+  <table style:table-layout={tableLayout}>
     <colgroup>
       {#each columnWidths as width, i}
         <col style="width: {width}%;" />
@@ -202,13 +231,14 @@
 <style lang="scss">
   $border-color: #ccc;
   $header-bg-color: #f0f0f0;
-  $header-gradient-start: #f8f8f8;
-  $header-gradient-end: #e8e8e8;
+  $header-gradient-start: #ffffff;
+  $header-gradient-end: #e0e0e0;
   $row-even-bg-color: #f8f8f8;
   $row-hover-bg-color: #e8e8e8;
   $resizer-color: #a0a0a0;
   $resizer-active-color: #606060;
   $cell-padding: 8px;
+  $cell-min-width: 50px;
   $resizer-width: 1px;
   $resizer-hover-width: 3px;
   $resizer-hover-color: #4a90e2;
@@ -216,52 +246,88 @@
   .list-view {
     border: 1px solid $border-color;
     overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 
     table {
       width: 100%;
-      border-collapse: separate;
+      border-collapse: collapse;
       border-spacing: 0;
-    }
 
-    th,
-    td {
-      padding: $cell-padding;
-      text-align: left;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    th {
-      position: relative;
-      background-color: $header-bg-color;
-      font-weight: bold;
-      border-bottom: 1px solid $border-color;
-      box-shadow:
-        0 2px 3px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-      background-image: linear-gradient(
-        to bottom,
-        $header-gradient-start,
-        $header-gradient-end
-      );
-    }
-
-    &.resizable {
-      th:not(:last-child),
-      td:not(:last-child) {
-        border-right: 1px solid lighten($border-color, 10%);
+      thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background-color: $header-bg-color;
       }
 
-      th:not(:last-child) {
-        padding-right: $cell-padding;
-      }
-    }
+      tbody {
+        overflow-y: auto;
+        width: 100%;
 
-    th {
-      &:hover .resizer {
-        opacity: 1;
+        tr {
+          &:nth-child(even) {
+            background-color: var(--alternating-row-color);
+          }
+
+          &:hover {
+            background-color: $row-hover-bg-color !important;
+          }
+        }
+      }
+
+      th,
+      td {
+        padding: $cell-padding;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border: 1px solid $border-color;
+        min-width: $cell-min-width;
+      }
+
+      th {
+        position: relative;
+        background-color: $header-bg-color;
+        font-weight: bold;
+        border-top: 0;
+        border-bottom: 1px solid $border-color;
+        box-shadow:
+          0 2px 3px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        background-image: linear-gradient(
+          to bottom,
+          $header-gradient-start,
+          $header-gradient-end
+        );
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+        transition: background-image 0.2s ease;
+
+        &:hover {
+          background-image: linear-gradient(
+            to bottom,
+            lighten($header-gradient-start, 5%),
+            lighten($header-gradient-end, 5%)
+          );
+        }
+
+        &:hover .resizer {
+          opacity: 1;
+        }
+      }
+
+      &.resizable {
+        th:not(:last-child),
+        td:not(:last-child) {
+          border-right: 1px solid lighten($border-color, 10%);
+        }
+
+        th:not(:last-child) {
+          padding-right: $cell-padding;
+        }
       }
     }
 
@@ -314,6 +380,10 @@
 
         &:hover {
           background-color: $row-hover-bg-color !important;
+        }
+
+        td {
+          padding: $cell-padding;
         }
       }
     }
