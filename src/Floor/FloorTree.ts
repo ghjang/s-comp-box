@@ -17,6 +17,7 @@ export default class FloorTree extends Tree {
     return this.traverse((node) => {
       if (node.id === ancestorFloorId) {
         const newNode = createTreeNode({ id: newFloorId });
+        node.children = node.children ?? [];
         node.children.push(newNode);
         return true;
       }
@@ -143,7 +144,7 @@ export default class FloorTree extends Tree {
     const valueSet = new Set(excludeIdMap?.values());
     const excludeIds = new Set([...keySet, ...valueSet]);
 
-    if (floorRootElem) {
+    if (floorRootElem && this.root[0].children) {
       removeInvalidNodeArrayElement(floorRootElem, this.root[0].children);
     }
 
@@ -161,7 +162,7 @@ export default class FloorTree extends Tree {
           console.log(`removed invalid node: ${node.id}`);
           treeData.splice(i, 1);
           --i;
-        } else if (floorElem && node.children.length > 0) {
+        } else if (floorElem && node.children && node.children.length > 0) {
           removeInvalidNodeArrayElement(floorElem, node.children);
         }
       }

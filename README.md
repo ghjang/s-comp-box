@@ -10,6 +10,7 @@ Some Svelte components are here:
 1. Console
 1. ContextMenu
 1. Floor
+1. JsonView
 1. marquee
 1. LaTeXDisplay: A display for LaTeX
 1. ListView

@@ -1,9 +1,9 @@
-export type TreeNode<T = any> = {
+export type TreeNode<T = unknown> = {
   id: string;
   name: string | null | undefined;
-  open: boolean;
-  children: TreeNode<T>[];
-  data: T;
+  open?: boolean;
+  children?: TreeNode<T>[];
+  data?: T;
 };
 
 export type TraverseCallback<T = any> = (
@@ -55,7 +55,10 @@ export class Tree<T = any> {
       ) {
         return true;
       }
-      if (this.doTraverse(node.children, callback, level + 1)) {
+      if (
+        node.children &&
+        this.doTraverse(node.children, callback, level + 1)
+      ) {
         return true;
       }
     }
