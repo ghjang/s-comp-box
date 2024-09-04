@@ -84,7 +84,20 @@
     if (key) {
       if (!value) {
         if (/\{|\}|\[|\]/.test(key)) {
-          htmlDomNode.innerHTML = `<span class="json-bracket">${key}</span>`;
+          if (key === "{" || key === "[") {
+            if (treeNodeData.open) {
+              htmlDomNode.innerHTML = `<span class="json-bracket">${key}</span>`;
+            } else {
+              const childrenLength = treeNodeData.children?.length ?? 0;
+              const childrenLengthText = `(${childrenLength})`;
+              const closeBracket = key === "{" ? "}" : "]";
+              htmlDomNode.innerHTML = showCloseBracket
+                ? `<span class="json-bracket">${key}</span>...<span class="json-children-count">${childrenLengthText}</span>`
+                : `<span class="json-bracket">${key}...${childrenLengthText}...${closeBracket}</span>`;
+            }
+          } else {
+            htmlDomNode.innerHTML = `<span class="json-bracket">${key}</span>`;
+          }
         } else {
           htmlDomNode.innerHTML = `<span class="json-key">${key}</span>`;
         }
@@ -110,8 +123,7 @@
         if (!treeNodeData.open) {
           if (/\[|\{/.test(trimmedOrgValue)) {
             const childrenLength = treeNodeData.children?.length ?? 0;
-            const childrenLengthText =
-              childrenLength > 0 ? `(${childrenLength})` : "";
+            const childrenLengthText = `(${childrenLength})`;
             const childrenLengthSpan = `<span class="json-children-count">${childrenLengthText}</span>`;
             if (showCloseBracket) {
               value = `${value}...${childrenLengthSpan}`;
@@ -153,6 +165,10 @@
 
 <style lang="scss">
   .json-view {
+    :global(.tree-container) {
+      outline: none;
+    }
+
     :global(.json-key) {
       font-weight: bold;
       color: #881391; /* 보라색 계열로 변경 */
