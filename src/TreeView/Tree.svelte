@@ -22,6 +22,8 @@
 
   export let showSelectRect = false;
 
+  export let nodeStyler = null;
+
   /*
   $: if (data) {
     console.log(`[Tree] data:`, data);
@@ -36,7 +38,7 @@
   export function openNodeAtSelectRect(rootUlElem) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeBtnElem = rootUlElem.querySelector(
-      `div.node-content[data-node-id="${nodeId}"] button.toggle-button`
+      `div.node-content[data-node-id="${nodeId}"] button.toggle-button`,
     );
     if (nodeBtnElem) {
       const contentNode = nodeBtnElem.parentNode;
@@ -50,7 +52,7 @@
   export function closeNodeAtSelectRect(rootUlElem) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeBtnElem = rootUlElem.querySelector(
-      `div.node-content[data-node-id="${nodeId}"] button.toggle-button`
+      `div.node-content[data-node-id="${nodeId}"] button.toggle-button`,
     );
     if (nodeBtnElem) {
       const contentNode = nodeBtnElem.parentNode;
@@ -64,7 +66,7 @@
   export function selectNodeAtSelectRect(rootUlElem) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeElem = rootUlElem.querySelector(
-      `div.node-content[data-node-id="${nodeId}"]`
+      `div.node-content[data-node-id="${nodeId}"]`,
     );
     if (nodeElem) {
       nodeElem.querySelector(".node-name").click();
@@ -110,7 +112,7 @@
   export function removeNodeAtSelectRect(rootUlElem) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeElem = rootUlElem.querySelector(
-      `div.node-content[data-node-id="${nodeId}"]`
+      `div.node-content[data-node-id="${nodeId}"]`,
     );
     if (nodeElem) {
       const nodeLiElem = nodeElem.closest("li");
@@ -186,6 +188,18 @@
     }
     toggleNodeOpenState(nodeData);
   }
+
+  function applyNodeStyler(htmlDomNode, params) {
+    let { nodeStyler, treeNodeData, nodeOpen } = params;
+
+    nodeStyler?.(htmlDomNode, { treeNodeData, nodeOpen });
+
+    return {
+      update(newParams) {
+        ({ nodeStyler, treeNodeData, nodeOpen } = newParams);
+      },
+    };
+  }
 </script>
 
 <ul data-node-level={nodeLevel}>
@@ -228,7 +242,27 @@
           on:dblclick|preventDefault|stopPropagation={(e) =>
             handleNodeNameDbClick(e, node)}
         >
-          {node.name}
+          {#if node.open}
+            <span
+              use:applyNodeStyler={{
+                nodeStyler,
+                treeNodeData: node,
+                nodeOpen: true,
+              }}
+            >
+              {node.name}
+            </span>
+          {:else}
+            <span
+              use:applyNodeStyler={{
+                nodeStyler,
+                treeNodeData: node,
+                nodeOpen: false,
+              }}
+            >
+              {node.name}
+            </span>
+          {/if}
         </span>
       </div>
 
@@ -236,7 +270,10 @@
         <svelte:self
           nodeLevel={nodeLevel + 1}
           data={node.children}
+          {openIcon}
+          {closeIcon}
           {showSelectRect}
+          {nodeStyler}
           on:treeNodeSelected
           on:treeNodeButtonClicked
         />

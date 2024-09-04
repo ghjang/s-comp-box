@@ -13,6 +13,8 @@
   export let openIcon = "▼";
   export let closeIcon = "►";
 
+  export let nodeStyler = null;
+
   export const customEvents = ["treeNodeSelected", "treeNodeRemove"];
 
   let treeContainer;
@@ -63,6 +65,7 @@
     {openIcon}
     {closeIcon}
     {showSelectRect}
+    {nodeStyler}
     on:treeNodeSelected={handleTreeNodeSelected}
     on:treeNodeRemove={handleTreeNodeRemove}
     on:treeNodeButtonClicked={handleTreeNodeButtonClicked}
@@ -72,7 +75,7 @@
 <style>
   .tree-container {
     margin: 0;
-    padding: 0;
+    padding: 0 0 1px 0;
     width: 100%;
     height: 100%;
     overflow: auto;

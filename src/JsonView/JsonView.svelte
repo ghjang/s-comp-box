@@ -4,6 +4,7 @@
 
   export let jsonData: object | string | null = {};
   export let openChildren = false;
+  export let showCloseBracket = true;
 
   // JSON 데이터를 트리 데이터 형식으로 변환하는 함수
   function convertJsonToTreeData(
@@ -46,7 +47,9 @@
             ),
           }),
         );
-        result.push(createTreeNode({ id: `${id}-bracket-close`, name: "]" }));
+        if (showCloseBracket) {
+          result.push(createTreeNode({ id: `${id}-bracket-close`, name: "]" }));
+        }
       } else if (typeof value === "object" && value !== null) {
         result.push(
           createTreeNode({
@@ -56,7 +59,9 @@
             children: convertJsonToTreeData(value, level + 1, id),
           }),
         );
-        result.push(createTreeNode({ id: `${id}-bracket-close`, name: "}" }));
+        if (showCloseBracket) {
+          result.push(createTreeNode({ id: `${id}-bracket-close`, name: "}" }));
+        }
       } else if (typeof value === "string") {
         result.push(createTreeNode({ id, name: `${key}: "${value}"` }));
       } else {
@@ -65,6 +70,60 @@
     }
 
     return result;
+  }
+
+  function nodeStyler(
+    htmlDomNode: HTMLElement,
+    params: { treeNodeData: TreeNode },
+  ) {
+    const { treeNodeData } = params;
+    const nodeName = treeNodeData.name;
+    let [key, value] = nodeName?.includes(":")
+      ? nodeName.split(/:(.+)/)
+      : [nodeName];
+    if (key) {
+      if (!value) {
+        if (/\{|\}|\[|\]/.test(key)) {
+          htmlDomNode.innerHTML = `<span class="json-bracket">${key}</span>`;
+        } else {
+          htmlDomNode.innerHTML = `<span class="json-key">${key}</span>`;
+        }
+      } else {
+        const trimmedOrgValue = value.trim();
+        if (/^(['"]).*\1$/.test(trimmedOrgValue)) {
+          // 문자열
+          value = `<span class="json-string">${trimmedOrgValue}</span>`;
+        } else if (/^[0-9]+$/.test(trimmedOrgValue)) {
+          // 숫자
+          value = `<span class="json-number">${trimmedOrgValue}</span>`;
+        } else if (/^true|false$/.test(trimmedOrgValue)) {
+          // 불리언
+          value = `<span class="json-boolean">${trimmedOrgValue}</span>`;
+        } else if (/\[|\{/.test(trimmedOrgValue)) {
+          // 왼쪽 괄호([{,
+          value = `<span class="json-bracket">${trimmedOrgValue}</span>`;
+        } else {
+          // 기타
+          value = `<span class="json-other">${trimmedOrgValue}</span>`;
+        }
+
+        if (!treeNodeData.open) {
+          if (/\[|\{/.test(trimmedOrgValue)) {
+            const childrenLength = treeNodeData.children?.length ?? 0;
+            const childrenLengthText =
+              childrenLength > 0 ? `(${childrenLength})` : "";
+            const childrenLengthSpan = `<span class="json-children-count">${childrenLengthText}</span>`;
+            if (showCloseBracket) {
+              value = `${value}...${childrenLengthSpan}`;
+            } else {
+              const closeBracket = trimmedOrgValue === "{" ? "}" : "]";
+              value = `${value}...${childrenLengthSpan}...${closeBracket}`;
+            }
+          }
+        }
+        htmlDomNode.innerHTML = `<span class="json-key">${key}</span>: ${value}`;
+      }
+    }
   }
 
   let treeData: TreeNode[] = [];
@@ -77,12 +136,44 @@
       open: true,
       children: _treeData,
     });
-    const rootBracketCloseNode = createTreeNode({
-      id: "root-bracket-close",
-      name: "}",
-    });
-    treeData = [rootBracketOpenNode, rootBracketCloseNode];
+    treeData = [rootBracketOpenNode];
+    if (showCloseBracket) {
+      const rootBracketCloseNode = createTreeNode({
+        id: "root-bracket-close",
+        name: "}",
+      });
+      treeData.push(rootBracketCloseNode);
+    }
   }
 </script>
 
-<TreeView data={treeData} />
+<div class="json-view">
+  <TreeView data={treeData} {nodeStyler} />
+</div>
+
+<style lang="scss">
+  .json-view {
+    :global(.json-key) {
+      font-weight: bold;
+      color: #881391; /* 보라색 계열로 변경 */
+    }
+    :global(.json-string) {
+      color: #c41a16; /* 밝은 빨간색으로 변경 */
+    }
+    :global(.json-number) {
+      color: #1c00cf; /* 진한 파란색으로 변경 */
+    }
+    :global(.json-boolean) {
+      color: #0d904f; /* 진한 녹색으로 변경 */
+    }
+    :global(.json-bracket) {
+      color: #000000; /* 검정색 유지 */
+    }
+    :global(.json-other) {
+      color: #e17000; /* 주황색 조정 */
+    }
+    :global(.json-children-count) {
+      color: #5a5a5a; /* 회색 조정 */
+    }
+  }
+</style>

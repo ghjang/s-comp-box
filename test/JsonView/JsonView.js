@@ -21,6 +21,7 @@ const jsonView1 = new JsonView({
   props: {
     jsonData: jsonData1,
     openChildren: true,
+    showCloseBracket: false,
   },
 });
 
