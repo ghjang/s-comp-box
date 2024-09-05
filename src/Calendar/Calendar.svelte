@@ -30,6 +30,8 @@
     "December",
   ];
   export let dayNamesOfWeek: string[] = ["S", "M", "T", "W", "T", "F", "S"];
+
+  export let disableAnimation: boolean = false;
   export let animationDuration: number = 600; // milliseconds
 
   let selectedYear: number = -1;
@@ -71,7 +73,7 @@
     direction = ctx.direction;
   }
 
-  $: ctx.duration?.set(animationDuration);
+  $: ctx.duration?.set(disableAnimation ? 0 : animationDuration);
 
   const handlePrevMonthClick = (event: MouseEvent) => {
     const target = event.target as HTMLButtonElement;
@@ -291,12 +293,15 @@
         {/each}
       </div>
     </div>
-    <div class="bottomPart" class:isFlying={$direction !== ""}>
+    <div
+      class="bottomPart"
+      class:isFlying={!disableAnimation && $direction !== ""}
+    >
       {#key `${selectedYear}-${selectedMonth}`}
         <div
           class="dayNumbers"
-          in:fly={ctx.flyInProp}
-          out:fly={ctx.flyOutProp}
+          in:fly={disableAnimation ? {} : ctx.flyInProp}
+          out:fly={disableAnimation ? {} : ctx.flyOutProp}
           on:introstart={ctx.flyIntroStart}
           on:introend={ctx.flyIntroEnd}
           on:outrostart={ctx.flyOutroStart}
