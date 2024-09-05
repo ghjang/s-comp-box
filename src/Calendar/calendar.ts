@@ -230,9 +230,8 @@ export function createContext(calendarElem: HTMLDivElement): CalendarContext {
 
     flyIntroEnd: (event: CustomEvent) => {
       const target = event.target as HTMLElement;
-      target.style.willChange = "auto";
-      target.style.top = "0";
-      target.style.left = "0";
+      target.style.cssText = ""; // inline으로 설정한 'top, left'등의 스타일 속성들 모두 제거
+
       _direction.set("");
 
       if (typeof _flyEndAction === "function") {
