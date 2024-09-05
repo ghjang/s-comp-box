@@ -1,7 +1,39 @@
-import { writable, get } from "svelte/store";
+import { writable, get, type Writable } from "svelte/store";
+
+export interface DayNumber {
+  day: number | null;
+  key: string;
+}
+
+export interface CalendarData {
+  year: number;
+  month: number;
+  day: number;
+  dayNumbers: DayNumber[];
+}
+
+export interface CalendarContext {
+  calendarWidth: string;
+  calendarHeight: string;
+  direction: Writable<string>;
+  duration: Writable<number>;
+  flyOutProp: FlyProp;
+  flyInProp: FlyProp;
+  flyOutroStart: (event: CustomEvent) => void;
+  flyOutroEnd: (event: CustomEvent) => void;
+  flyIntroStart: (event: CustomEvent) => void;
+  flyIntroEnd: (event: CustomEvent) => void;
+  setFlyEndAction: (action: () => void) => void;
+}
+
+interface FlyProp {
+  x: number;
+  y: number;
+  duration: number;
+}
 
 // 'getDaysInMonth()'는 '해당 월의 일 수'를 반환한다.
-function getDaysInMonth(year, month) {
+function getDaysInMonth(year: number, month: number): number {
   // 'getDate()'는 'Date 객체'에 지정된 '월'의 '일 수'를 반환한다.
   // 'new Date(year, month + 1, 0)'은 '다음 달의 0일'을 의미한다.
   // '0일'은 '이전 달의 마지막 날'과도 같은 의미다. 따라서 '다음 달의 0일'의
@@ -12,12 +44,12 @@ function getDaysInMonth(year, month) {
 }
 
 // 'getDay()'는 '0(일요일)'부터 '6(토요일)'까지의 값을 반환한다.
-function getFirstDayOfMonth(year, month) {
+function getFirstDayOfMonth(year: number, month: number): number {
   return new Date(year, month, 1).getDay();
 }
 
-export function getCalendarData(targetDate) {
-  let date = null;
+export function getCalendarData(targetDate: Date | string): CalendarData {
+  let date: Date;
 
   if (targetDate instanceof Date) {
     date = targetDate;
@@ -27,7 +59,7 @@ export function getCalendarData(targetDate) {
     throw new Error("Invalid targetDay type");
   }
 
-  let dayNumbers = [];
+  let dayNumbers: DayNumber[] = [];
 
   const year = date.getFullYear(); // 'getFullYear()'는 '4자리 연도'를 반환한다.
   const month = date.getMonth(); // 'getMonth()'는 '0(1월)'부터 '11(12월)'까지의 값을 반환한다.
@@ -55,22 +87,22 @@ export function getCalendarData(targetDate) {
 //       최초 마운트 시점의 초기 영역 크기 값을 저장한다. 캘린더의 크기가 동적으로 변하게 추후에
 //       수정할 경우 'ResizeObserver'를 사용해서 캘린더 크기 변화를 감지하고 'calendarWidth',
 //       'calendarHeight' 값을 업데이트는 방식으로 구현이 가능할 것으로 보인다.
-export function createContext(calendarElem) {
+export function createContext(calendarElem: HTMLDivElement): CalendarContext {
   let _direction = writable("");
   let _duration = writable(600);
-  let _flyEndAction = null;
+  let _flyEndAction: (() => void) | null = null;
 
   const calendarSize = calendarElem.getBoundingClientRect();
   const initialCalendarWidth = `${calendarSize.width}px`;
   const initialCalendarHeight = `${calendarSize.height}px`;
 
   // '일 숫자' 부분을 나타내는 'bottomPart'를 찾는다.
-  const bottomPart = calendarElem.querySelector(".bottomPart");
+  const bottomPart = calendarElem.querySelector(".bottomPart") as HTMLElement;
   const _bottomPartSize = bottomPart.getBoundingClientRect();
 
   // NOTE: 'in:fly'에서 'x, y'의 의미는 '현재의 위치'로 최종적으로 도착하기 전의 '애니메이션 시작 위치'를 의미한다.
-  class FlyInProp {
-    get x() {
+  class FlyInProp implements FlyProp {
+    get x(): number {
       const direction = get(_direction);
       const xOffset = _bottomPartSize.width;
 
@@ -84,7 +116,7 @@ export function createContext(calendarElem) {
       }
     }
 
-    get y() {
+    get y(): number {
       const direction = get(_direction);
       const yOffset = _bottomPartSize.height;
 
@@ -98,7 +130,7 @@ export function createContext(calendarElem) {
       }
     }
 
-    get duration() {
+    get duration(): number {
       return get(_duration);
     }
   }
@@ -111,8 +143,8 @@ export function createContext(calendarElem) {
   //       'out:fly'에서 동적으로 현재의 이동 방향에을 참조할 수 있도록 함.
   //
   // NOTE: 'out:fly'에서 'x, y'의 의미는 '현재의 위치'에서 최종적으로 '이동할 위치'를 의미한다.
-  class FlyOutProp {
-    get x() {
+  class FlyOutProp implements FlyProp {
+    get x(): number {
       const direction = get(_direction);
       const xOffset = _bottomPartSize.width;
 
@@ -126,7 +158,7 @@ export function createContext(calendarElem) {
       }
     }
 
-    get y() {
+    get y(): number {
       const direction = get(_direction);
       const yOffset = _bottomPartSize.height;
 
@@ -140,7 +172,7 @@ export function createContext(calendarElem) {
       }
     }
 
-    get duration() {
+    get duration(): number {
       return get(_duration);
     }
   }
@@ -155,27 +187,30 @@ export function createContext(calendarElem) {
     flyOutProp: new FlyOutProp(),
     flyInProp: new FlyInProp(),
 
-    flyOutroStart: (event) => {
+    flyOutroStart: (event: CustomEvent) => {
       const direction = get(_direction);
+      const target = event.target as HTMLElement;
 
       if (direction === "up" || direction === "down") {
-        event.target.style.willChange = "top";
+        target.style.willChange = "top";
       } else if (direction === "left" || direction === "right") {
-        event.target.style.willChange = "left";
+        target.style.willChange = "left";
       } else {
         // do nothing
       }
     },
 
-    flyOutroEnd: (event) => {
-      event.target.style.willChange = "auto";
+    flyOutroEnd: (event: CustomEvent) => {
+      const target = event.target as HTMLElement;
+      target.style.willChange = "auto";
     },
 
     // NOTE: 'in:fly' 대상인 'div'는 'display: relative'로 설정되어 있는 'block' 요소이다.
     //       'document flow'상 'out:fly' 대상인 'div'의 아래에 위치하고 있다. 'in:fly' 애니메이션의
     //       'offset'값이 정상 적용될 수 있도록 div의 위치를 미리 조정해 주어야 한다.
-    flyIntroStart: (event) => {
-      const style = event.target.style;
+    flyIntroStart: (event: CustomEvent) => {
+      const target = event.target as HTMLElement;
+      const style = target.style;
       const h = _bottomPartSize.height;
       const direction = get(_direction);
 
@@ -193,10 +228,11 @@ export function createContext(calendarElem) {
       }
     },
 
-    flyIntroEnd: (event) => {
-      event.target.style.willChange = "auto";
-      event.target.style.top = "0";
-      event.target.style.left = "0";
+    flyIntroEnd: (event: CustomEvent) => {
+      const target = event.target as HTMLElement;
+      target.style.willChange = "auto";
+      target.style.top = "0";
+      target.style.left = "0";
       _direction.set("");
 
       if (typeof _flyEndAction === "function") {
@@ -210,7 +246,7 @@ export function createContext(calendarElem) {
     //       '대입'을 할 경우에 의도하지 않게 'createContext'를 호출하는 '스벨트 반응형 블럭'이
     //       호출되는 문제가 있다. 결과적으로 새로운 '익명 컨텍스트 객체'가 생성되어 '_flyEndAction'가
     //       'null'이 되어 버린다.
-    setFlyEndAction(action) {
+    setFlyEndAction(action: () => void) {
       _flyEndAction = action;
     },
   };

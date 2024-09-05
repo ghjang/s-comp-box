@@ -1,13 +1,21 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { type Writable } from "svelte/store";
   import { fly } from "svelte/transition";
-  import { getCalendarData, createContext } from "./calendar.js";
+  import {
+    getCalendarData,
+    createContext,
+    type CalendarContext,
+    type DayNumber,
+  } from "./calendar";
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    dateSelected: { targetDate: Date };
+  }>();
 
-  export let targetDate = new Date();
-  export let autoSelectTargetDay = true;
-  export let monthNames = [
+  export let targetDate: Date = new Date();
+  export let autoSelectTargetDay: boolean = true;
+  export let monthNames: string[] = [
     "January",
     "February",
     "March",
@@ -21,15 +29,14 @@
     "November",
     "December",
   ];
-  export let dayNamesOfWeek = ["S", "M", "T", "W", "T", "F", "S"];
-  export let animationDuration = 600; // milliseconds
+  export let dayNamesOfWeek: string[] = ["S", "M", "T", "W", "T", "F", "S"];
+  export let animationDuration: number = 600; // milliseconds
 
-  let selectedYear = -1;
-  let selectedMonth = -1;
-  let selectedDayNumber = -1;
-  let dayNumbers = [];
+  let selectedYear: number = -1;
+  let selectedMonth: number = -1;
+  let selectedDayNumber: number = -1;
+  let dayNumbers: DayNumber[] = [];
 
-  // 'targetDate'로부터 캘린더 구성
   $: {
     const data = getCalendarData(targetDate);
 
@@ -44,9 +51,9 @@
     }
   }
 
-  let calendar;
-  let ctx = {}; // '애니메이션'과 관련된 '상태'를 관리하는 '컨텍스트' 객체
-  let direction;
+  let calendar: HTMLDivElement;
+  let ctx: CalendarContext = {} as CalendarContext;
+  let direction: Writable<string>;
 
   // NOTE: 이 '반응형 블럭'에서 '의존성 변수'는 'calendar' 1개이다.
   //       'ctx'의 경우는 '코드 텍스트' 자체로만 보았을때는 'ctx.direction'에
@@ -66,28 +73,31 @@
 
   $: ctx.duration?.set(animationDuration);
 
-  const handlePrevMonthClick = (event) => {
-    event.target.blur();
+  const handlePrevMonthClick = (event: MouseEvent) => {
+    const target = event.target as HTMLButtonElement;
+    target.blur();
     ctx.direction.set("right");
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth - 2, 1);
   };
 
-  const handleNextMonthClick = (event) => {
-    event.target.blur();
+  const handleNextMonthClick = (event: MouseEvent) => {
+    const target = event.target as HTMLButtonElement;
+    target.blur();
     ctx.direction.set("left");
     autoSelectTargetDay = false;
     targetDate = new Date(selectedYear, selectedMonth, 1);
   };
 
-  const handleDayNumberClick = (event) => {
-    const dayNumber = parseInt(event.target.textContent);
+  const handleDayNumberClick = (event: MouseEvent) => {
+    const target = event.target as HTMLButtonElement;
+    const dayNumber = parseInt(target.textContent || "");
 
     if (!dayNumber) {
       return;
     }
 
-    event.target.focus();
+    target.focus();
 
     selectedDayNumber = dayNumber;
 
@@ -102,67 +112,87 @@
   // TODO: 'handleDayNumberKeyDown' 키보드 네비게이션 코드 분리 및 개선
   //
   // - '달 네비게이션'용의 '스토어 객체' 따위를 별도로 추가?
-  const handleDayNumberKeyDown = (event) => {
+  const handleDayNumberKeyDown = (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement;
     const ctrlKey = event.ctrlKey;
     const metaKey = event.metaKey;
     const key = event.key;
 
-    const parent = event.target.parentElement;
+    const parent = target.parentElement;
+    if (!parent) return;
 
     if (key === "ArrowLeft") {
-      const prevSibling = event.target.previousElementSibling;
-      if (prevSibling && prevSibling.dataset.day != "") {
+      const prevSibling = target.previousElementSibling as HTMLElement;
+      if (prevSibling && prevSibling.dataset.day !== "") {
         prevSibling.focus();
       }
     } else if (key === "ArrowRight") {
-      event.target.nextElementSibling?.focus();
+      const nextSibling = target.nextElementSibling as HTMLElement | null;
+      if (nextSibling && nextSibling.dataset.day !== "") {
+        nextSibling.focus();
+      }
     } else if (key === "ArrowUp") {
-      const curDay = parseInt(event.target.dataset.day);
+      const curDay = parseInt(target.dataset.day || "");
       if (!isNaN(curDay)) {
         const preRowDay = curDay - 7;
-        parent.querySelector(`[data-day="${preRowDay}"]`)?.focus();
+        const selectedDayElem = parent.querySelector(
+          `[data-day="${preRowDay}"]`,
+        ) as HTMLButtonElement | null;
+        selectedDayElem?.focus();
       }
     } else if (key === "ArrowDown") {
-      const curDay = parseInt(event.target.dataset.day);
+      const curDay = parseInt(target.dataset.day || "");
       if (!isNaN(curDay)) {
         const nextRowDay = curDay + 7;
-        parent.querySelector(`[data-day="${nextRowDay}"]`)?.focus();
+        const selectedDayElem = parent.querySelector(
+          `[data-day="${nextRowDay}"]`,
+        ) as HTMLButtonElement | null;
+        selectedDayElem?.focus();
       }
     } else if (key === "Home") {
       if (ctrlKey) {
-        parent.querySelector(`[data-day]:not([data-day=""])`)?.focus();
+        const selectedDayElem = parent.querySelector(
+          `[data-day]:not([data-day=""])`,
+        ) as HTMLButtonElement | null;
+        selectedDayElem?.focus();
       } else {
-        const curDay = parseInt(event.target.dataset.day);
+        const curDay = parseInt(target.dataset.day || "");
         const curDate = new Date(selectedYear, selectedMonth - 1, curDay);
         const dayOfWeek = curDate.getDay();
         const sundayDay = curDay - dayOfWeek;
-        if (sundayDay > 0) {
-          parent.querySelector(`[data-day="${sundayDay}"]`)?.focus();
-        } else {
-          parent.querySelector(`[data-day="1"]`)?.focus();
-        }
+        const selectedDayElem = parent.querySelector(
+          `[data-day="${sundayDay > 0 ? sundayDay : 1}"]`,
+        ) as HTMLButtonElement | null;
+        selectedDayElem?.focus();
       }
     } else if (key === "End") {
       if (ctrlKey) {
-        parent
-          .querySelector(`[data-day]:not([data-day=""]):last-child`)
-          ?.focus();
+        const lastDayElem = parent.querySelector(
+          `[data-day]:not([data-day=""]):last-child`,
+        ) as HTMLButtonElement | null;
+        lastDayElem?.focus();
       } else {
-        const curDay = parseInt(event.target.dataset.day);
+        const curDay = parseInt(target.dataset.day || "");
         const curDate = new Date(selectedYear, selectedMonth - 1, curDay);
         const dayOfWeek = curDate.getDay();
         const saturdayDay = curDay + (6 - dayOfWeek);
         const lastDayElem = parent.querySelector(
-          `[data-day]:not([data-day=""]):last-child`
-        );
-        if (saturdayDay <= lastDayElem.dataset.day) {
-          parent.querySelector(`[data-day="${saturdayDay}"]`)?.focus();
-        } else {
+          `[data-day]:not([data-day=""]):last-child`,
+        ) as HTMLButtonElement | null;
+        if (
+          lastDayElem &&
+          saturdayDay <= parseInt(lastDayElem.dataset.day || "")
+        ) {
+          const targetDayElem = parent.querySelector(
+            `[data-day="${saturdayDay}"]`,
+          ) as HTMLButtonElement | null;
+          targetDayElem?.focus();
+        } else if (lastDayElem) {
           lastDayElem.focus();
         }
       }
     } else if (key === "PageUp" || key === "PageDown") {
-      const curDay = parseInt(event.target.dataset.day);
+      const curDay = parseInt(target.dataset.day || "");
 
       if (isNaN(curDay)) {
         return;
@@ -176,7 +206,10 @@
 
       ctx.setFlyEndAction(() => {
         const targetDay = targetDate.getDate();
-        calendar.querySelector(`button[data-day="${targetDay}"]`)?.focus();
+        const targetDayElem = calendar.querySelector(
+          `button[data-day="${targetDay}"]`,
+        ) as HTMLButtonElement | null;
+        targetDayElem?.focus();
         if (animationDurationBak !== animationDuration) {
           animationDuration = animationDurationBak;
         }
