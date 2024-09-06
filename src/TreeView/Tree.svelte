@@ -12,6 +12,7 @@
 
   type TreeEvents = {
     treeNodeSelected: TreeNode;
+    treeNodeHovered: TreeNode;
     treeNodeButtonClicked: TreeNode;
     treeNodeRemove: TreeNode;
   };
@@ -34,6 +35,8 @@
   export let showSelectRect = false;
 
   export let nodeStyler: NodeStylerFunction | null = null;
+
+  export let hoverDelay = 1000; // 1초
 
   interface TreeContext {
     maxLevel: number;
@@ -218,6 +221,22 @@
       },
     };
   }
+
+  let hoverTimer: number | null = null;
+
+  function handleNodeMouseEnter(node: TreeNode) {
+    hoverTimer = window.setTimeout(
+      () => dispatch("treeNodeHovered", node),
+      hoverDelay,
+    );
+  }
+
+  function handleNodeMouseLeave() {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+  }
 </script>
 
 <ul data-node-level={nodeLevel}>
@@ -259,6 +278,8 @@
             handleNodeNameClick(e, node)}
           on:dblclick|preventDefault|stopPropagation={(e) =>
             handleNodeNameDbClick(e, node)}
+          on:mouseenter={() => handleNodeMouseEnter(node)}
+          on:mouseleave={handleNodeMouseLeave}
         >
           {#if node.open}
             <span
@@ -292,6 +313,8 @@
           {closeIcon}
           {showSelectRect}
           {nodeStyler}
+          {hoverDelay}
+          on:treeNodeHovered
           on:treeNodeSelected
           on:treeNodeButtonClicked
         />

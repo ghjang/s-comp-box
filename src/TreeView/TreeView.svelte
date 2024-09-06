@@ -14,6 +14,8 @@
 
   export let nodeStyler: NodeStylerFunction | null = null;
 
+  export let hoverDelay = 1000; // 1초
+
   export const customEvents = ["treeNodeSelected", "treeNodeRemove"];
 
   let treeContainer: HTMLDivElement;
@@ -69,6 +71,8 @@
     {closeIcon}
     {showSelectRect}
     {nodeStyler}
+    {hoverDelay}
+    on:treeNodeHovered
     on:treeNodeSelected={handleTreeNodeSelected}
     on:treeNodeRemove={handleTreeNodeRemove}
     on:treeNodeButtonClicked={handleTreeNodeButtonClicked}

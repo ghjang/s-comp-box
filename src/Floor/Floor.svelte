@@ -143,6 +143,11 @@
     componentTreeData = event.detail.componentTreeData;
   }
 
+  function handleTreeNodeHovered(event) {
+    const hoveredNode = event.detail;
+    console.log(`Node ${hoveredNode.id} is hovered`);
+  }
+
   function handleTreeNodeSelected(event) {
     const selectedNode = event.detail;
     const targetFloorId = selectedNode.id;
@@ -238,6 +243,7 @@
         <TreeView
           slot="left"
           data={componentTreeData}
+          on:treeNodeHovered={handleTreeNodeHovered}
           on:treeNodeSelected={handleTreeNodeSelected}
           on:treeNodeRemove={handleTreeNodeRemove}
         />
@@ -294,6 +300,7 @@
         <TreeView
           slot="right"
           data={componentTreeData}
+          on:treeNodeHovered={handleTreeNodeHovered}
           on:treeNodeSelected={handleTreeNodeSelected}
           on:treeNodeRemove={handleTreeNodeRemove}
         />
