@@ -1,6 +1,7 @@
 export type TreeNode<T = unknown> = {
   id: string;
   name: string | null | undefined;
+  tooltip?: string;
   open?: boolean;
   children?: TreeNode<T>[];
   data?: T;

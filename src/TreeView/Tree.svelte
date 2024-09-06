@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { getContext, setContext, createEventDispatcher } from "svelte";
   import {
     getFirstNodeId,
@@ -6,42 +6,53 @@
     getPrevNodeId,
     getNextNodeId,
   } from "./tree.dom.js";
-  import { writable } from "svelte/store";
+  import { writable, Writable } from "svelte/store";
+  import type { TreeNode } from "../common/tree";
+  import type { NodeStylerFunction } from "./types";
 
-  const _dispatch = createEventDispatcher();
-  const dispatch = (type, nodeData) => {
+  type TreeEvents = {
+    treeNodeSelected: TreeNode;
+    treeNodeButtonClicked: TreeNode;
+    treeNodeRemove: TreeNode;
+  };
+
+  type EventName = keyof TreeEvents;
+
+  const _dispatch = createEventDispatcher<TreeEvents>();
+
+  const dispatch = (type: EventName, nodeData: TreeNode) => {
     $context.lastSelectRectNodeId = nodeData.id;
     _dispatch(type, nodeData);
   };
 
   export let nodeLevel = 0;
-  export let data = [];
+  export let data: TreeNode[] = [];
 
   export let openIcon = "▼";
   export let closeIcon = "►";
 
   export let showSelectRect = false;
 
-  export let nodeStyler = null;
+  export let nodeStyler: NodeStylerFunction | null = null;
 
-  /*
-  $: if (data) {
-    console.log(`[Tree] data:`, data);
+  interface TreeContext {
+    maxLevel: number;
+    selectedNodeId: string | null;
+    lastSelectRectNodeId: string | null;
   }
-   */
 
-  export function updateNodeSelected(nodeId) {
+  export function updateNodeSelected(nodeId: string | null) {
     $context.selectedNodeId = nodeId;
     $context.lastSelectRectNodeId = nodeId;
   }
 
-  export function openNodeAtSelectRect(rootUlElem) {
+  export function openNodeAtSelectRect(rootUlElem: HTMLUListElement) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeBtnElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"] button.toggle-button`,
-    );
+    ) as HTMLButtonElement | null;
     if (nodeBtnElem) {
-      const contentNode = nodeBtnElem.parentNode;
+      const contentNode = nodeBtnElem.parentNode as HTMLElement;
       const isOpen = contentNode.dataset.nodeOpen == "true";
       if (!isOpen) {
         nodeBtnElem.click();
@@ -49,13 +60,13 @@
     }
   }
 
-  export function closeNodeAtSelectRect(rootUlElem) {
+  export function closeNodeAtSelectRect(rootUlElem: HTMLUListElement) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeBtnElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"] button.toggle-button`,
-    );
+    ) as HTMLButtonElement | null;
     if (nodeBtnElem) {
-      const contentNode = nodeBtnElem.parentNode;
+      const contentNode = nodeBtnElem.parentNode as HTMLElement;
       const isOpen = contentNode.dataset.nodeOpen == "true";
       if (isOpen) {
         nodeBtnElem.click();
@@ -63,17 +74,18 @@
     }
   }
 
-  export function selectNodeAtSelectRect(rootUlElem) {
+  export function selectNodeAtSelectRect(rootUlElem: HTMLUListElement) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"]`,
-    );
+    ) as HTMLElement | null;
     if (nodeElem) {
-      nodeElem.querySelector(".node-name").click();
+      const nodeNameElem = nodeElem.querySelector(".node-name") as HTMLElement;
+      nodeNameElem.click();
     }
   }
 
-  export function moveSelectRectToPrevNode(rootUlElem) {
+  export function moveSelectRectToPrevNode(rootUlElem: HTMLUListElement) {
     const lastNodeId = $context.lastSelectRectNodeId;
 
     if (!lastNodeId) {
@@ -86,7 +98,7 @@
     updateNodeSelectRect(prevNodeId);
   }
 
-  export function moveSelectRectToNextNode(rootUlElem) {
+  export function moveSelectRectToNextNode(rootUlElem: HTMLUListElement) {
     const lastNodeId = $context.lastSelectRectNodeId;
 
     if (!lastNodeId) {
@@ -99,34 +111,34 @@
     updateNodeSelectRect(nextNodeId);
   }
 
-  export function moveSelectRectToFirstNode(rootUlElem) {
+  export function moveSelectRectToFirstNode(rootUlElem: HTMLUListElement) {
     const firstNodeId = getFirstNodeId(rootUlElem);
     updateNodeSelectRect(firstNodeId);
   }
 
-  export function moveSelectRectToLastNode(rootUlElem) {
+  export function moveSelectRectToLastNode(rootUlElem: HTMLUListElement) {
     const lastNodeId = getLastNodeId(rootUlElem);
     updateNodeSelectRect(lastNodeId);
   }
 
-  export function removeNodeAtSelectRect(rootUlElem) {
+  export function removeNodeAtSelectRect(rootUlElem: HTMLUListElement) {
     const nodeId = $context.lastSelectRectNodeId;
     const nodeElem = rootUlElem.querySelector(
       `div.node-content[data-node-id="${nodeId}"]`,
-    );
+    ) as HTMLElement | null;
     if (nodeElem) {
       const nodeLiElem = nodeElem.closest("li");
       if (nodeLiElem) {
-        dispatch("treeNodeRemove", { id: nodeId });
+        dispatch("treeNodeRemove", { id: nodeId } as TreeNode);
       }
     }
   }
 
-  function updateNodeSelectRect(nodeId) {
+  function updateNodeSelectRect(nodeId: string | null) {
     $context.lastSelectRectNodeId = nodeId ?? $context.lastSelectRectNodeId;
   }
 
-  function toggleNodeOpenState(nodeData) {
+  function toggleNodeOpenState(nodeData: TreeNode) {
     nodeData.open = !nodeData.open;
     data = [...data];
   }
@@ -135,8 +147,8 @@
   const context = initContext(contextName);
   $: updateTreeViewState($context);
 
-  function initContext(ctxName) {
-    let context;
+  function initContext(ctxName: string): Writable<TreeContext> {
+    let context: Writable<TreeContext>;
     if (nodeLevel === 0) {
       context = writable({
         maxLevel: 0,
@@ -156,31 +168,30 @@
     return context;
   }
 
-  function updateTreeViewState(context) {
+  function updateTreeViewState(context: TreeContext) {
     if (nodeLevel === 0) {
+      // 루트 레벨에서의 처리
     } else {
+      // 하위 레벨에서의 처리
     }
   }
 
-  // NOTE: '노드명'에서 더블 클릭시 'dblclick' 이벤트만 발생시키고
-  //       'click' 이벤트는 발생시키지 않도록 workaround하기 위해 사용함.
-  let clickTimeout = null;
+  let clickTimeout: number | null = null;
 
-  function handleNodeNameClick(event, nodeData) {
-    // 'click()' 함수 호출을 통해 발생한 경우는 '타임아웃 workaround'를 사용할 필요가 없음.
+  function handleNodeNameClick(event: MouseEvent, nodeData: TreeNode) {
     if (!event.isTrusted) {
       dispatch("treeNodeSelected", nodeData);
       return;
     }
 
-    clearTimeout(clickTimeout);
-    clickTimeout = setTimeout(() => {
+    clearTimeout(clickTimeout!);
+    clickTimeout = window.setTimeout(() => {
       clickTimeout = null;
       dispatch("treeNodeSelected", nodeData);
     }, 250);
   }
 
-  function handleNodeNameDbClick(event, nodeData) {
+  function handleNodeNameDbClick(event: MouseEvent, nodeData: TreeNode) {
     if (clickTimeout) {
       clearTimeout(clickTimeout);
       clickTimeout = null;
@@ -189,13 +200,20 @@
     toggleNodeOpenState(nodeData);
   }
 
-  function applyNodeStyler(htmlDomNode, params) {
+  function applyNodeStyler(
+    htmlDomNode: HTMLElement,
+    params: {
+      nodeStyler: typeof nodeStyler;
+      treeNodeData: TreeNode;
+      nodeOpen: boolean;
+    },
+  ) {
     let { nodeStyler, treeNodeData, nodeOpen } = params;
 
     nodeStyler?.(htmlDomNode, { treeNodeData, nodeOpen });
 
     return {
-      update(newParams) {
+      update(newParams: typeof params) {
         ({ nodeStyler, treeNodeData, nodeOpen } = newParams);
       },
     };
@@ -213,7 +231,7 @@
           showSelectRect}
         data-node-id={node.id}
         data-node-open={node.open}
-        on:click={dispatch("treeNodeSelected", node)}
+        on:click={() => dispatch("treeNodeSelected", node)}
       >
         <button
           class="toggle-button"
