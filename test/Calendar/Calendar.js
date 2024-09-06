@@ -5,6 +5,7 @@ const calendar = new Calendar({
   props: {
     targetDate: new Date(),
     autoSelectTargetDay: true,
+    autoFocusTargetDay: true,
 
     disableAnimation: true,
     animationDuration: 600,

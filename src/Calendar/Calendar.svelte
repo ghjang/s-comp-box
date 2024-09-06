@@ -16,6 +16,7 @@
 
   export let targetDate: Date = new Date();
   export let autoSelectTargetDay: boolean = true;
+  export let autoFocusTargetDay: boolean = false;
   export let monthNames: string[] = [
     "January",
     "February",
@@ -42,6 +43,7 @@
 
   let dayNumbersDiv: DayNumbers;
   let lastFocusedDayNumber: number = -1;
+  let firstTimeAutoFocusTargetDay: boolean = true;
 
   $: {
     const data = getCalendarData(targetDate);
@@ -80,12 +82,17 @@
   $: ctx.duration?.set(disableAnimation ? 0 : animationDuration);
 
   // '달 이동' 후에 선택된 날짜로 포커스 이동
-  $: if (dayNumbersDiv) {
-    const targetDay = targetDate?.getDate();
-    const targetDayElem = calendar?.querySelector(
-      `button[data-day="${targetDay}"]`,
-    ) as HTMLButtonElement | null;
-    targetDayElem?.focus();
+  $: if (dayNumbersDiv && autoFocusTargetDay) {
+    if (firstTimeAutoFocusTargetDay) {
+      // NOTE: 컴포넌트가 최초에 렌더링된 후에는 자동 포커스 처리를 하지 않도록 한다.
+      firstTimeAutoFocusTargetDay = false;
+    } else {
+      const targetDay = targetDate?.getDate();
+      const targetDayElem = calendar?.querySelector(
+        `button[data-day="${targetDay}"]`,
+      ) as HTMLButtonElement | null;
+      targetDayElem?.focus();
+    }
   }
 
   const handlePrevMonthClick = (event: MouseEvent) => {
@@ -95,7 +102,10 @@
       ctx.direction.set("right");
     }
     autoSelectTargetDay = false;
-    const focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
+    let focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
+    if (lastFocusedDayNumber === -1 && selectedDayNumber !== -1) {
+      focusedDay = selectedDayNumber;
+    }
     const prevMonLastDay = new Date(selectedYear, selectedMonth - 1, 0);
     const targetDay = Math.min(focusedDay, prevMonLastDay.getDate());
     targetDate = new Date(selectedYear, selectedMonth - 2, targetDay);
@@ -108,7 +118,10 @@
       ctx.direction.set("left");
     }
     autoSelectTargetDay = false;
-    const focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
+    let focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
+    if (lastFocusedDayNumber === -1 && selectedDayNumber !== -1) {
+      focusedDay = selectedDayNumber;
+    }
     const nextMonLastDay = new Date(selectedYear, selectedMonth + 1, 0);
     const targetDay = Math.min(focusedDay, nextMonLastDay.getDate());
     targetDate = new Date(selectedYear, selectedMonth, targetDay);
@@ -324,8 +337,8 @@
       class="bottomPart"
       class:isFlying={!disableAnimation && $direction !== ""}
     >
-      {#key `${selectedYear}-${selectedMonth}`}
-        {#if disableAnimation}
+      {#if disableAnimation}
+        {#key `${selectedYear}-${selectedMonth}`}
           <DayNumbers
             bind:this={dayNumbersDiv}
             {dayNumbers}
@@ -335,7 +348,9 @@
             on:dayNumberButtonFocus={(e) =>
               (lastFocusedDayNumber = e.detail.day)}
           />
-        {:else}
+        {/key}
+      {:else}
+        {#key `${selectedYear}-${selectedMonth}`}
           <div
             in:fly={ctx.flyInProp}
             out:fly={ctx.flyOutProp}
@@ -354,8 +369,8 @@
                 (lastFocusedDayNumber = e.detail.day)}
             />
           </div>
-        {/if}
-      {/key}
+        {/key}
+      {/if}
     </div>
   </div>
 </div>
