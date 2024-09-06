@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import { type Writable } from "svelte/store";
   import { fly } from "svelte/transition";
   import {
@@ -41,9 +41,8 @@
   let selectedDayNumber: number = -1;
   let dayNumbers: DayNumber[] = [];
 
-  let dayNumbersDiv: DayNumbers;
-  let lastFocusedDayNumber: number = -1;
   let firstTimeAutoFocusTargetDay: boolean = true;
+  let lastFocusedDayNumber: number = -1;
 
   $: {
     const data = getCalendarData(targetDate);
@@ -57,6 +56,8 @@
     } else {
       selectedDayNumber = -1;
     }
+
+    doAutoFocusTargetDay();
   }
 
   let calendar: HTMLDivElement;
@@ -81,27 +82,34 @@
 
   $: ctx.duration?.set(disableAnimation ? 0 : animationDuration);
 
-  // '달 이동' 후에 선택된 날짜로 포커스 이동
-  $: if (dayNumbersDiv && autoFocusTargetDay) {
-    if (firstTimeAutoFocusTargetDay) {
-      // NOTE: 컴포넌트가 최초에 렌더링된 후에는 자동 포커스 처리를 하지 않도록 한다.
-      firstTimeAutoFocusTargetDay = false;
-    } else {
-      const targetDay = targetDate?.getDate();
-      const targetDayElem = calendar?.querySelector(
-        `button[data-day="${targetDay}"]`,
-      ) as HTMLButtonElement | null;
-      targetDayElem?.focus();
+  const doAutoFocusTargetDay = async () => {
+    await tick();
+    if (autoFocusTargetDay) {
+      if (firstTimeAutoFocusTargetDay) {
+        // NOTE: 'Calendar' 컴포넌트가 최초 렌더링 될때는 'autoFocusTargetDay'가 활성화되어도
+        //       아무런 동작을 하지 않도록 하기 위함.
+        firstTimeAutoFocusTargetDay = false;
+      } else {
+        const flyEndAction = getFlyAnimationEndAction();
+        flyEndAction();
+      }
     }
-  }
+  };
 
   const handlePrevMonthClick = (event: MouseEvent) => {
     const target = event.target as HTMLButtonElement;
     target.blur();
+
     if (!disableAnimation) {
+      if (autoFocusTargetDay) {
+        const flyEndAction = getFlyAnimationEndAction();
+        ctx.setFlyEndAction(flyEndAction);
+      }
       ctx.direction.set("right");
     }
+
     autoSelectTargetDay = false;
+
     let focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
     if (lastFocusedDayNumber === -1 && selectedDayNumber !== -1) {
       focusedDay = selectedDayNumber;
@@ -114,10 +122,17 @@
   const handleNextMonthClick = (event: MouseEvent) => {
     const target = event.target as HTMLButtonElement;
     target.blur();
+
     if (!disableAnimation) {
+      if (autoFocusTargetDay) {
+        const flyEndAction = getFlyAnimationEndAction();
+        ctx.setFlyEndAction(flyEndAction);
+      }
       ctx.direction.set("left");
     }
+
     autoSelectTargetDay = false;
+
     let focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
     if (lastFocusedDayNumber === -1 && selectedDayNumber !== -1) {
       focusedDay = selectedDayNumber;
@@ -145,6 +160,23 @@
     dispatch("dateSelected", {
       targetDate: new Date(selectedYear, selectedMonth - 1, dayNumber),
     });
+  };
+
+  const getFlyAnimationEndAction = () => {
+    // NOTE: 'Ctrl(Command) + PageUp/PageDown'을 통해서 각각 '1월'과 '12월'로 점프시에는
+    //       '애니메이션' 없이 곧바로 이동하도록 하기 위한 workaround 코드이다.
+    let animationDurationBackUp = animationDuration;
+
+    return () => {
+      const targetDay = targetDate.getDate();
+      const targetDayElem = calendar.querySelector(
+        `button[data-day="${targetDay}"]`,
+      ) as HTMLButtonElement | null;
+      targetDayElem?.focus();
+      if (animationDurationBackUp !== animationDuration) {
+        animationDuration = animationDurationBackUp;
+      }
+    };
   };
 
   // TODO: 'handleDayNumberKeyDown' 키보드 네비게이션 코드 분리 및 개선
@@ -238,20 +270,10 @@
 
       autoSelectTargetDay = false;
 
-      // NOTE: 'Ctrl(Command) + PageUp/PageDown'을 통해서 각각 '1월'과 '12월'로 점프시에는
-      //       '애니메이션' 없이 곧바로 이동하도록 하기 위한 workaround 코드이다.
-      let animationDurationBackUp = animationDuration;
-
-      ctx.setFlyEndAction(() => {
-        const targetDay = targetDate.getDate();
-        const targetDayElem = calendar.querySelector(
-          `button[data-day="${targetDay}"]`,
-        ) as HTMLButtonElement | null;
-        targetDayElem?.focus();
-        if (animationDurationBackUp !== animationDuration) {
-          animationDuration = animationDurationBackUp;
-        }
-      });
+      if (!disableAnimation && autoFocusTargetDay) {
+        const flyEndAction = getFlyAnimationEndAction();
+        ctx.setFlyEndAction(flyEndAction);
+      }
 
       if (key === "PageUp") {
         // NOTE: 'macOS'에서 'Ctrl + PageUp' 코드가 정상적으로 오지 않는다.
@@ -295,6 +317,26 @@
     }
   };
 
+  let bottomPartDiv: HTMLDivElement;
+  let dayNumbersWrapper: HTMLDivElement;
+  let bottomPartDivWidth: string = "auto";
+  let bottomPartDivHeight: string = "auto";
+
+  // NOTE: '달 이동 애니메이션'이 활성화되었을 경우 'bottomPart div' 하위에 생성되는
+  //       'dayNumbersWrapper div'를 'position: absolute'로 설정했기 때문에
+  //       부모 요소인 bottomPart의 '크기'가 자식 요소인 'dayNumbersWrapper'의
+  //       크기에 맞추어 자동으로 조절되지 않는다. 따라서 아래와 같이 수동으로 설정해준다.
+  //
+  //       이렇게 하는 이유는 이전에 'dayNumbers div' 부분을 'position: relative'로
+  //       설정후에 'top, left'를 조정하는 방식으로 '달 이동 Svelte fly 애니메이션'을
+  //       적용시 애니메이션이 '완료되 후'에 간혹 'dayNumbers' 영역 부분이 깜빡이는
+  //       현상이 발생했기 때문이다. 몇가지 방법을 시도후에 'position: absolute'로
+  //       설정하고 애니메이션 방식을 변경하는 방법으로 해결했다.
+  $: if (bottomPartDiv && !disableAnimation && dayNumbersWrapper) {
+    bottomPartDivWidth = `${dayNumbersWrapper.offsetWidth}px`;
+    bottomPartDivHeight = `${dayNumbersWrapper.offsetHeight}px`;
+  }
+
   // TODO: Calendar 컴포넌트 개선
   //
   // - 'https://mui.com/x/react-date-pickers/date-calendar/' 와 유사한 형태로 개선할 것.
@@ -304,14 +346,7 @@
 </script>
 
 <div class="calendar-container">
-  <div
-    bind:this={calendar}
-    class="calendar"
-    style:min-width={ctx.calendarWidth ?? "auto"}
-    style:max-width={ctx.calendarWidth ?? "auto"}
-    style:min-height={ctx.calendarHeight ?? "auto"}
-    style:max-height={ctx.calendarHeight ?? "auto"}
-  >
+  <div bind:this={calendar} class="calendar">
     <div class="topPart">
       <div class="header">
         <div class="monthYear">
@@ -334,13 +369,15 @@
       </div>
     </div>
     <div
+      bind:this={bottomPartDiv}
       class="bottomPart"
       class:isFlying={!disableAnimation && $direction !== ""}
+      style:width={bottomPartDivWidth}
+      style:height={bottomPartDivHeight}
     >
       {#if disableAnimation}
         {#key `${selectedYear}-${selectedMonth}`}
           <DayNumbers
-            bind:this={dayNumbersDiv}
             {dayNumbers}
             {selectedDayNumber}
             {handleDayNumberClick}
@@ -352,16 +389,16 @@
       {:else}
         {#key `${selectedYear}-${selectedMonth}`}
           <div
+            bind:this={dayNumbersWrapper}
             class="dayNumbersWrapper"
             in:fly={ctx.flyInProp}
             out:fly={ctx.flyOutProp}
-            on:introstart={ctx.flyIntroStart}
+            on:introstart={ctx.flyStart}
             on:introend={ctx.flyIntroEnd}
-            on:outrostart={ctx.flyOutroStart}
+            on:outrostart={ctx.flyStart}
             on:outroend={ctx.flyOutroEnd}
           >
             <DayNumbers
-              bind:this={dayNumbersDiv}
               {dayNumbers}
               {selectedDayNumber}
               {handleDayNumberClick}
@@ -394,8 +431,8 @@
       position: relative;
       z-index: 0;
       background-color: $bg-color;
-      overflow: hidden;
       user-select: none;
+      overflow: hidden;
 
       .topPart {
         position: relative;
@@ -453,11 +490,14 @@
       }
 
       .bottomPart {
+        position: relative;
         z-index: 1;
         background-color: $bg-color;
 
         .dayNumbersWrapper {
-          position: relative;
+          position: absolute;
+          top: 0;
+          left: 0;
         }
 
         &.isFlying {

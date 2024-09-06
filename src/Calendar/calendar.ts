@@ -13,15 +13,12 @@ export interface CalendarData {
 }
 
 export interface CalendarContext {
-  calendarWidth: string;
-  calendarHeight: string;
   direction: Writable<string>;
   duration: Writable<number>;
   flyOutProp: FlyProp;
   flyInProp: FlyProp;
-  flyOutroStart: (event: CustomEvent) => void;
+  flyStart: (event: CustomEvent) => void;
   flyOutroEnd: (event: CustomEvent) => void;
-  flyIntroStart: (event: CustomEvent) => void;
   flyIntroEnd: (event: CustomEvent) => void;
   setFlyEndAction: (action: () => void) => void;
 }
@@ -83,28 +80,21 @@ export function getCalendarData(targetDate: Date | string): CalendarData {
   };
 }
 
-// NOTE: 'calendar'가 최초에 마운트된 후에 캘린더 자체의 크기가 변경되지는 않는 것을 가정한다.
-//       최초 마운트 시점의 초기 영역 크기 값을 저장한다. 캘린더의 크기가 동적으로 변하게 추후에
-//       수정할 경우 'ResizeObserver'를 사용해서 캘린더 크기 변화를 감지하고 'calendarWidth',
-//       'calendarHeight' 값을 업데이트는 방식으로 구현이 가능할 것으로 보인다.
 export function createContext(calendarElem: HTMLDivElement): CalendarContext {
   let _direction = writable("");
   let _duration = writable(600);
   let _flyEndAction: (() => void) | null = null;
 
-  const calendarSize = calendarElem.getBoundingClientRect();
-  const initialCalendarWidth = `${calendarSize.width}px`;
-  const initialCalendarHeight = `${calendarSize.height}px`;
-
-  // '일 숫자' 부분을 나타내는 'bottomPart'를 찾는다.
-  const bottomPart = calendarElem.querySelector(".bottomPart") as HTMLElement;
-  const _bottomPartSize = bottomPart.getBoundingClientRect();
+  const getBottomPartSize = (): DOMRect => {
+    const bottomPart = calendarElem.querySelector(".bottomPart") as HTMLElement;
+    return bottomPart.getBoundingClientRect();
+  };
 
   // NOTE: 'in:fly'에서 'x, y'의 의미는 '현재의 위치'로 최종적으로 도착하기 전의 '애니메이션 시작 위치'를 의미한다.
   class FlyInProp implements FlyProp {
     get x(): number {
       const direction = get(_direction);
-      const xOffset = _bottomPartSize.width;
+      const xOffset = getBottomPartSize().width;
 
       switch (direction) {
         case "left":
@@ -118,7 +108,7 @@ export function createContext(calendarElem: HTMLDivElement): CalendarContext {
 
     get y(): number {
       const direction = get(_direction);
-      const yOffset = _bottomPartSize.height;
+      const yOffset = getBottomPartSize().height;
 
       switch (direction) {
         case "up":
@@ -146,7 +136,7 @@ export function createContext(calendarElem: HTMLDivElement): CalendarContext {
   class FlyOutProp implements FlyProp {
     get x(): number {
       const direction = get(_direction);
-      const xOffset = _bottomPartSize.width;
+      const xOffset = getBottomPartSize().width;
 
       switch (direction) {
         case "left":
@@ -160,7 +150,7 @@ export function createContext(calendarElem: HTMLDivElement): CalendarContext {
 
     get y(): number {
       const direction = get(_direction);
-      const yOffset = _bottomPartSize.height;
+      const yOffset = getBottomPartSize().height;
 
       switch (direction) {
         case "up":
@@ -178,16 +168,13 @@ export function createContext(calendarElem: HTMLDivElement): CalendarContext {
   }
 
   return {
-    calendarWidth: initialCalendarWidth,
-    calendarHeight: initialCalendarHeight,
-
     direction: _direction,
     duration: _duration,
 
     flyOutProp: new FlyOutProp(),
     flyInProp: new FlyInProp(),
 
-    flyOutroStart: (event: CustomEvent) => {
+    flyStart: (event: CustomEvent) => {
       const direction = get(_direction);
       const target = event.target as HTMLElement;
 
@@ -202,30 +189,7 @@ export function createContext(calendarElem: HTMLDivElement): CalendarContext {
 
     flyOutroEnd: (event: CustomEvent) => {
       const target = event.target as HTMLElement;
-      target.style.willChange = "auto";
-    },
-
-    // NOTE: 'in:fly' 대상인 'div'는 'display: relative'로 설정되어 있는 'block' 요소이다.
-    //       'document flow'상 'out:fly' 대상인 'div'의 아래에 위치하고 있다. 'in:fly' 애니메이션의
-    //       'offset'값이 정상 적용될 수 있도록 div의 위치를 미리 조정해 주어야 한다.
-    flyIntroStart: (event: CustomEvent) => {
-      const target = event.target as HTMLElement;
-      const style = target.style;
-      const h = _bottomPartSize.height;
-      const direction = get(_direction);
-
-      // 'style.top = `${-h}px`;'의 의미는 'out:fly'가 적용되는 이전 'div'의 위치로
-      // 'in:fly' 애니메이션을 적용한 'div'의 최종 도착 위치로 설정하기 위함이다.
-      // 'in:fly' 애니메이션은 설정된 최종 도착 위치에 대한 'offset'값을 적용해서 실행된다.
-      if (direction === "up" || direction === "down") {
-        style.willChange = "top";
-        style.top = `${-h}px`;
-      } else if (direction === "left" || direction === "right") {
-        style.willChange = "top, left";
-        style.top = `${-h}px`;
-      } else {
-        // do nothing
-      }
+      target.style.cssText = ""; // inline으로 설정한 'top, left'등의 스타일 속성들 모두 제거
     },
 
     flyIntroEnd: (event: CustomEvent) => {
