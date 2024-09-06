@@ -83,7 +83,14 @@
   $: ctx.duration?.set(disableAnimation ? 0 : animationDuration);
 
   const doAutoFocusTargetDay = async () => {
+    if (!disableAnimation) {
+      // NOTE: '달 이동 애니메이션'을 수행하는 경우에는 현재 구현에서 사용하는 'flyEndAction'이
+      //       'fly 애니메이션 종료'후에 실행되기 때문에 여기서 중복해서 실행할 필요가 없다.
+      return;
+    }
+
     await tick();
+    
     if (autoFocusTargetDay) {
       if (firstTimeAutoFocusTargetDay) {
         // NOTE: 'Calendar' 컴포넌트가 최초 렌더링 될때는 'autoFocusTargetDay'가 활성화되어도
