@@ -352,6 +352,7 @@
       {:else}
         {#key `${selectedYear}-${selectedMonth}`}
           <div
+            class="dayNumbersWrapper"
             in:fly={ctx.flyInProp}
             out:fly={ctx.flyOutProp}
             on:introstart={ctx.flyIntroStart}
@@ -452,9 +453,12 @@
       }
 
       .bottomPart {
-        position: relative;
         z-index: 1;
         background-color: $bg-color;
+
+        .dayNumbersWrapper {
+          position: relative;
+        }
 
         &.isFlying {
           pointer-events: none;

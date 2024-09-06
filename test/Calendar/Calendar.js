@@ -7,7 +7,7 @@ const calendar = new Calendar({
     autoSelectTargetDay: true,
     autoFocusTargetDay: true,
 
-    disableAnimation: true,
+    disableAnimation: false,
     animationDuration: 600,
   },
 });
