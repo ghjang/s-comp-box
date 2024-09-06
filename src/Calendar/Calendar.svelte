@@ -8,6 +8,7 @@
     type CalendarContext,
     type DayNumber,
   } from "./calendar";
+  import DayNumbers from "./DayNumbers.svelte";
 
   const dispatch = createEventDispatcher<{
     dateSelected: { targetDate: Date };
@@ -38,6 +39,9 @@
   let selectedMonth: number = -1;
   let selectedDayNumber: number = -1;
   let dayNumbers: DayNumber[] = [];
+
+  let dayNumbersDiv: DayNumbers;
+  let lastFocusedDayNumber: number = -1;
 
   $: {
     const data = getCalendarData(targetDate);
@@ -75,20 +79,39 @@
 
   $: ctx.duration?.set(disableAnimation ? 0 : animationDuration);
 
+  // '달 이동' 후에 선택된 날짜로 포커스 이동
+  $: if (dayNumbersDiv) {
+    const targetDay = targetDate?.getDate();
+    const targetDayElem = calendar?.querySelector(
+      `button[data-day="${targetDay}"]`,
+    ) as HTMLButtonElement | null;
+    targetDayElem?.focus();
+  }
+
   const handlePrevMonthClick = (event: MouseEvent) => {
     const target = event.target as HTMLButtonElement;
     target.blur();
-    ctx.direction.set("right");
+    if (!disableAnimation) {
+      ctx.direction.set("right");
+    }
     autoSelectTargetDay = false;
-    targetDate = new Date(selectedYear, selectedMonth - 2, 1);
+    const focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
+    const prevMonLastDay = new Date(selectedYear, selectedMonth - 1, 0);
+    const targetDay = Math.min(focusedDay, prevMonLastDay.getDate());
+    targetDate = new Date(selectedYear, selectedMonth - 2, targetDay);
   };
 
   const handleNextMonthClick = (event: MouseEvent) => {
     const target = event.target as HTMLButtonElement;
     target.blur();
-    ctx.direction.set("left");
+    if (!disableAnimation) {
+      ctx.direction.set("left");
+    }
     autoSelectTargetDay = false;
-    targetDate = new Date(selectedYear, selectedMonth, 1);
+    const focusedDay = lastFocusedDayNumber !== -1 ? lastFocusedDayNumber : 1;
+    const nextMonLastDay = new Date(selectedYear, selectedMonth + 1, 0);
+    const targetDay = Math.min(focusedDay, nextMonLastDay.getDate());
+    targetDate = new Date(selectedYear, selectedMonth, targetDay);
   };
 
   const handleDayNumberClick = (event: MouseEvent) => {
@@ -204,7 +227,7 @@
 
       // NOTE: 'Ctrl(Command) + PageUp/PageDown'을 통해서 각각 '1월'과 '12월'로 점프시에는
       //       '애니메이션' 없이 곧바로 이동하도록 하기 위한 workaround 코드이다.
-      let animationDurationBak = animationDuration;
+      let animationDurationBackUp = animationDuration;
 
       ctx.setFlyEndAction(() => {
         const targetDay = targetDate.getDate();
@@ -212,8 +235,8 @@
           `button[data-day="${targetDay}"]`,
         ) as HTMLButtonElement | null;
         targetDayElem?.focus();
-        if (animationDurationBak !== animationDuration) {
-          animationDuration = animationDurationBak;
+        if (animationDurationBackUp !== animationDuration) {
+          animationDuration = animationDurationBackUp;
         }
       });
 
@@ -230,7 +253,9 @@
             // do nothing
           }
         } else {
-          ctx.direction.set("down");
+          if (!disableAnimation) {
+            ctx.direction.set("down");
+          }
           const prevMonLastDay = new Date(selectedYear, selectedMonth - 1, 0);
           const targetDay = Math.min(curDay, prevMonLastDay.getDate());
           targetDate = new Date(selectedYear, selectedMonth - 2, targetDay);
@@ -246,7 +271,9 @@
             // do nothing
           }
         } else {
-          ctx.direction.set("up");
+          if (!disableAnimation) {
+            ctx.direction.set("up");
+          }
           const nextMonLastDay = new Date(selectedYear, selectedMonth + 1, 0);
           const targetDay = Math.min(curDay, nextMonLastDay.getDate());
           targetDate = new Date(selectedYear, selectedMonth, targetDay);
@@ -265,12 +292,12 @@
 
 <div class="calendar-container">
   <div
+    bind:this={calendar}
     class="calendar"
     style:min-width={ctx.calendarWidth ?? "auto"}
     style:max-width={ctx.calendarWidth ?? "auto"}
     style:min-height={ctx.calendarHeight ?? "auto"}
     style:max-height={ctx.calendarHeight ?? "auto"}
-    bind:this={calendar}
   >
     <div class="topPart">
       <div class="header">
@@ -298,30 +325,36 @@
       class:isFlying={!disableAnimation && $direction !== ""}
     >
       {#key `${selectedYear}-${selectedMonth}`}
-        <div
-          class="dayNumbers"
-          in:fly={disableAnimation ? {} : ctx.flyInProp}
-          out:fly={disableAnimation ? {} : ctx.flyOutProp}
-          on:introstart={ctx.flyIntroStart}
-          on:introend={ctx.flyIntroEnd}
-          on:outrostart={ctx.flyOutroStart}
-          on:outroend={ctx.flyOutroEnd}
-        >
-          {#each dayNumbers as { day, key } (key)}
-            {@const dayVal = day || ""}
-            <button
-              tabindex="-1"
-              class="dayNumber"
-              class:hoverable={day}
-              class:selected={selectedDayNumber === day}
-              data-day={dayVal}
-              on:click={handleDayNumberClick}
-              on:keydown={handleDayNumberKeyDown}
-            >
-              {dayVal}
-            </button>
-          {/each}
-        </div>
+        {#if disableAnimation}
+          <DayNumbers
+            bind:this={dayNumbersDiv}
+            {dayNumbers}
+            {selectedDayNumber}
+            {handleDayNumberClick}
+            {handleDayNumberKeyDown}
+            on:dayNumberButtonFocus={(e) =>
+              (lastFocusedDayNumber = e.detail.day)}
+          />
+        {:else}
+          <div
+            in:fly={ctx.flyInProp}
+            out:fly={ctx.flyOutProp}
+            on:introstart={ctx.flyIntroStart}
+            on:introend={ctx.flyIntroEnd}
+            on:outrostart={ctx.flyOutroStart}
+            on:outroend={ctx.flyOutroEnd}
+          >
+            <DayNumbers
+              bind:this={dayNumbersDiv}
+              {dayNumbers}
+              {selectedDayNumber}
+              {handleDayNumberClick}
+              {handleDayNumberKeyDown}
+              on:dayNumberButtonFocus={(e) =>
+                (lastFocusedDayNumber = e.detail.day)}
+            />
+          </div>
+        {/if}
       {/key}
     </div>
   </div>
@@ -410,56 +443,6 @@
 
         &.isFlying {
           pointer-events: none;
-        }
-
-        /*
-          NOTE: '.dayNumbers'에 'position: absolute'를 설정하면
-                'display: grid'가 제대로 동작하지 않는다. 'relative'로
-                설정후 'document flow'에 의해서 차례대로 배치된 2개의 div중에서
-                1번째 div는 'out'되는 div이고 2번째 div는 'in'되는 div이다.
-                이 2개의 div의 'top'값을 조정하여 'fly' 애니메이션을 구현했다.
-         */
-        .dayNumbers {
-          position: relative;
-          display: grid;
-          grid-template-rows: repeat(6, 1fr);
-          grid-template-columns: repeat(7, 1fr);
-          text-align: center;
-          align-items: center;
-
-          .dayNumber {
-            background: none;
-            border: none;
-            padding: $grid-item-padding;
-            outline: none;
-
-            /* '일요일'은 '빨간색'으로 표시 */
-            &:nth-child(7n + 1) {
-              color: red;
-            }
-
-            &.hoverable {
-              border-radius: 50%;
-              cursor: pointer;
-
-              &:hover {
-                background-color: lighten(darkgray, 20%);
-              }
-
-              &:focus {
-                background-color: lighten(lightcoral, 20%);
-              }
-
-              &.selected {
-                background-color: lightcoral;
-
-                &:hover,
-                &:focus {
-                  background-color: darken(lightcoral, 10%);
-                }
-              }
-            }
-          }
         }
       }
     }
