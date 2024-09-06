@@ -40,16 +40,6 @@
   },
   {
     "component": {
-      "name": "Marquee",
-      "customElementName": "s-marquee",
-      "description": "Marquee",
-      "props": {
-        "text": "Hello Marquee!"
-      }
-    }
-  },
-  {
-    "component": {
       "name": "PyRun",
       "componentClassName": "PyRun",
       "description": "PyRun",
@@ -57,6 +47,34 @@
         "pyodideIndexURL": "resources/pyodide",
         "editorResourcePath": "resources/monaco-editor",
         "code": "print(\"Hello Python!\")"
+      }
+    }
+  },
+  {
+    "divider": {
+      "style": {}
+    }
+  },
+  {
+    "component": {
+      "name": "Calendar",
+      "componentClassName": "Calendar",
+      "description": "Calendar",
+      "props": {
+        "autoSelectTargetDay": true,
+        "autoFocusTargetDay": true,
+        "disableAnimation": false,
+        "animationDuration": 600
+      }
+    }
+  },
+  {
+    "component": {
+      "name": "Marquee",
+      "customElementName": "s-marquee",
+      "description": "Marquee",
+      "props": {
+        "text": "Hello Marquee!"
       }
     }
   },

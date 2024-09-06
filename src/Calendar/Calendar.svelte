@@ -427,8 +427,10 @@
   /*
     '.calendar-container'는 캘린더 보더를 설정하고,
     'z-index' 스태킹 컨텍스트(Stacking Context)를 리셋한다.
+    'width: min-content'는 캘린더 영역의 넒이를 내부 컨텐트의 넒이만큼만 차지하도록 한다.
    */
   .calendar-container {
+    width: min-content;
     border: 1px solid darkgray;
     border-radius: 5px;
     padding: 5px;
