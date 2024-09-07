@@ -1,5 +1,17 @@
-export function as<T>(value: unknown): T | null {
-  return (value as T) ?? null;
+/*
+ * '컴파일 타임'에서는 'obj'가 'T 타입'인 경우와 'null'인 경우만을 허용해 정상 컴파일됨.
+ *  obj가 T 타입이 아니고 null도 아닌 경우에는 '컴파일 에러'가 발생함.
+ * 
+ * 컴파일을 통해서 생성된 코드는 '런 타임'에서 아무런 타입 체크를 하지않고 단순히 전단된 값을
+ * 다시 반환만 함. 즉, 다음과 같은 '자바스크립트 코드'가 생성될 것임:
+ *   function as(obj) {
+ *     return obj;
+ *   }
+ * 
+ * 결과적으로 컴파일 타임에서의 타입 체크에만 목적이 있는 구현 코드임.
+ */
+export function as<T>(obj: unknown): T | null {
+  return obj as T | null;
 }
 
 // ex.) fontWeight -> font-weight
