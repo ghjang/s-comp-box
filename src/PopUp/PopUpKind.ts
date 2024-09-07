@@ -1,7 +1,7 @@
-export const PopUpKind = {
-  ALERT: Symbol("alert"),
-  INFO: Symbol("info"),
-  CONFIRM: Symbol("confirm"),
-  PROMPT: Symbol("prompt"),
-  CUSTOM: Symbol("custom"),
-};
+export enum PopUpKind {
+  ALERT = "alert",
+  INFO = "info",
+  CONFIRM = "confirm",
+  PROMPT = "prompt",
+  CUSTOM = "custom",
+}

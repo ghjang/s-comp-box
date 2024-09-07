@@ -1,20 +1,27 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
   import { trapFocus } from "../common/action/trapFocus.js";
-  import {
-    defaultEnumValue,
-    findSymbolByDescription,
-  } from "../common/reflection.js";
-  import { PopUpKind } from "./PopUpKind.js";
+  import { PopUpKind } from "./PopUpKind";
+  import { as } from "../common/util";
 
-  const dispatch = createEventDispatcher();
+  type ButtonConfig = {
+    text: string;
+    value: string;
+    userInput?: string;
+  };
 
-  export let kind;
+  type DispatchEvents = {
+    buttonClicked: ButtonConfig;
+  };
+
+  const dispatch = createEventDispatcher<DispatchEvents>();
+
+  export let kind: PopUpKind;
 
   export let title = "";
   export let content = "";
   export let userInput = "";
-  export let buttons = null;
+  export let buttons: ButtonConfig[] | null = null;
   export let background = "white";
 
   /*
@@ -27,14 +34,14 @@
    */
   const buttonTabIndex = 9999;
 
-  let titleIcon;
+  let titleIcon: string;
 
-  let promptInputElem;
-  let buttonRefs = [];
+  let promptInputElem: HTMLInputElement;
+  let buttonRefs: HTMLButtonElement[] = [];
 
-  let lastFocusedElem = null;
+  let lastFocusedElem: HTMLElement | null = null;
 
-  function getDefaultButtons(kind) {
+  function getDefaultButtons(kind: PopUpKind): ButtonConfig[] {
     switch (kind) {
       case PopUpKind.ALERT:
       case PopUpKind.INFO:
@@ -59,7 +66,7 @@
     }
   }
 
-  function getTitleIcon(kind) {
+  function getTitleIcon(kind: PopUpKind): string {
     switch (kind) {
       case PopUpKind.ALERT:
         return "⚠️";
@@ -74,15 +81,12 @@
     }
   }
 
-  function initPopUp() {
+  function initPopUp(): void {
     if (!kind) {
-      kind = defaultEnumValue(PopUpKind);
+      kind = PopUpKind.ALERT; // 기본값 설정
     }
 
-    kind = findSymbolByDescription(PopUpKind, kind);
-    if (!kind) {
-      throw new Error(`Unknown pop-up kind: ${kind}`);
-    }
+    // 'findSymbolByDescription' 함수 호출 제거
 
     // 'props'로 받은 'buttons' 값이 없을 경우 'kind'에 따라 기본 버튼을 설정한다.
     buttons = buttons || getDefaultButtons(kind);
@@ -112,14 +116,14 @@
     }
   });
 
-  function handleButtonClick(btn) {
+  function handleButtonClick(btn: ButtonConfig): void {
     if (promptInputElem) {
       btn.userInput = promptInputElem.value;
     }
     dispatch("buttonClicked", btn);
   }
 
-  function handleKeydown(event) {
+  function handleKeydown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -135,6 +139,10 @@
         userInput: promptInputElem.value,
       });
     }
+  }
+
+  function handleUserInputFocus(event: FocusEvent): void {
+    lastFocusedElem = as<HTMLElement>(event.target);
   }
 </script>
 
@@ -162,7 +170,7 @@
             type="text"
             tabindex={buttonTabIndex}
             value={userInput}
-            on:focus={(e) => (lastFocusedElem = e.target)}
+            on:focus={handleUserInputFocus}
             on:keydown={handleKeydown}
           />
         </div>
@@ -173,17 +181,19 @@
         <div class="content">{@html content}</div>
       {/if}
       <div class="button-group">
-        {#each buttons as btn, i}
-          <!-- svelte-ignore a11y-positive-tabindex -->
-          <button
-            bind:this={buttonRefs[i]}
-            tabindex={buttonTabIndex}
-            on:focus={() => (lastFocusedElem = buttonRefs[i])}
-            on:click={() => handleButtonClick(btn)}
-          >
-            {btn.text}
-          </button>
-        {/each}
+        {#if buttons}
+          {#each buttons as btn, i}
+            <!-- svelte-ignore a11y-positive-tabindex -->
+            <button
+              bind:this={buttonRefs[i]}
+              tabindex={buttonTabIndex}
+              on:focus={() => (lastFocusedElem = buttonRefs[i])}
+              on:click={() => handleButtonClick(btn)}
+            >
+              {btn.text}
+            </button>
+          {/each}
+        {/if}
       </div>
     </div>
   </div>
