@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
-  import { trapFocus } from "../common/action/trapFocus.js";
+  import { trapFocus } from "../common/action/trapFocus";
   import { PopUpKind } from "./PopUpKind";
   import { as } from "../common/util";
 
