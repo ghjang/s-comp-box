@@ -1,26 +1,13 @@
 <script lang="ts">
   import { createEventDispatcher, getContext, setContext } from "svelte";
   import { writable, type Writable } from "svelte/store";
+  import type { MenuItem, MenuPosition, MenuSize } from "./types";
 
-  const dispatch = createEventDispatcher();
+  type ContextMenuEvents = {
+    menuItemClicked: MenuItem;
+  };
 
-  interface MenuItem {
-    divider?: boolean;
-    link?: { text: string };
-    popup?: { text: string };
-    action?: { text: string; checked?: boolean };
-    subMenu?: { text: string; items: MenuItem[] };
-  }
-
-  interface MenuPosition {
-    x: number;
-    y: number;
-  }
-
-  interface MenuSize {
-    width: number;
-    height: number;
-  }
+  const dispatch = createEventDispatcher<ContextMenuEvents>();
 
   interface ContextValue {
     maxLevel: number;
