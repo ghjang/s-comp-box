@@ -1,7 +1,8 @@
 import { writable } from "svelte/store";
+import { PopUpKind } from "./PopUpKind";
 
 interface PopupConfig {
-  kind: string;
+  kind: PopUpKind;
   title: string;
   content: string;
   userInput?: string;

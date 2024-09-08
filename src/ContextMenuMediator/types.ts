@@ -1,8 +1,12 @@
 export interface MenuItem {
-  divider?: boolean;
+  divider?: { style: Record<string, string> };
   link?: { text: string };
   popup?: { text: string };
-  action?: { text: string; checked?: boolean };
+  action?: {
+    text: string;
+    checked?: boolean;
+    handler: () => Promise<unknown> | unknown;
+  };
   subMenu?: { text: string; items: MenuItem[] };
 }
 
