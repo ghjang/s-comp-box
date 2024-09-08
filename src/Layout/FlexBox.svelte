@@ -1,59 +1,96 @@
 <svelte:options accessors />
 
-<script>
+<script lang="ts">
   import { onMount, createEventDispatcher } from "svelte";
-  import { conditionalTrapFocus } from "../common/action/trapFocus.js";
+  import { conditionalTrapFocus } from "../common/action/trapFocus";
+  import {
+    CustomEventsRegister,
+    combineCustomEvents,
+  } from "../common/customEvents.js";
+  import type { SvelteComponent } from "svelte";
+  import type { ComponentType } from "svelte";
 
-  const dispatch = createEventDispatcher();
-
-  export let direction = "column";
-  export let reverse = false;
-  export let justifyContent = "flex-start";
-  export let alignItems = "flex-start";
-
-  export let trapFocus = false;
-
-  export let defaultItemProps = {};
-  export let items = [];
-
-  export let autoRegisterCustomEventsFromItemProps = true;
-  export const customEvents = [];
-
-  export function clearRegisteredCustomEvents() {
-    unregisterEventHandlers.forEach((unregister) => unregister());
-    unregisterEventHandlers = [];
+  interface ItemProps {
+    component?: ComponentType;
+    [key: string]: any;
   }
 
-  let itemInstances = [];
-  let unregisterEventHandlers = [];
+  type DispatchEvents = {
+    customEventsRegistered: { customEvents: string[] };
+  };
 
-  function registerCustomEvents() {
+  const dispatch = createEventDispatcher<DispatchEvents>();
+
+  export let direction: "row" | "column" = "column";
+  export let reverse: boolean = false;
+  export let justifyContent: string = "flex-start";
+  export let alignItems: string = "flex-start";
+
+  export let trapFocus: boolean = false;
+
+  export let defaultItemProps: Record<string, any> = {};
+  export let items: Array<ItemProps> = [];
+
+  export let autoRegisterCustomEventsFromItemProps: boolean = true;
+  export const customEvents: string[] = [];
+
+  interface ItemInstance extends SvelteComponent {
+    $on: (
+      eventName: string,
+      handler: (event: CustomEvent) => void,
+    ) => () => void;
+  }
+
+  let itemInstances: Array<ItemInstance | undefined> = [];
+  let customEventsRegisters: CustomEventsRegister[] = [];
+
+  export function clearRegisteredCustomEvents(): void {
+    customEventsRegisters.forEach((register) => register.unregister());
+    customEventsRegisters = [];
+  }
+
+  function registerCustomEvents(): void {
     clearRegisteredCustomEvents();
-    customEvents.length = 0;
-
-    const eventNames = new Set();
+    let allCustomEvents: string[] = [];
 
     itemInstances.forEach((instance, index) => {
-      if (!instance || typeof instance.$on !== "function") {
-        return;
-      }
+      if (!instance) return;
 
-      const itemProps = { ...defaultItemProps, ...items[index] };
-      itemProps.customEvents?.forEach((eventName) => {
-        eventNames.add(eventName);
-
-        const unregister = instance.$on(eventName, (event) => {
-          const eventArg = {
-            ...event.detail,
+      const register = new CustomEventsRegister(
+        dispatch,
+        instance,
+        (eventName: string, bubble: any, component: any) => {
+          return {
+            componentName: "FlexBox",
+            itemInstances,
             context: { item: items[index], index },
           };
-          dispatch(eventName, eventArg);
-        });
-        unregisterEventHandlers.push(unregister);
-      });
+        },
+        (callback: (info: any) => void) => {
+          callback({
+            containerName: "FlexBox",
+            itemLength: items.length,
+            itemIndex: index,
+          });
+        },
+      );
+
+      const itemProps = { ...defaultItemProps, ...items[index] };
+      if (itemProps.customEvents) {
+        register.registerAdditionalCustomEvents(itemProps.customEvents);
+        // NOTE: 필요하다면 'detailHandler'를 작성해서
+        //       이 'FlexBox'내에서 해당 컴포넌트가 배치된 위치 정보등을 'detail'에 추가할 수 있겠음.
+      }
+
+      customEventsRegisters.push(register);
+      allCustomEvents = combineCustomEvents(
+        allCustomEvents,
+        register.customEvents,
+      );
     });
 
-    customEvents.push(...eventNames);
+    customEvents.length = 0;
+    customEvents.push(...allCustomEvents);
   }
 
   $: if (autoRegisterCustomEventsFromItemProps && items) {
@@ -77,11 +114,15 @@
   use:conditionalTrapFocus={{ predicate: trapFocus }}
 >
   {#each items as item, index}
-    {@const { component, customEvents, ...itemProps } = {
+    {@const {
+      component,
+      customEvents = undefined,
+      ...itemProps
+    } = {
       ...defaultItemProps,
       ...item,
     }}
-    {#if typeof component === "function"}
+    {#if component}
       <svelte:component
         this={component}
         bind:this={itemInstances[index]}
