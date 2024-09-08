@@ -8,7 +8,7 @@
   // - 유용한 특수 데이터에 대한 출력 포맷 (예: 표, 그래프, 이미지)
 
   import { onMount } from "svelte";
-  import { preventOverscroll } from "../common/action/preventOverscroll.js";
+  import { preventOverscroll } from "../common/action/preventOverscroll";
   import { DataProps, DataSink } from "../common/data/DataStore";
 
   export let height = "100%";
