@@ -3,8 +3,10 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from "svelte";
 
+  type MarqueeDirection = "rtl" | "ltr" | "ttb" | "btt";
+
   export let text: string = "";
-  export let direction: "rtl" | "ltr" | "ttb" | "btt" = "rtl";
+  export let direction: MarqueeDirection = "rtl";
   export let duration: number = 3;
   export let debug: boolean = false;
   export let color: string = "#f0f0f0";
