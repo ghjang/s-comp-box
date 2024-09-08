@@ -3,17 +3,20 @@
   import { writable, type Writable } from "svelte/store";
   import ComponentLoader from "../ComponentLoader/ComponentLoader.svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
+  import type { Direction, HAlign, VAlign } from "../Layout/types";
   import { ToggleGroupContext } from "./types";
 
-  const dispatch = createEventDispatcher<{
+  type ToggleGroupEvents = {
     toggleItemChanged: { value: any; itemIndex: number };
-  }>();
+  };
+
+  const dispatch = createEventDispatcher<ToggleGroupEvents>();
 
   export let activatedValue: any = null;
-  export let direction: "vertical" | "horizontal" = "vertical";
+  export let direction: Direction = "vertical";
   export let reverse: boolean = false;
-  export let hAlign: "left" | "center" | "right" = "left";
-  export let vAlign: "top" | "center" | "bottom" = "top";
+  export let hAlign: HAlign = "left";
+  export let vAlign: VAlign = "top";
   export let trapFocus: boolean = false;
   export let defaultItemProps: Record<string, any> = {};
   export let items: Array<Record<string, any>> = [];

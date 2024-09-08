@@ -3,14 +3,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import FlexBox from "./FlexBox.svelte";
+  import type { Direction, HAlign, VAlign } from "./types";
 
   type ForwardingCustomEvents = Record<string, unknown>;
 
   const dispatch = createEventDispatcher<ForwardingCustomEvents>();
-
-  type Direction = "vertical" | "horizontal";
-  type HAlign = "left" | "center" | "right";
-  type VAlign = "top" | "middle" | "bottom";
 
   export let direction: Direction = "vertical";
   export let reverse: boolean = false;
