@@ -1,21 +1,28 @@
-<script>
+<script lang="ts">
   import StackPanel from "../Layout/StackPanel.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
+  import type { MenuItem, MenuPosition } from "../ContextMenuMediator/types";
 
-  export let menus = [];
+  interface Menu {
+    name: string;
+    items: MenuItem[];
+  }
 
-  let menuBar;
-  let contextMenus = [];
-  let activeMenuIndex = -1;
+  export let menus: Menu[] = [];
 
-  function deactivateMenuBar() {
+  let menuBar: HTMLElement;
+  let contextMenus: ContextMenuMediator[] = [];
+  let activeMenuIndex: number = -1;
+
+  function deactivateMenuBar(): void {
     activeMenuIndex = -1;
   }
 
-  function showMenu(event, menuIndex) {
+  function showMenu(event: MouseEvent, menuIndex: number): void {
     const menuBarRect = menuBar.getBoundingClientRect();
-    const menuBtnRect = event.target.getBoundingClientRect();
-    const menuPos = {
+    const menuBtnElem = event.target as HTMLElement;
+    const menuBtnRect = menuBtnElem.getBoundingClientRect();
+    const menuPos: MenuPosition & { parentBox: HTMLElement | null } = {
       parentBox: menuBar.parentElement,
       x: menuBtnRect.left,
       y: menuBarRect.bottom,
@@ -26,33 +33,33 @@
 
   // 사용자가 명시적으로 '마우스 클릭'으로 메뉴를 선택한 경우에
   // 마우스 포인터 진입만으로 메뉴를 활성화하도록 한다.
-  function handleMouseEnter(event, menuIndex) {
+  function handleMouseEnter(event: MouseEvent, menuIndex: number): void {
     if (activeMenuIndex !== -1) {
       showMenu(event, menuIndex);
     }
   }
 
-  function handleKeyUp(event) {
+  function handleKeyUp(event: KeyboardEvent): void {
     if (activeMenuIndex === -1) {
       return;
     }
 
-    const getMenuBtnElem = (index) =>
+    const getMenuBtnElem = (index: number): HTMLElement | null =>
       menuBar?.querySelector(`button[data-button-index="${index}"]`);
 
     if (event.key === "Escape") {
       contextMenus[activeMenuIndex].hideContextMenu();
       deactivateMenuBar();
-    } else if (event.key === "ArrowLeft") {
-      const prevMenuIndex =
-        activeMenuIndex - 1 < 0 ? menus.length - 1 : activeMenuIndex - 1;
-      const targetMenuBtn = getMenuBtnElem(prevMenuIndex);
-      showMenu({ target: targetMenuBtn }, prevMenuIndex);
-    } else if (event.key === "ArrowRight") {
-      const nextMenuIndex =
-        activeMenuIndex + 1 < menus.length ? activeMenuIndex + 1 : 0;
-      const targetMenuBtn = getMenuBtnElem(nextMenuIndex);
-      showMenu({ target: targetMenuBtn }, nextMenuIndex);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      const direction = event.key === "ArrowLeft" ? -1 : 1;
+      const newIndex =
+        (activeMenuIndex + direction + menus.length) % menus.length;
+      const targetMenuBtn = getMenuBtnElem(newIndex);
+      if (targetMenuBtn) {
+        const event = new MouseEvent("click");
+        Object.defineProperty(event, "target", { value: targetMenuBtn });
+        showMenu(event, newIndex);
+      }
     }
   }
 </script>
@@ -66,7 +73,7 @@
         대체하는 방법도 있을 것 같다. 현재 시점에서는 아래의 구현이 단순하고 효율적이다.
   -->
 <nav bind:this={menuBar} class="menu-bar">
-  <StackPanel direction="horizontal" hAlign="left" vAlign="center">
+  <StackPanel direction="horizontal" hAlign="left" vAlign="middle">
     {#each menus as menu, index}
       <button
         class="menu-name-btn"
