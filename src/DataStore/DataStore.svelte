@@ -8,8 +8,8 @@
     DefaultDataStore,
   } from "../common/data/DataStore";
 
-  let _subscriberCount = 0;
-  export const subscriberCount = () => _subscriberCount;
+  let _subscriberCount: number = 0;
+  export const subscriberCount: () => number = () => _subscriberCount;
   export let maxSubscriberCount: undefined | number = undefined;
   export let dataProps: DataProps = { sourceComponentName: null };
 
@@ -26,7 +26,7 @@
       _subscriberCount >= maxSubscriberCount
     ) {
       throw new Error(
-        `DataStore: maximum subscriber count exceeded: ${maxSubscriberCount}`
+        `DataStore: maximum subscriber count exceeded: ${maxSubscriberCount}`,
       );
     }
 

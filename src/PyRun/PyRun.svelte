@@ -86,14 +86,14 @@
   $: if (noConsole && dataStore) {
     customConsole = {
       log: (msg) => {
-        if (dataStore.subscriberCount > 0) {
+        if (dataStore.subscriberCount() > 0) {
           dataStore.set({ log: msg });
         } else {
           console.log(msg);
         }
       },
       error: (msg) => {
-        if (dataStore.subscriberCount > 0) {
+        if (dataStore.subscriberCount() > 0) {
           dataStore.set({ error: msg });
         } else {
           console.error(msg);
