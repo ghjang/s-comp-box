@@ -1,57 +1,62 @@
 <svelte:options customElement="s-stack-panel" />
 
-<script>
-  // NOTE: 'FlexBox' wrapper이다. 'display: flex'를 이해하는게 쉽지 않다.
-  //       주로 이용하는 'flex' 패턴에 대해서 좀더 단순한 형태로 작성되었다.
-
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
   import FlexBox from "./FlexBox.svelte";
 
-  const dispatch = createEventDispatcher();
+  type ForwardingCustomEvents = Record<string, unknown>;
 
-  export let direction = "vertical";
-  export let reverse = false;
-  export let hAlign = "center";
-  export let vAlign = "top";
+  const dispatch = createEventDispatcher<ForwardingCustomEvents>();
 
-  let flexDirection;
-  let justifyContent;
-  let alignItems;
+  type Direction = "vertical" | "horizontal";
+  type HAlign = "left" | "center" | "right";
+  type VAlign = "top" | "middle" | "bottom";
 
-  export let trapFocus = false;
+  export let direction: Direction = "vertical";
+  export let reverse: boolean = false;
+  export let hAlign: HAlign = "center";
+  export let vAlign: VAlign = "top";
 
-  export let defaultItemProps = {};
-  export let items = [];
+  let flexDirection: "column" | "row";
+  let justifyContent: string;
+  let alignItems: string;
 
-  export let autoRegisterCustomEventsFromItemProps = true;
-  export const customEvents = [];
+  export let trapFocus: boolean = false;
 
-  export function clearRegisteredCustomEvents() {
+  export let defaultItemProps: Record<string, any> = {};
+  export let items: any[] = [];
+
+  export let autoRegisterCustomEventsFromItemProps: boolean = true;
+  export const customEvents: string[] = [];
+
+  export function clearRegisteredCustomEvents(): void {
     unregisterEventHandlers.forEach((unregister) => unregister());
     unregisterEventHandlers = [];
   }
 
-  let unregisterEventHandlers = [];
-  let flexBox;
+  let unregisterEventHandlers: (() => void)[] = [];
+  let flexBox: FlexBox;
 
-  function registerCustomEventsFrom(flexBoxCustomEvents) {
+  function registerCustomEventsFrom(flexBoxCustomEvents: string[]): void {
     customEvents.length = 0;
     customEvents.push(...flexBoxCustomEvents);
 
     customEvents.forEach((eventName) => {
-      const unregister = flexBox.$on(eventName, (event) => {
+      const unregister = flexBox.$on(eventName, (event: CustomEvent) => {
         dispatch(eventName, event.detail);
       });
       unregisterEventHandlers.push(unregister);
     });
   }
 
-  function handleCustomEventsRegistered(event) {
+  function handleCustomEventsRegistered(
+    event: CustomEvent<{ customEvents: string[] }>,
+  ): void {
     clearRegisteredCustomEvents();
     registerCustomEventsFrom(event.detail.customEvents);
   }
 
-  function reverseFlexAlign(align) {
+  function reverseFlexAlign(align: string): string {
     switch (align) {
       case "flex-start":
         return "flex-end";
@@ -64,8 +69,12 @@
     }
   }
 
-  function mapAlignProps(direction, hAlign, vAlign) {
-    const alignMap = {
+  function mapAlignProps(
+    direction: Direction,
+    hAlign: HAlign,
+    vAlign: VAlign,
+  ): void {
+    const alignMap: Record<HAlign | VAlign, string> = {
       top: "flex-start",
       middle: "center",
       bottom: "flex-end",
