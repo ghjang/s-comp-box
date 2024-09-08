@@ -1,21 +1,42 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher, getContext, setContext } from "svelte";
+  import { writable, type Writable } from "svelte/store";
 
   const dispatch = createEventDispatcher();
 
-  import { writable } from "svelte/store";
+  interface MenuItem {
+    divider?: boolean;
+    link?: { text: string };
+    popup?: { text: string };
+    action?: { text: string; checked?: boolean };
+    subMenu?: { text: string; items: MenuItem[] };
+  }
 
-  export let menuItems = [];
+  interface MenuPosition {
+    x: number;
+    y: number;
+  }
 
-  export let menuLevel = 0;
-  export let menuPos = { x: 0, y: 0 };
-  export let menuSize = { width: 0, height: 0 };
+  interface MenuSize {
+    width: number;
+    height: number;
+  }
+
+  interface ContextValue {
+    maxLevel: number;
+    [key: `level-${number}`]: { lastHoveredMenuItem: HTMLElement | null };
+  }
+
+  export let menuItems: MenuItem[] = [];
+  export let menuLevel: number = 0;
+  export let menuPos: MenuPosition = { x: 0, y: 0 };
+  export let menuSize: MenuSize = { width: 0, height: 0 };
 
   const contextName = "context-menu-context";
-  const context = initContext(contextName);
+  const context: Writable<ContextValue> = initContext(contextName);
   $: updateMenuState($context);
 
-  let contextMenu;
+  let contextMenu: HTMLDivElement;
 
   $: if (contextMenu) {
     menuSize = {
@@ -27,7 +48,7 @@
     //console.log(menuLevel ? "sub menu" : "main menu", menuSize);
 
     // NOTE: '상하위 메뉴' 내용이 겹쳐서 표시되지 않도록 'z-index' 값을 설정한다.
-    contextMenu.style.zIndex = 1000 + menuLevel;
+    contextMenu.style.zIndex = `${1000 + menuLevel}`;
 
     /* 
       NOTE: 다음과 같이 'div.context-menu'에 바인딩된 'menuPos' 변수를 참조해 로그를 출력하면
@@ -46,8 +67,8 @@
      */
   }
 
-  function initContext(ctxtName) {
-    let context;
+  function initContext(ctxtName: string): Writable<ContextValue> {
+    let context: Writable<ContextValue>;
     if (menuLevel === 0) {
       context = writable({
         maxLevel: 0,
@@ -67,24 +88,25 @@
     return context;
   }
 
-  function handleMenuItemHoverEnter(event) {
+  function handleMenuItemHoverEnter(event: MouseEvent) {
     context.update((value) => {
-      value[`level-${menuLevel}`].lastHoveredMenuItem = event.currentTarget;
+      value[`level-${menuLevel}`].lastHoveredMenuItem =
+        event.currentTarget as HTMLDivElement;
       return value;
     });
   }
 
-  function handleMenuItemHoverLeave(event) {
+  function handleMenuItemHoverLeave(event: MouseEvent) {
     context.update((value) => value);
   }
 
-  function updateMenuState(context) {
+  function updateMenuState(context: ContextValue) {
     if (menuLevel <= 0 || !contextMenu || !context) {
       return;
     }
 
-    const subMenu = contextMenu.parentElement;
-    const parentMenuItem = subMenu.closest(".menu-item");
+    const subMenu = contextMenu.parentElement as HTMLDivElement;
+    const parentMenuItem = subMenu.closest(".menu-item") as HTMLDivElement;
 
     const parentHoveredMenuItem =
       context[`level-${menuLevel - 1}`].lastHoveredMenuItem;
@@ -102,26 +124,32 @@
     updateSubMenuPos(subMenu, parentMenuItem);
   }
 
-  function isElementHidden(el) {
+  function isElementHidden(el: HTMLElement): boolean {
     return window.getComputedStyle(el).display === "none";
   }
 
-  function updateParentMenuItemState(subMenu, parentMenuItem) {
+  function updateParentMenuItemState(
+    subMenu: HTMLDivElement,
+    parentMenuItem: HTMLDivElement,
+  ) {
     const parentMenuItemBtn = parentMenuItem.querySelector("button");
 
     if (isElementHidden(subMenu)) {
-      parentMenuItemBtn.classList.remove("parent-menu-item-hovered");
+      parentMenuItemBtn?.classList.remove("parent-menu-item-hovered");
     } else {
-      parentMenuItemBtn.classList.add("parent-menu-item-hovered");
+      parentMenuItemBtn?.classList.add("parent-menu-item-hovered");
     }
   }
 
-  function updateSubMenuPos(subMenu, parentMenuItem) {
+  function updateSubMenuPos(
+    subMenu: HTMLDivElement,
+    parentMenuItem: HTMLDivElement,
+  ) {
     // NOTE: 'subMenu' 자체는 '크기 값'이 '0'이다.
     const subMenuWidth = contextMenu.offsetWidth;
     const subMenuHeight = contextMenu.offsetHeight;
 
-    const parentMenu = subMenu.closest(".context-menu");
+    const parentMenu = subMenu.closest(".context-menu") as HTMLDivElement;
     const parentMenuWidth = parentMenu.offsetWidth;
 
     const parentMenuItemWidth = parentMenuItem.offsetWidth;
@@ -129,7 +157,7 @@
     // NOTE: '+ 2'는 '부모 메뉴 항목'의 영역과 '자식 메뉴'의 영역이 살짝 겹치게 하기 위함.
     const offsetDiff = (parentMenuWidth - parentMenuItemWidth) / 2 + 2;
 
-    let x = parentMenu.offsetLeft + parentMenu.offsetWidth - offsetDiff;
+    let x = parentMenu.offsetLeft + parentMenuWidth - offsetDiff;
     let y = parentMenu.offsetTop + parentMenuItem.offsetTop;
 
     if (x + subMenuWidth > window.innerWidth) {
