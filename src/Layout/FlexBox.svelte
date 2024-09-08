@@ -77,9 +77,19 @@
 
       const itemProps = { ...defaultItemProps, ...items[index] };
       if (itemProps.customEvents) {
-        register.registerAdditionalCustomEvents(itemProps.customEvents);
-        // NOTE: 필요하다면 'detailHandler'를 작성해서
-        //       이 'FlexBox'내에서 해당 컴포넌트가 배치된 위치 정보등을 'detail'에 추가할 수 있겠음.
+        const detailHandler = (
+          eventName: string,
+          bubble: any,
+          component: any,
+        ) => {
+          return {
+            context: { item: items[index], index },
+          };
+        };
+        register.registerAdditionalCustomEvents(
+          itemProps.customEvents,
+          detailHandler,
+        );
       }
 
       customEventsRegisters.push(register);

@@ -36,12 +36,14 @@
   function updateToggleGroupState(context: ToggleGroupContext): void {}
 
   function handleToggleItemChanged(event: CustomEvent): void {
-    $context.activatedValue = event.detail.value;
-    activatedValue = event.detail.value;
-
+    const value = event.detail.bubble.forwardingDetail.value;
+    $context.activatedValue = value;
+    activatedValue = value;
+    
+    const detail = event.detail.bubble.detail;
     dispatch("toggleItemChanged", {
       value: activatedValue,
-      itemIndex: event.detail.context.index,
+      itemIndex: detail.context.index,
     });
   }
 

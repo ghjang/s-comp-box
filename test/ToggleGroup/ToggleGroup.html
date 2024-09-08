@@ -1,71 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ToggleGroup Component Test</title>
 
-    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css">
+    <link rel="stylesheet" href="/build/dev/default/s-comp.bundle.css" />
 
     <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: white;
-        }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: white;
+      }
 
-        table {
-            width: 100%;
-        }
+      #toggleGroupContainer {
+        height: 100vh;
+        overflow-y: auto;
+      }
 
-        div[id^="tabButtonContainer"] {
-            margin: 2px;
-            border: 2px solid black;
-        }
+      table {
+        width: 100%;
+      }
+
+      div[id^="tabButtonContainer"] {
+        margin: 2px;
+        border: 2px solid black;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-    <table>
+  <body>
+    <div id="toggleGroupContainer">
+      <table>
         <tr>
-            <td>
-                <h2>Radio Button Group</h2>
-            </td>
+          <td>
+            <h2>Radio Button Group</h2>
+          </td>
         </tr>
         <tr>
-            <td>
-                <div id="radioButtonContainer"></div>
-            </td>
+          <td>
+            <div id="radioButtonContainer"></div>
+          </td>
         </tr>
         <tr>
-            <td>
-                <h2>Tab Button Group </h2>
-            </td>
+          <td>
+            <h2>Tab Button Group</h2>
+          </td>
+        </tr>
+
         <tr>
-            <td>
-                <div id="tabButtonContainerTop"></div>
-            </td>
+          <td>
+            <div id="tabButtonContainerTop"></div>
+          </td>
         </tr>
         <tr>
-            <td>
-                <div id="tabButtonContainerRight"></div>
-            </td>
+          <td>
+            <div id="tabButtonContainerRight"></div>
+          </td>
         </tr>
         <tr>
-            <td>
-                <div id="tabButtonContainerBottom"></div>
-            </td>
+          <td>
+            <div id="tabButtonContainerBottom"></div>
+          </td>
         </tr>
         <tr>
-            <td>
-                <div id="tabButtonContainerLeft"></div>
-            </td>
+          <td>
+            <div id="tabButtonContainerLeft"></div>
+          </td>
         </tr>
-    </table>
+      </table>
+    </div>
 
     <script type="module" src="./ToggleGroup.js"></script>
-</body>
-
+  </body>
 </html>
