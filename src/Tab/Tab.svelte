@@ -1,41 +1,56 @@
 <svelte:options accessors />
 
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { as } from "../common/util";
   import Floor from "../Floor/Floor.svelte";
   import StackPanel from "../Layout/StackPanel.svelte";
   import TabButtonGroup from "./TabButtonGroup.svelte";
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
+  import { PopUpKind } from "../PopUp/PopUpKind";
   import { PopUpManager } from "../PopUp/util";
   import { findClosestAncestor } from "../common/util.dom";
   import {
     CustomEventsRegister,
     combineCustomEvents,
   } from "../common/customEvents.js";
+  import type { MenuItem } from "../ContextMenuMediator/types";
+
+  interface Tab {
+    label: string;
+    component: any;
+    componentClassName: string;
+    props?: Record<string, any>;
+  }
+
+  type TabPosition = "top" | "bottom" | "left" | "right";
+  type TabDirection = "vertical" | "horizontal";
+  type TabHAlign = "left" | "right";
+  type TabVAlign = "top" | "bottom";
 
   const dispatch = createEventDispatcher();
 
   // FIXME: 다수의 '탭'들이 추가될 경우 탭이 잘려서 표시되거나 아예 보이지 않음.
-  export let tabs = [];
+  export let tabs: Tab[] = [];
   export let selectedTabIndex = 0;
-  export let tabPosition = "top";
+  export let tabPosition: TabPosition = "top";
   export let showContentControl = false;
 
-  export let customEvents = ["updateChildComponentInfo"];
+  export let customEvents: string[] = ["updateChildComponentInfo"];
 
-  export const getTabComponents = () => tabComponents;
+  export const getTabComponents = (): any[] => tabComponents;
 
-  let tabComponents = [];
-  let customEventsRegisters = [];
+  let tabComponents: any[] = [];
+  let customEventsRegisters: CustomEventsRegister[] = [];
 
-  let tabDirection = "vertical";
-  let tabHAlign = "left";
-  let tabVAlign = "bottom";
+  let tabDirection: TabDirection = "vertical";
+  let tabHAlign: TabHAlign = "left";
+  let tabVAlign: TabVAlign = "bottom";
   let tabReverse = false;
 
-  let contextMenu;
-  let menuItems = [];
+  let contextMenu: ContextMenuMediator;
+  let menuItems: MenuItem[] = [];
 
   // NOTE: 탭 컴포넌트가 '추가, 삭제'될 경우에도 실행됨.
   $: if (tabs.length === tabComponents.length) {
@@ -58,16 +73,21 @@
             selectedTabIndex,
           };
         },
-        (callback) => {
+        (callback: (info: any) => void) => {
           // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
-          callback({
-            containerName: "Tab",
-            tabLength: tabs.length,
-            tabIndex: index,
-            ancestorFloorId: findClosestAncestor(tabView, "floor-container")
-              ?.dataset.floorId,
-            ensureTabVisible: (tabIndex) => (selectedTabIndex = tabIndex),
-          });
+          const ancestorElem = as<HTMLElement>(
+            findClosestAncestor(tabView, "floor-container"),
+          );
+          if (ancestorElem) {
+            callback({
+              containerName: "Tab",
+              tabLength: tabs.length,
+              tabIndex: index,
+              ancestorFloorId: ancestorElem?.dataset.floorId,
+              ensureTabVisible: (tabIndex: number) =>
+                (selectedTabIndex = tabIndex),
+            });
+          }
         },
       );
 
@@ -88,7 +108,7 @@
   //       초기화되었을 경우에 자신의 화면을 정상적으로 'update(layout)'할 수 없는 문제가 있음.
   //       이를 해결하기 위해 명시적으로 탭이 선택되었을 때 명시적으로 컴포넌트에 'update' 함수가
   //       존재할 경우에 호출하도록해 workaround함.
-  function updateSelectedTab(tabIndex, tabPosition) {
+  function updateSelectedTab(tabIndex: number, tabPosition: string): void {
     // '탭 컨텐트' 업데이트
     if (
       tabComponents[tabIndex] &&
@@ -133,7 +153,7 @@
     }
 
     dispatch("updateChildComponentInfo", {
-      updateCallback: (childComponentInfo) => {
+      updateCallback: (childComponentInfo: any) => {
         const _childComponentInfo = childComponentInfo.childComponentInfo;
         if (_childComponentInfo.componentClassName === "Tab") {
           _childComponentInfo.props.selectedTabIndex = tabIndex;
@@ -145,12 +165,12 @@
 
   $: updateSelectedTab(selectedTabIndex, tabPosition);
 
-  let tabView;
+  let tabView: HTMLDivElement;
 
   const popUpManager = new PopUpManager();
   const popUpStore = popUpManager.store;
 
-  async function handleKeyUp(event) {
+  async function handleKeyUp(event: KeyboardEvent): Promise<void> {
     if (event.ctrlKey && event.code === "KeyN") {
       // 'Ctrl + N' 키 입력을 통한 '탭' 추가
       event.preventDefault();
@@ -174,7 +194,7 @@
     }
   }
 
-  function handleTabsContextMenu(event) {
+  function handleTabsContextMenu(event: MouseEvent): void {
     if (!contextMenu) {
       return;
     }
@@ -202,7 +222,7 @@
     }
 
     // '탭 위치' 변경 메뉴 항목 추가
-    const tabPositions = ["top", "bottom", "left", "right"];
+    const tabPositions: TabPosition[] = ["top", "bottom", "left", "right"];
     tabPositions.forEach((position) => {
       menuItems.push({
         action: {
@@ -213,10 +233,14 @@
       });
     });
 
-    contextMenu.showContextMenu(event, true, { parentBox: tabView });
+    contextMenu.showContextMenu(event, true, {
+      parentBox: tabView,
+      x: null,
+      y: null,
+    });
   }
 
-  function generateNewTabLabel(lastTabLabel) {
+  function generateNewTabLabel(lastTabLabel: string): string {
     const match = lastTabLabel.match(/^(.*?)(\d+)$/);
     if (match) {
       const prefix = match[1];
@@ -226,9 +250,9 @@
     return `${lastTabLabel} ${tabs.length + 1}`;
   }
 
-  async function handleAddNewTab() {
+  async function handleAddNewTab(): Promise<Tab | null> {
     if (!(tabComponents[0] instanceof Floor)) {
-      return;
+      return null;
     }
 
     const lastTabLabel = tabs[tabs.length - 1].label;
@@ -236,7 +260,7 @@
     const scriptBasePath = tabComponents[0].getComponentScriptBasePath();
     const items = tabComponents[0].getMenuItems();
 
-    const newTabChildComponentInfo = {
+    const newTabChildComponentInfo: Tab = {
       label: newTabLabel,
       component: Floor,
       componentClassName: "Floor",
@@ -248,18 +272,18 @@
 
     return new Promise((resolve) => {
       popUpManager.show({
-        kind: "prompt",
+        kind: PopUpKind.PROMPT,
         title: "Tab Name",
         content: "Input a New Tab Name:",
         userInput: newTabChildComponentInfo.label,
-        onConfirm: (userInput) => {
+        onConfirm: (userInput?: string) => {
           if (userInput && userInput.trim()) {
             newTabChildComponentInfo.label = userInput;
             tabs = [...tabs, newTabChildComponentInfo];
             selectedTabIndex = tabs.length - 1;
 
             dispatch("updateChildComponentInfo", {
-              updateCallback: (childComponentInfo) => {
+              updateCallback: (childComponentInfo: any) => {
                 const _childInfo = childComponentInfo.childComponentInfo;
                 _childInfo.props.tabs.push(newTabChildComponentInfo);
                 _childInfo.props.selectedTabIndex = selectedTabIndex;
@@ -278,17 +302,17 @@
     });
   }
 
-  async function handleDeleteCurrentTab() {
+  async function handleDeleteCurrentTab(): Promise<boolean> {
     if (tabs.length <= 1) {
       console.info("The last tab cannot be deleted.");
-      return;
+      return false;
     }
 
     const tabToDelete = tabs[selectedTabIndex];
 
     return new Promise((resolve) => {
       popUpManager.show({
-        kind: "confirm",
+        kind: PopUpKind.CONFIRM,
         title: "Delete Tab",
         content: `Are you sure you want to delete the tab "${tabToDelete.label}"?`,
         onConfirm: async () => {
@@ -315,7 +339,7 @@
           selectedTabIndex = newSelectedTabIndex;
 
           dispatch("updateChildComponentInfo", {
-            updateCallback: (childComponentInfo) => {
+            updateCallback: (childComponentInfo: any) => {
               const _childInfo = childComponentInfo.childComponentInfo;
               _childInfo.props.tabs = tabs;
               _childInfo.props.selectedTabIndex = selectedTabIndex;
@@ -331,19 +355,23 @@
     });
   }
 
-  function handleTabSelected(event) {
+  function handleTabSelected(event: CustomEvent<{ tabIndex: number }>): void {
     const { tabIndex } = event.detail;
     selectedTabIndex = tabIndex;
   }
 
-  function handleTabDeleteButtonClicked(event) {
+  function handleTabDeleteButtonClicked(
+    event: CustomEvent<{ tabIndex: number }>,
+  ): void {
     const targetTabIndex = event.detail.tabIndex;
     if (targetTabIndex === selectedTabIndex) {
       handleDeleteCurrentTab();
     }
   }
 
-  async function handleMenuItemClicked(event) {
+  async function handleMenuItemClicked(
+    event: CustomEvent<MenuItem>,
+  ): Promise<void> {
     const { action } = event.detail;
     if (action && typeof action.handler === "function") {
       await action.handler();
