@@ -1,4 +1,6 @@
 export class CustomEventsRegister {
+  #dispatch;
+  #component;
   #unregisters = [];
   customEvents = [];
 
@@ -13,9 +15,13 @@ export class CustomEventsRegister {
       throw new Error("dispatch must be a function.");
     }
 
+    this.#dispatch = dispatch;
+
     if (!component) {
       throw new Error("component must be an object.");
     }
+
+    this.#component = component;
 
     if (!component.customEvents) {
       // 등록할 커스텀 이벤트가 없을 경우 아무것도 하지 않음.
@@ -65,19 +71,34 @@ export class CustomEventsRegister {
         });
         this.#unregisters.push(unregister);
       } else {
-        const unregister = component.$on(eventName, (event) => {
-          const bubble = event.detail.bubble || {};
-          bubble.chain = bubble.chain || [];
-
-          bubble.chain.push(component);
-          bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
-          bubble.detail = detailHandler?.(eventName, bubble, component);
-
-          dispatch(eventName, { bubble });
-        });
+        const unregister = this.#registerCustomEvent(eventName, detailHandler);
         this.#unregisters.push(unregister);
       }
     });
+  }
+
+  #registerCustomEvent(eventName, detailHandler) {
+    return this.#component.$on(eventName, (event) => {
+      const bubble = event.detail.bubble || {};
+      bubble.chain = bubble.chain || [];
+
+      bubble.chain.push(this.#component);
+      bubble.forwardingDetail = bubble.forwardingDetail || event.detail;
+      bubble.detail = detailHandler?.(eventName, bubble, this.#component);
+
+      this.#dispatch(eventName, { bubble });
+    });
+  }
+
+  registerAdditionalCustomEvents(additionalCustomEvents, detailHandler) {
+    additionalCustomEvents.forEach((eventName) => {
+      const unregister = this.#registerCustomEvent(eventName, detailHandler);
+      this.#unregisters.push(unregister);
+    });
+    this.customEvents = combineCustomEvents(
+      this.customEvents,
+      additionalCustomEvents
+    );
   }
 
   unregister() {
