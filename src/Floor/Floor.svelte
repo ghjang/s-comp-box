@@ -5,7 +5,7 @@
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
   import FloorChild from "./FloorChild.svelte";
-  import { findClosestAncestor } from "../common/util.dom.js";
+  import { findClosestAncestor } from "../common/util.dom";
   import { restoreUnserializableProperties as restoreComponentClass } from "../common/serialization.js";
   import { updateMenuItemsInProps } from "./persistency.ts";
 

@@ -8,7 +8,7 @@
   import ContextMenuMediator from "../ContextMenuMediator/ContextMenuMediator.svelte";
   import PopUp from "../PopUp/PopUp.svelte";
   import { PopUpManager } from "../PopUp/util";
-  import { findClosestAncestor } from "../common/util.dom.js";
+  import { findClosestAncestor } from "../common/util.dom";
   import {
     CustomEventsRegister,
     combineCustomEvents,
