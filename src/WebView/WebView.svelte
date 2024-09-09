@@ -1,13 +1,17 @@
 <svelte:options accessors />
 
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  const dispatch = createEventDispatcher();
+  type WebViewEvents = {
+    webPageLoaded: void;
+  };
 
-  export let url = "";
+  const dispatch = createEventDispatcher<WebViewEvents>();
 
-  let iframe;
+  export let url: string = "";
+
+  let iframe: HTMLIFrameElement;
 
   export function getContentWindow() {
     return iframe.contentWindow;
