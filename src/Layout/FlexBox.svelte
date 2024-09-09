@@ -59,7 +59,7 @@
       const register = new CustomEventsRegister(
         dispatch,
         instance,
-        (eventName: string, bubble: any, component: any) => {
+        (_eventName: string, _bubble: any, _component: SvelteComponent) => {
           return {
             componentName: "FlexBox",
             itemInstances,
@@ -78,9 +78,9 @@
       const itemProps = { ...defaultItemProps, ...items[index] };
       if (itemProps.customEvents) {
         const detailHandler = (
-          eventName: string,
-          bubble: any,
-          component: any,
+          _eventName: string,
+          _bubble: any,
+          _component: SvelteComponent,
         ) => {
           return {
             context: { item: items[index], index },
