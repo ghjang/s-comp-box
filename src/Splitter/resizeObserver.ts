@@ -1,14 +1,27 @@
 import debounce from "lodash-es/debounce";
+import type { Action } from "svelte/action";
+import type { PanelSizeInfo } from "./common";
 
-export function resizeObserver(panel_0, params) {
-  let { panel_1, onPanelSizeChanged, observePanel1, debounceTime } = params;
+interface ResizeObserverParams {
+  panel_1?: HTMLElement;
+  onPanelSizeChanged?: (panelSizeInfo: PanelSizeInfo) => void;
+  observePanel1?: boolean;
+  debounceTime?: number;
+}
 
-  const debouncedHandler = debounce((entries) => {
+export const resizeObserver: Action<HTMLElement, ResizeObserverParams> = (
+  panel_0: HTMLElement,
+  initialParams: ResizeObserverParams
+) => {
+  let { panel_1, onPanelSizeChanged, observePanel1, debounceTime } =
+    initialParams;
+
+  const debouncedHandler = debounce((entries: ResizeObserverEntry[]) => {
     const entry = entries[0];
     if (entry.target === panel_0 || entry.target === panel_1) {
       const container = (
         panel_0 || panel_1
-      ).parentElement.getBoundingClientRect();
+      ).parentElement!.getBoundingClientRect();
 
       // NOTE: 패널이 화면에 보이는지 확인한다.
       //       'Tab' 컴포넌트의 특정 탭에 'Splitter' 컴포넌트가 추가된 후에
@@ -17,7 +30,7 @@ export function resizeObserver(panel_0, params) {
       const isVisible = container.width > 0 && container.height > 0;
 
       if (isVisible) {
-        const panelSizeInfo = {
+        const panelSizeInfo: PanelSizeInfo = {
           container,
           panel_0: panel_0.getBoundingClientRect(),
           panel_1: panel_1?.getBoundingClientRect(),
@@ -30,8 +43,12 @@ export function resizeObserver(panel_0, params) {
   const observer = new ResizeObserver(debouncedHandler);
   observer.observe(panel_0);
 
+  if (observePanel1 && panel_1) {
+    observer.observe(panel_1);
+  }
+
   return {
-    update(newParams) {
+    update(newParams: ResizeObserverParams) {
       if (observePanel1 && panel_1) {
         observer.unobserve(panel_1);
       }
@@ -44,10 +61,7 @@ export function resizeObserver(panel_0, params) {
       }
     },
     destroy() {
-      observer.unobserve(panel_0);
-      if (observePanel1 && panel_1) {
-        observer.unobserve(panel_1);
-      }
+      observer.disconnect();
     },
   };
-}
+};

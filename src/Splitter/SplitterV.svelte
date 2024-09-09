@@ -1,28 +1,42 @@
-<script>
+<script lang="ts">
   import debounce from "lodash-es/debounce";
   import { createEventDispatcher } from "svelte";
-  import { resizeObserver } from "./resizeObserver.js";
-  import { styleObserver } from "./styleObserver.js";
-  import { dragGrip } from "./dragGrip.js";
+  import {
+    type ShowContentControlOptions,
+    type PanelSizeInfo,
+    shouldShowPanelSwapButton,
+    shouldShowToggleOrientationButton,
+  } from "./common";
+  import { resizeObserver } from "./resizeObserver";
+  import { styleObserver } from "./styleObserver";
+  import { dragGrip } from "./dragGrip";
 
-  const dispatch = createEventDispatcher();
+  type VCollapseDirection = "ttb" | "btt";
 
-  export let showContentControl = false;
+  type SplitterVEvents = {
+    panelSizeChanged: PanelSizeInfo;
+    panelSwapButtonClicked: void;
+    panelOrientationButtonClicked: void;
+  };
+
+  const dispatch = createEventDispatcher<SplitterVEvents>();
+
+  export let showContentControl: boolean | ShowContentControlOptions = false;
   export let showPanelResizingInfo = false;
   export let panel_0_length = "50%";
 
-  let panel_0;
-  let panel_1;
+  let panel_0: HTMLDivElement;
+  let panel_1: HTMLDivElement;
   let topPanelCollapsed = false;
   let bottomPanelCollapsed = false;
   let ttbPanelCollapseButtonClicked = false;
-  let resetTtbPanelCollapseButtonClicked = null;
+  let resetTtbPanelCollapseButtonClicked: (() => void) | null = null;
   let lastNonZeroPanel0Height = panel_0_length;
   let panel_0_min_height = panel_0_length;
   let panel_0_max_height = panel_0_length;
   let splitterPanelLength = "auto";
 
-  const panelSizeUpdater = (newSize) => (panel_0_length = newSize);
+  const panelSizeUpdater = (newSize: string) => (panel_0_length = newSize);
 
   $: if (showContentControl) {
     resetTtbPanelCollapseButtonClicked = debounce(
@@ -43,7 +57,7 @@
     panel_0_max_height = panel_0_length;
   }
 
-  function onPanelSizeChanged(panelSizeInfo) {
+  function onPanelSizeChanged(panelSizeInfo: PanelSizeInfo) {
     panel_0_length = `${panelSizeInfo.panel_0.height}px`;
     dispatch("panelSizeChanged", panelSizeInfo);
 
@@ -54,10 +68,10 @@
     topPanelCollapsed = panelSizeInfo.panel_0.height === 0;
 
     if (ttbPanelCollapseButtonClicked) {
-      resetTtbPanelCollapseButtonClicked();
+      resetTtbPanelCollapseButtonClicked?.();
     } else if (
       (panel_1?.style.display === "none" || panel_1?.style.display === "") &&
-      panelSizeInfo.panel_1.height === 0
+      panelSizeInfo.panel_1?.height === 0
     ) {
       bottomPanelCollapsed = false; // 'bottomPanelCollapsed' 클래스 제거
     } else {
@@ -65,7 +79,9 @@
     }
   }
 
-  function handlePanelCollapseButtonClick(direction = "ttb") {
+  function handlePanelCollapseButtonClick(
+    direction: VCollapseDirection = "ttb",
+  ) {
     if (direction === "ttb") {
       bottomPanelCollapsed = true; // 'bottomPanelCollapsed' 클래스 추가
       ttbPanelCollapseButtonClicked = true;
@@ -93,7 +109,7 @@
   //       자식 컴포넌트로 설정된 경우에(ex.> AbcRun) 이 문제가 확실히 발생하는
   //       것으로 보인다. 아마도 모나코 에디터의 '재레이아웃' 메쏘드가 호출되면서
   //       최대한의 영역을 차지하려고 하는 것이 문제인 것으로 보인다.
-  function onStyleChange(computedStyle) {
+  function onStyleChange(computedStyle: CSSStyleDeclaration) {
     if (
       computedStyle.display !== "none" &&
       !topPanelCollapsed &&
@@ -142,13 +158,13 @@
             on:pointerdown|stopPropagation>▲</button
           >
         {/if}
-        {#if showContentControl.toggleOrientationButton !== false}
+        {#if shouldShowToggleOrientationButton(showContentControl)}
           <button
             on:click|stopPropagation={() => handlePanelOrientationButtonClick()}
             on:pointerdown|stopPropagation>↺</button
           >
         {/if}
-        {#if showContentControl.panelSwapButton !== false}
+        {#if shouldShowPanelSwapButton(showContentControl)}
           <button
             class="rotate-90"
             on:click|stopPropagation={() => handlePanelSwapButtonClick()}

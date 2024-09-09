@@ -4,8 +4,9 @@
  -->
 <svelte:options customElement="s-splitter" accessors />
 
-<script>
-  import { createEventDispatcher } from "svelte";
+<script lang="ts">
+  import { type SvelteComponent, createEventDispatcher } from "svelte";
+  import { type ShowContentControlOptions, type PanelSizeInfo } from "./common";
   import SplitterH from "./SplitterH.svelte";
   import SplitterV from "./SplitterV.svelte";
   import {
@@ -13,65 +14,111 @@
     combineCustomEvents,
   } from "../common/customEvents.js";
 
-  const dispatch = createEventDispatcher();
+  type Orientation = "horizontal" | "vertical";
 
-  export let orientation = "horizontal";
-  export let showContentControl = false;
-  export let showPanelResizingInfo = false;
+  type ComponentInfo = {
+    component: any;
+    componentClassName: string | null;
+    props: Record<string, any>;
+  };
 
-  export let panel_0_length = "50%";
+  type SplitterEvents = {
+    splitterOrientationChanged: { orientation: Orientation };
+    splitterPanelSwapped: {
+      component_0: {
+        before: {
+          componentInfo: ComponentInfo;
+          componentInstance: SvelteComponent;
+        };
+        after: {
+          componentInfo: ComponentInfo;
+          componentInstance: SvelteComponent;
+        };
+      };
+      component_1: {
+        before: {
+          componentInfo: ComponentInfo;
+          componentInstance: SvelteComponent;
+        };
+        after: {
+          componentInfo: ComponentInfo;
+          componentInstance: SvelteComponent;
+        };
+      };
+    };
+    splitterPanelSizeChanged: {
+      orientation: Orientation;
+      panel_0_length: string;
+      splitterSize: Record<string, any>;
+    };
+  };
 
-  export let component_0 = {
+  const dispatch = createEventDispatcher<SplitterEvents>();
+
+  export let orientation: Orientation = "horizontal";
+  export let showContentControl: boolean | ShowContentControlOptions = false;
+  export let showPanelResizingInfo: boolean = false;
+
+  export let panel_0_length: string = "50%";
+
+  export let component_0: ComponentInfo = {
     component: null,
     componentClassName: null,
     props: {},
   };
-  export let component_1 = {
+  export let component_1: ComponentInfo = {
     component: null,
     componentClassName: null,
     props: {},
   };
 
-  export let customEvents = [
+  export let customEvents: string[] = [
     "splitterOrientationChanged",
     "splitterPanelSwapped",
     "splitterPanelSizeChanged",
   ];
 
-  export const toggleOrientation = () => {
+  export const toggleOrientation = (): void => {
     if (orientation === "horizontal") {
       orientation = "vertical";
       if (panelSize.panelSize) {
         const sizeInfo = panelSize.panelSize;
-        const prevTotalWidth = sizeInfo.panel_1.right - sizeInfo.panel_0.left;
-        const prevPanel0WidthPercent =
-          (sizeInfo.panel_0.width / prevTotalWidth) * 100;
-        panel_0_length = `${prevPanel0WidthPercent}%`;
+        if (sizeInfo.panel_1) {
+          const prevTotalWidth = sizeInfo.panel_1.right - sizeInfo.panel_0.left;
+          const prevPanel0WidthPercent =
+            (sizeInfo.panel_0.width / prevTotalWidth) * 100;
+          panel_0_length = `${prevPanel0WidthPercent}%`;
+        }
       }
     } else if (orientation === "vertical") {
       orientation = "horizontal";
       if (panelSize.panelSize) {
         const sizeInfo = panelSize.panelSize;
-        const prevTotalHeight = sizeInfo.panel_1.bottom - sizeInfo.panel_0.top;
-        const prevPanel0HeightPercent =
-          (sizeInfo.panel_0.height / prevTotalHeight) * 100;
-        panel_0_length = `${prevPanel0HeightPercent}%`;
+        if (sizeInfo.panel_1) {
+          const prevTotalHeight =
+            sizeInfo.panel_1.bottom - sizeInfo.panel_0.top;
+          const prevPanel0HeightPercent =
+            (sizeInfo.panel_0.height / prevTotalHeight) * 100;
+          panel_0_length = `${prevPanel0HeightPercent}%`;
+        }
       }
     }
 
     dispatch("splitterOrientationChanged", { orientation });
   };
 
-  export const clearPanel = () => {
+  export const clearPanel = (): void => {
     component_0 = { component: null, componentClassName: null, props: {} };
     component_1 = { component: null, componentClassName: null, props: {} };
   };
-  export const clearPanel_0 = () =>
-    (component_0 = { component: null, componentClassName: null, props: {} });
-  export const clearPanel_1 = () =>
-    (component_1 = { component: null, componentClassName: null, props: {} });
+  export const clearPanel_0 = (): void => {
+    component_0 = { component: null, componentClassName: null, props: {} };
+  };
+  export const clearPanel_1 = (): void => {
+    component_1 = { component: null, componentClassName: null, props: {} };
+  };
 
-  export const swapPanel = () => {
+  export const swapPanel = (): void => {
     const temp = component_0;
     component_0 = { ...component_1 };
     component_1 = { ...temp };
@@ -102,12 +149,12 @@
 
   export const getPanelSize = () => panelSize;
 
-  let panelSize = {};
+  let panelSize: { panelSize: PanelSizeInfo | null } = { panelSize: null };
 
-  let this_component_0;
-  let this_component_1;
-  let customEventsRegister_0;
-  let customEventsRegister_1;
+  let this_component_0: SvelteComponent;
+  let this_component_1: SvelteComponent;
+  let customEventsRegister_0: CustomEventsRegister | null;
+  let customEventsRegister_1: CustomEventsRegister | null;
 
   $: if (this_component_0) {
     customEventsRegister_0 = new CustomEventsRegister(
@@ -121,18 +168,18 @@
           component_1: this_component_1,
         };
       },
-      (callback) => {
+      (callback: (info: any) => void) => {
         // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
         callback({
           containerName: "Splitter",
           component_0,
         });
-      }
+      },
     );
 
     customEvents = combineCustomEvents(
       customEventsRegister_0.customEvents,
-      customEvents
+      customEvents,
     );
   } else {
     customEventsRegister_0?.unregister();
@@ -151,18 +198,18 @@
           component_1: this_component_1,
         };
       },
-      (callback) => {
+      (callback: (info: any) => void) => {
         // 'queryContainerInfo' 이벤트 발생시 'callback'으로 값 전달
         callback({
           containerName: "Splitter",
           component_1,
         });
-      }
+      },
     );
 
     customEvents = combineCustomEvents(
       customEventsRegister_1.customEvents,
-      customEvents
+      customEvents,
     );
   } else {
     customEventsRegister_1?.unregister();
@@ -179,7 +226,7 @@
   //
   // 'debounce' 처리를 하고는 있으나,
   // '처리 방식 자체'에 개선 가능한 부분이 있는지 점검할 것.
-  function handlePanelSizeChange(event) {
+  function handlePanelSizeChange(event: CustomEvent<PanelSizeInfo>): void {
     panelSize = { panelSize: event.detail };
 
     if (orientation === "horizontal") {
@@ -202,7 +249,7 @@
    * NOTE
    * - 'slot' 태그가 부모 태그 하위에 직접 오지 않으면 스벨트 컴파일러(플러그인)이 오류를 발생시킴.
    *   부모 태그 하위에 'if'와 같은 제어 블럭이 있고 그 안에 'slot' 태그가 있으면 오류가 발생하는 것으로 보임.
-   *   따라서 현재 아래와 같이 좀 번잡한 'if ~ else if ~ else' 제어문이 구성됨.
+   *   따라서 현재 아래와 같�� 좀 번잡한 'if ~ else if ~ else' 제어문이 구성됨.
    *
    * - 'horizontal'과 'vertical' 구분에 따라서 'slot' 처리 부분을 'SplitterSlotH'와 'SplitterSlotV'로
    *   코드 분리를 시도해 보았으나 컴파일러(플러그인) 오류는 발생하지 않지만 렌더링이 제대로 되지 않음.

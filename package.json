@@ -33,6 +33,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@rollup/plugin-url": "^8.0.2",
+    "@types/lodash-es": "^4.17.12",
     "css-loader": "^7.1.2",
     "file-loader": "^6.2.0",
     "glob": "^11.0.0",

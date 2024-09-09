@@ -1,28 +1,44 @@
-export function dragGrip(node, initialParams) {
-  let params = initialParams;
+import type { Action } from "svelte/action";
 
-  let isPointerDown = false;
-  let isDragging = false;
-  let startX, startY, startWidth, startHeight;
+type DragDirection = "horizontal" | "vertical";
 
-  let panel_0_display = null;
-  let panel_1_display = null;
+interface DragGripParams {
+  direction: DragDirection;
+  panel_0: HTMLElement;
+  panel_1: HTMLElement;
+  panelSizeUpdater: (newSize: string) => void;
+  showPanelResizingInfo: boolean;
+  hidePanel?: boolean;
+}
 
-  function handlePointerDown(event) {
+export const dragGrip: Action<HTMLElement, DragGripParams> = (
+  node: HTMLElement,
+  initialParams: DragGripParams
+) => {
+  let params: DragGripParams = initialParams;
+
+  let isPointerDown: boolean = false;
+  let isDragging: boolean = false;
+  let startX: number, startY: number, startWidth: number, startHeight: number;
+
+  let panel_0_display: string = "";
+  let panel_1_display: string = "";
+
+  function handlePointerDown(event: PointerEvent) {
     event.preventDefault(); // '드래깅' 중에 '텍스트'와 같은 선택 가능한 것들이 선택되는 것을 방지
     event.stopPropagation();
 
     const layerDiv = document.createElement("div");
     layerDiv.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                margin: 0;
-                padding: 0;
-                z-index: 9999;
-            `;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      z-index: 9999;
+    `;
     layerDiv.className = "top-level-layer-for-pointer-event-capture";
     layerDiv.addEventListener("pointermove", handlePointerMove);
     layerDiv.addEventListener("pointerup", handlePointerUp);
@@ -34,7 +50,7 @@ export function dragGrip(node, initialParams) {
       addPanelBorder(params.panel_1);
     }
 
-    let newSize = null;
+    let newSize: number;
     if (params.direction === "horizontal") {
       startX = event.clientX;
       startWidth = params.panel_0.offsetWidth;
@@ -44,17 +60,19 @@ export function dragGrip(node, initialParams) {
       startHeight = params.panel_0.offsetHeight;
       newSize = startHeight;
     }
-    params.panelSizeUpdater(newSize);
+    params.panelSizeUpdater(`${newSize}px`);
 
     // '드래깅' 중에 패널 컨텐트 숨김
     if (params.hidePanel) {
       if (params.panel_0.firstElementChild) {
-        panel_0_display = params.panel_0.firstElementChild.style.display;
-        params.panel_0.firstElementChild.style.display = "none";
+        const panel_0_child = params.panel_0.firstElementChild as HTMLElement;
+        panel_0_display = panel_0_child.style.display;
+        panel_0_child.style.display = "none";
       }
       if (params.panel_1.firstElementChild) {
-        panel_1_display = params.panel_1.firstElementChild.style.display;
-        params.panel_1.firstElementChild.style.display = "none";
+        const panel_1_child = params.panel_1.firstElementChild as HTMLElement;
+        panel_1_display = panel_1_child.style.display;
+        panel_1_child.style.display = "none";
       }
     }
 
@@ -62,7 +80,7 @@ export function dragGrip(node, initialParams) {
     isDragging = false;
   }
 
-  function handlePointerMove(event) {
+  function handlePointerMove(event: PointerEvent) {
     if (!isPointerDown) {
       return;
     }
@@ -93,12 +111,12 @@ export function dragGrip(node, initialParams) {
     params.panelSizeUpdater(newSize);
   }
 
-  function handlePointerUp(event) {
+  function handlePointerUp(event: PointerEvent) {
     event.stopPropagation();
 
     const layerDiv = node.querySelector(
       ".top-level-layer-for-pointer-event-capture"
-    );
+    ) as HTMLDivElement;
     if (layerDiv) {
       layerDiv.removeEventListener("pointermove", handlePointerMove);
       layerDiv.removeEventListener("pointerup", handlePointerUp);
@@ -125,19 +143,23 @@ export function dragGrip(node, initialParams) {
 
       // 숨겼던 패널 컨텐트 복원
       if (params.hidePanel) {
-        // NOTE: '모나코 에디터'와 같이 자체��으로 크기를 조절하려 시도하는 요소가 포함되어 있을 경우에
+        // NOTE: '모나코 에디터'와 같이 자체로 크기를 조절하려 시도하는 요소가 포함되어 있을 경우에
         //       곧바로 패널 컨텐트를 복원하면 크기 조절이 제대로 이루어지지 않는 문제를 workaround함.
         //
         //       자식 컴포넌트에 'min-content, max-content'와 같은 크기 조절이 필요한 CSS 속성이
         //       설정되어 있는 경우에 패널 크기 조절이 제대로 안될 수도 있다.
         setTimeout(() => {
           if (params.panel_0.firstElementChild) {
-            params.panel_0.firstElementChild.style.display = panel_0_display;
-            panel_0_display = null;
+            const panel_0_child = params.panel_0
+              .firstElementChild as HTMLElement;
+            panel_0_child.style.display = panel_0_display ?? "";
+            panel_0_display = "";
           }
           if (params.panel_1.firstElementChild) {
-            params.panel_1.firstElementChild.style.display = panel_1_display;
-            panel_1_display = null;
+            const panel_1_child = params.panel_1
+              .firstElementChild as HTMLElement;
+            panel_1_child.style.display = panel_1_display ?? "";
+            panel_1_display = "";
           }
         }, 250);
       }
@@ -147,7 +169,7 @@ export function dragGrip(node, initialParams) {
     isDragging = false;
   }
 
-  function addPanelBorder(panel) {
+  function addPanelBorder(panel: HTMLElement) {
     const originalPosition = getComputedStyle(panel).position;
     if (originalPosition === "static") {
       panel.style.setProperty("--original-position", "static");
@@ -162,13 +184,13 @@ export function dragGrip(node, initialParams) {
     panel.classList.add("s-comp-splitter-panel-with-border");
   }
 
-  function updatePanelSizeInfo(panel) {
+  function updatePanelSizeInfo(panel: HTMLElement) {
     const width = panel.offsetWidth;
     const height = panel.offsetHeight;
     panel.style.setProperty("--panel-size-content", `"${width} x ${height}"`);
   }
 
-  function removePanelBorder(panel) {
+  function removePanelBorder(panel: HTMLElement) {
     const originalPosition = panel.style.getPropertyValue(
       "--original-position"
     );
@@ -186,11 +208,11 @@ export function dragGrip(node, initialParams) {
   node.addEventListener("pointerdown", handlePointerDown);
 
   return {
-    update(newParams) {
+    update(newParams: DragGripParams) {
       params = newParams;
     },
     destroy() {
       node.removeEventListener("pointerdown", handlePointerDown);
     },
   };
-}
+};

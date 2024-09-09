@@ -1,5 +1,12 @@
+import type { Action } from "svelte/action";
+
+type StyleObserverCallback = (computedStyle: CSSStyleDeclaration) => void;
+
 // NOTE: '노드의 style 속성'의 하위 속성인 'display CSS 속성'만을 감시하는 방법은 없다고 함.
-export function styleObserver(node, callback) {
+export const styleObserver: Action<HTMLElement, StyleObserverCallback> = (
+  node: HTMLElement,
+  callback: StyleObserverCallback
+) => {
   const observer = new MutationObserver((mutationsList) => {
     for (let mutation of mutationsList) {
       if (
@@ -19,4 +26,4 @@ export function styleObserver(node, callback) {
       observer.disconnect();
     },
   };
-}
+};

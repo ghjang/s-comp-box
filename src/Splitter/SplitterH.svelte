@@ -1,28 +1,42 @@
-<script>
+<script lang="ts">
   import debounce from "lodash-es/debounce";
   import { createEventDispatcher } from "svelte";
-  import { resizeObserver } from "./resizeObserver.js";
-  import { styleObserver } from "./styleObserver.js";
-  import { dragGrip } from "./dragGrip.js";
+  import {
+    type ShowContentControlOptions,
+    type PanelSizeInfo,
+    shouldShowPanelSwapButton,
+    shouldShowToggleOrientationButton,
+  } from "./common";
+  import { resizeObserver } from "./resizeObserver";
+  import { styleObserver } from "./styleObserver";
+  import { dragGrip } from "./dragGrip";
 
-  const dispatch = createEventDispatcher();
+  type HCollapseDirection = "rtl" | "ltr";
 
-  export let showContentControl = false;
+  type SplitterHEvents = {
+    panelSizeChanged: PanelSizeInfo;
+    panelSwapButtonClicked: void;
+    panelOrientationButtonClicked: void;
+  };
+
+  const dispatch = createEventDispatcher<SplitterHEvents>();
+
+  export let showContentControl: boolean | ShowContentControlOptions = false;
   export let showPanelResizingInfo = false;
   export let panel_0_length = "50%";
 
-  let panel_0;
-  let panel_1;
+  let panel_0: HTMLDivElement;
+  let panel_1: HTMLDivElement;
   let leftPanelCollapsed = false; // '<' 버튼을 눌러서 '왼쪽 패널'이 접혀있는지 여부
   let rightPanelCollapsed = false; // '>' 버튼을 눌러서 '오른쪽 패널'이 접혀있는지 여부
   let ltrPanelCollapseButtonClicked = false; // '>' 버튼이 눌렸었는지 여부
-  let resetLtrPanelCollapseButtonClicked = null;
+  let resetLtrPanelCollapseButtonClicked: (() => void) | null = null;
   let lastNonZeroPanel0Width = panel_0_length;
   let panel_0_min_width = panel_0_length;
   let panel_0_max_width = panel_0_length;
   let splitterPanelLength = "auto";
 
-  const panelSizeUpdater = (newSize) => (panel_0_length = newSize);
+  const panelSizeUpdater = (newSize: string) => (panel_0_length = newSize);
 
   $: if (showContentControl) {
     resetLtrPanelCollapseButtonClicked = debounce(
@@ -43,7 +57,7 @@
     panel_0_max_width = panel_0_length;
   }
 
-  function onPanelSizeChanged(sizeInfo) {
+  function onPanelSizeChanged(sizeInfo: PanelSizeInfo) {
     panel_0_length = `${sizeInfo.panel_0.width}px`;
     dispatch("panelSizeChanged", sizeInfo);
 
@@ -59,10 +73,10 @@
       //       여러번 트리거 될 수 있다. 여러번 호출될 경우에 'rightPanelCollapsed = false;'가
       //       레이아웃이되는 중도에 설정되는 것으로 보이며, 결과적으로 오른쪽 패널이 완전히 접히지 앟을 수도 있다.
       //       일단 'lodash-es' 라이브러리의 'debounce' 함수를 사용해서 보완하였다.
-      resetLtrPanelCollapseButtonClicked();
+      resetLtrPanelCollapseButtonClicked?.();
     } else if (
       (panel_1?.style.display === "none" || panel_1?.style.display === "") &&
-      sizeInfo.panel_1.width === 0
+      sizeInfo.panel_1?.width === 0
     ) {
       // NOTE:
       // - 'ltrPanelCollapseButtonClicked' 플래그를 이용해서 '>' 버튼 클릭 직후에 이 코드 블럭이
@@ -80,7 +94,9 @@
   }
 
   // NOTE: 패널의 크기값 설정시 'onPanelSizeChanged' 이벤트가 자동으로 트리거 된다.
-  function handlePanelCollapseButtonClick(direction = "rtl") {
+  function handlePanelCollapseButtonClick(
+    direction: HCollapseDirection = "rtl",
+  ) {
     if (direction === "rtl") {
       leftPanelCollapsed = true;
       panel_0_length = "0px";
@@ -101,7 +117,7 @@
   }
 
   // NOTE: 'SplitterV'의 'onStyleChange' 주석 참고할 것.
-  function onStyleChange(computedStyle) {
+  function onStyleChange(computedStyle: CSSStyleDeclaration) {
     if (
       computedStyle.display !== "none" &&
       !leftPanelCollapsed &&
@@ -150,13 +166,13 @@
             on:pointerdown|stopPropagation>▶</button
           >
         {/if}
-        {#if showContentControl.panelSwapButton !== false}
+        {#if shouldShowPanelSwapButton(showContentControl)}
           <button
             on:click|stopPropagation={() => handlePanelSwapButtonClick()}
             on:pointerdown|stopPropagation>⇄</button
           >
         {/if}
-        {#if showContentControl.toggleOrientationButton !== false}
+        {#if shouldShowToggleOrientationButton(showContentControl)}
           <button
             class="rotate-270"
             on:click|stopPropagation={() => handlePanelOrientationButtonClick()}
