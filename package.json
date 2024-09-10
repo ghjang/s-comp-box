@@ -1,11 +1,11 @@
 {
-  "name": "licomp",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "name": "s-comp",
+  "version": "0.1.0",
+  "description": "Some Svelte Components",
+  "svelte": "src/index.js",
+  "files": [
+    "src"
+  ],
   "scripts": {
     "clean": "rimraf build/*",
     "bundle-monaco-editor": "cd vendor/monaco-editor/browser-rollup-custom && sh bundle.sh dist",
@@ -23,9 +23,27 @@
     "precopy-build-to-extension": "rimraf extension/chrome/build extension/chrome/test extension/chrome/vendor",
     "copy-build-to-extension": "cp -R build extension/chrome && cp -R test extension/chrome && cp -R vendor extension/chrome"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ghjang/s-comp.git"
+  },
+  "keywords": [
+    "svelte",
+    "components",
+    "ui",
+    "abc-notation",
+    "pdf-viewer",
+    "monaco-editor"
+  ],
+  "author": "ghjang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ghjang/s-comp/issues"
+  },
+  "homepage": "https://ghjang.github.io/s-comp/",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-json": "^6.1.0",
@@ -46,6 +64,7 @@
     "rollup-plugin-styles": "^4.0.0",
     "rollup-plugin-svelte": "^7.2.0",
     "style-loader": "^4.0.0",
+    "svelte": "^4.2.19",
     "svelte-preprocess": "^5.1.4",
     "terser-webpack-plugin": "^5.3.10",
     "tslib": "^2.7.0",
@@ -66,5 +85,12 @@
     "pyodide": "^0.26.1",
     "sass": "^1.76.0",
     "svg2pdf.js": "^2.2.4"
+  },
+  "peerDependencies": {
+    "svelte": "^4.2.19",
+    "monaco-editor": "^0.47.0",
+    "mathjax": "^3.2.2",
+    "pdfjs-dist": "^4.3.136",
+    "pyodide": "^0.26.1"
   }
 }
