@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from "svelte";
-  import Splitter from "../Splitter/Splitter.svelte";
+  import { DataStore, Splitter } from "s-comp-core";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
   import AbcRenderer from "../AbcRenderer/AbcRenderer.svelte";
-  import DataStore from "../DataStore/DataStore.svelte";
   import langdef from "./abc.lang.def.js";
   import completionItemProvider from "./abc.completion.js";
   import EditAreaAdaptor from "./abc.monaco.adaptor.js";

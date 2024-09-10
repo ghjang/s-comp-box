@@ -71,7 +71,7 @@
   {
     "component": {
       "name": "Marquee",
-      "customElementName": "s-marquee",
+      "componentClassName": "Marquee",
       "description": "Marquee",
       "props": {
         "text": "Hello Marquee!"

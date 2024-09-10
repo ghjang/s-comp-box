@@ -1,5 +1,5 @@
 <script>
-  import WebView from "../WebView/WebView.svelte";
+  import { WebView } from "s-comp-core";
 
   export let pdfViewerHtmlUrl = "";
   export let pdfViewerWorkerUrl = "";

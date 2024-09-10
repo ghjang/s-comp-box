@@ -1,10 +1,8 @@
 <script>
   import { onMount, tick } from "svelte";
+  import { Console, DataStore, Splitter } from "s-comp-core";
   import Pyodide from "./Pyodide.svelte";
-  import Splitter from "../Splitter/Splitter.svelte";
   import MonacoEditor from "../MonacoEditor/MonacoEditor.svelte";
-  import Console from "../Console/Console.svelte";
-  import DataStore from "../DataStore/DataStore.svelte";
 
   export let pyodideIndexURL = ".";
   export let editorResourcePath;

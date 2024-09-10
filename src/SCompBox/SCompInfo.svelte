@@ -1,8 +1,6 @@
 <script lang="ts">
+  import { Floor, Splitter, Tab } from "s-comp-core";
   import { MenuItem, CustomElement, AvailableContainer } from "./types";
-  import Floor from "../Floor/Floor.svelte";
-  import Splitter from "../Splitter/Splitter.svelte";
-  import Tab from "../Tab/Tab.svelte";
 
   export let compJsBundleBasePath: string;
   export let customElementConfigBasePath: string;

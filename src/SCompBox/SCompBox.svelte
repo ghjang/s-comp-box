@@ -1,15 +1,14 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { Floor, PopUp, PopUpManager } from "s-comp-core";
   import {
     isAsyncFunction,
     fileExists,
     loadScript,
     loadClassFromModule,
-  } from "../common/util";
+  } from "s-comp-core/common/util";
+
   import SCompInfo from "./SCompInfo.svelte";
-  import Floor from "../Floor/Floor.svelte";
-  import PopUp from "../PopUp/PopUp.svelte";
-  import { PopUpManager } from "../PopUp/util";
   import { CompProps, MenuItem, ComponentInfo } from "./types";
 
   export let compProps: CompProps = {};
