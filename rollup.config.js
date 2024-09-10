@@ -101,7 +101,7 @@ function createConfig(
       }),
       !customElement &&
         postcss({
-          extract: "s-comp.bundle.css",
+          extract: "s-comp-box.bundle.css",
           minimize: production,
           sourceMap: {
             inline: false,

@@ -89,15 +89,15 @@
       "items": [
         {
           "link": {
-            "text": "s-comp GitHub repository",
-            "url": "https://github.com/ghjang/s-comp",
+            "text": "s-comp-box GitHub repository",
+            "url": "https://github.com/ghjang/s-comp-box",
             "target": "_blank"
           }
         },
         {
           "link": {
-            "text": "s-comp Component Unit Test",
-            "url": "/test/s-comp.html",
+            "text": "s-comp-box Component Unit Test", 
+            "url": "/test/s-comp-box.html",
             "target": "_blank"
           }
         },
@@ -105,8 +105,8 @@
           "popup": {
             "text": "What's this?",
             "kind": "info",
-            "title": "About s-comp",
-            "content": "s-comp is a collection of custom elements that are built with Svelte."
+            "title": "About s-comp-box",
+            "content": "s-comp-box is a collection of custom components that are built with Svelte."
           }
         }
       ]

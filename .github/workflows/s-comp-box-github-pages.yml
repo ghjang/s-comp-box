@@ -1,4 +1,4 @@
-name: Deploy s-comp build contents to Pages
+name: Deploy s-comp-box build contents to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -81,7 +81,7 @@ jobs:
 
       - name: Copy component config files
         run: |
-          cp build/dist/default/s-comp.list.txt pages/docroot/scripts/default/
+          cp build/dist/default/s-comp-box.list.txt pages/docroot/scripts/default/
 
       - name: Copy component unit test files
         run: |
@@ -94,11 +94,11 @@ jobs:
             -e "s|/build/dev/vendor/pdfjs|/${REPO_NAME}/resources/pdfjs|g" \
             -e "s|/build/dev/vendor/mathjax|/${REPO_NAME}/resources/mathjax|g" \
             -e "s|/build/dev|/${REPO_NAME}/scripts|g" \
-            -e "s|href="/favicon.ico"|href="/s-comp/favicon.ico"|g" \
-            -e "s|customElementConfigBasePath: '/s-comp/scripts/default'|customElementConfigBasePath: '/s-comp/config'|g" \
-            -e "s|customElementConfigBasePath='/s-comp/scripts/custom'|customElementConfigBasePath='/s-comp/config'|g" \
-            -e "s|customElementConfigBasePath: \"/s-comp/scripts/default\"|customElementConfigBasePath: \"/s-comp/config\"|g" \
-            -e "s|customElementConfigBasePath=\"/s-comp/scripts/custom\"|customElementConfigBasePath=\"/s-comp/config\"|g" {} \;
+            -e "s|href="/favicon.ico"|href="/s-comp-box/favicon.ico"|g" \
+            -e "s|customElementConfigBasePath: '/s-comp-box/scripts/default'|customElementConfigBasePath: '/s-comp-box/config'|g" \
+            -e "s|customElementConfigBasePath='/s-comp-box/scripts/custom'|customElementConfigBasePath='/s-comp-box/config'|g" \
+            -e "s|customElementConfigBasePath: \"/s-comp-box/scripts/default\"|customElementConfigBasePath: \"/s-comp-box/config\"|g" \
+            -e "s|customElementConfigBasePath=\"/s-comp-box/scripts/custom\"|customElementConfigBasePath=\"/s-comp-box/config\"|g" {} \;
 
       - name: Update GitHub Pages's index.html
         run: |
@@ -106,8 +106,8 @@ jobs:
           cp pages/docroot/test/SCompBox/SCompBox.js pages/docroot/
           cp pages/docroot/test/SCompBox/SCompBox.html pages/docroot/
           mv pages/docroot/SCompBox.html pages/docroot/index.html
-          sed -i -e 's|<title>.*</title>|<title>s-comp GitHub Pages</title>|' \
-            -e 's|href="/favicon.ico"|href="/s-comp/favicon.ico"|g' pages/docroot/index.html
+          sed -i -e 's|<title>.*</title>|<title>s-comp-box GitHub Pages</title>|' \
+            -e 's|href="/favicon.ico"|href="/s-comp-box/favicon.ico"|g' pages/docroot/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

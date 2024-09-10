@@ -57,7 +57,7 @@ export function writeSvelteComponentsNameToOutput(targetComponentFilePaths, outp
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const sCompListFilePath = path.join(outputDir, "s-comp.list.txt");
+  const sCompListFilePath = path.join(outputDir, "s-comp-box.list.txt");
   const uniqueComponentNames = new Set(
     targetComponentFilePaths.map((filePath) => path.basename(filePath, path.extname(filePath)))
   );

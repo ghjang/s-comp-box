@@ -29,7 +29,7 @@ function updateNodeName(nodes, level = 0) {
     }
 }
 
-fetch('./s-comp.treeview.node-data.json')
+fetch('./s-comp-box.treeview.node-data.json')
     .then(response => response.json())
     .then(nodeData => {
         addIdToNode(nodeData);

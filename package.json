@@ -1,7 +1,7 @@
 {
-  "name": "s-comp",
+  "name": "s-comp-box",
   "version": "0.1.0",
-  "description": "Some Svelte Components",
+  "description": "Some Svelte Components Box",
   "svelte": "src/index.js",
   "files": [
     "src"
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ghjang/s-comp.git"
+    "url": "https://github.com/ghjang/s-comp-box.git"
   },
   "keywords": [
     "svelte",
@@ -38,9 +38,9 @@
   "author": "ghjang",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ghjang/s-comp/issues"
+    "url": "https://github.com/ghjang/s-comp-box/issues"
   },
-  "homepage": "https://ghjang.github.io/s-comp/",
+  "homepage": "https://ghjang.github.io/s-comp-box/",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -83,7 +83,7 @@
     "monaco-editor": "^0.47.0",
     "pdfjs-dist": "^4.3.136",
     "pyodide": "^0.26.1",
-    "s-comp-core": "file:../s-comp-core/s-comp-core-0.0.1.tgz",
+    "s-comp-core": "^0.1.0",
     "sass": "^1.76.0",
     "svg2pdf.js": "^2.2.4"
   },

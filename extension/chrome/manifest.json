@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "s-comp",
+    "name": "s-comp-box",
     "version": "0.1",
     "action": {},
     "background": {
