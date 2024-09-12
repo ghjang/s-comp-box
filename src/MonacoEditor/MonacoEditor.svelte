@@ -70,18 +70,20 @@
   }
 
   export function setText(text, formatDocument = false) {
-    if (editor) {
-      editor.setValue(text);
-      if (formatDocument) {
-        // FIXME: '코드 포맷팅' 기능 동작하지 않음.
-        //
-        // 'HTML, CSS, JavaScript'등의 기본적인 언어에 대한 코드 텍스트의 포맷팅은
-        // 모나코 에디터 자체에서 기본적으로 지원(?)한다고 하는 것 같음. 확인 필요함.
-        //
-        // 'Python'같은 언어의 경우에는 자체 지원은 없고 'Prettier' 같은
-        // 외부 라이브러리를 사용해야 한다고 함(?).
-        editor.getAction("editor.action.formatDocument").run();
-      }
+    if (!editor || text === undefined || text === null) {
+      return;
+    }
+
+    editor.setValue(text);
+    if (formatDocument) {
+      // FIXME: '코드 포맷팅' 기능 동작하지 않음.
+      //
+      // 'HTML, CSS, JavaScript'등의 기본적인 언어에 대한 코드 텍스트의 포맷팅은
+      // 모나코 에디터 자체에서 기본적으로 지원(?)한다고 하는 것 같음. 확인 필요함.
+      //
+      // 'Python'같은 언어의 경우에는 자체 지원은 없고 'Prettier' 같은
+      // 외부 라이브러리를 사용해야 한다고 함(?).
+      editor.getAction("editor.action.formatDocument").run();
     }
   }
 
