@@ -7,7 +7,7 @@ export interface JSVersion {
 }
 
 export const jsVersions: JSVersion[] = [
-    { label: 'ES3', value: 'ES3', target: 3 },
+    //{ label: 'ES3', value: 'ES3', target: 3 },
     { label: 'ES5', value: 'ES5', target: 1 },
     { label: 'ES2015(ES6)', value: 'ES2015', target: 2 },
     { label: 'ES2016', value: 'ES2016', target: 3 },
