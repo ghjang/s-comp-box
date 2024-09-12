@@ -182,7 +182,7 @@
         dispatch("cursorPositionChange", { position: e.position });
       });
 
-      editor.onDidChangeCursorSelection((e) => {
+      editor.onDidChangeCursorSelection((_e) => {
         const selection = editor.getSelection();
         const selectedText = editor.getModel().getValueInRange(selection);
 
