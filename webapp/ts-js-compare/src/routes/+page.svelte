@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { debounce } from 'lodash-es';
 	import { Splitter } from 's-comp-core';
 	import MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
 	const MONACO_EDITOR_RESOURCE_PATH = import.meta.env.MONACO_EDITOR_RESOURCE_PATH;
@@ -10,6 +11,29 @@
 		tsEditor?.layout();
 		jsEditor?.layout();
 	}
+
+	const handleTsContentChange = debounce(async (event: CustomEvent) => {
+		const tsCode = event.detail.value;
+		try {
+			const response = await fetch('/api/ts-to-js', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ tsCode })
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || 'An error occurred during conversion.');
+			}
+
+			const { jsCode } = await response.json();
+			jsEditor.setText(jsCode);
+		} catch (error) {
+			console.error('Failed to convert TypeScript to JavaScript:', error);
+		}
+	}, 500);
 </script>
 
 <div class="page-container">
@@ -23,6 +47,7 @@
 					resourcePath={MONACO_EDITOR_RESOURCE_PATH}
 					language="typescript"
 					workerPath="ts.worker.bundle.js"
+					on:contentChange={handleTsContentChange}
 				/>
 			</div>
 			<div slot="right" class="editor-container">
