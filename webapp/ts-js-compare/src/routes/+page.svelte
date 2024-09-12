@@ -1,46 +1,36 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
-	import type { ComponentType } from 'svelte';
 	import { Splitter } from 's-comp-core';
-	import type MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
+	import MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
+	const MONACO_EDITOR_RESOURCE_PATH = import.meta.env.MONACO_EDITOR_RESOURCE_PATH;
 
-	const monacoCssPath = import.meta.env.MONACO_CSS_PATH;
-	let MonacoEditorConstructor: ComponentType<MonacoEditor>;
 	let tsEditor: MonacoEditor;
 	let jsEditor: MonacoEditor;
 
-	onMount(async () => {
-		MonacoEditorConstructor = (await import('../../../../src/MonacoEditor/MonacoEditor.svelte'))
-			.default;
-	});
-
-	$: if (jsEditor) {
-		jsEditor.layout();
-	}
-	$: if (tsEditor) {
-		tsEditor.layout();
+	$: {
+		tsEditor?.layout();
+		jsEditor?.layout();
 	}
 </script>
 
-<svelte:head>
-	<link rel="stylesheet" href={monacoCssPath} />
-</svelte:head>
-
 <div class="page-container">
-	<h1>JavaScript vs. TypeScript</h1>
+	<h1>TypeScript vs. JavaScript</h1>
 
 	<div class="main-container">
 		<Splitter orientation="horizontal">
 			<div slot="left" class="editor-container">
-				{#if browser && MonacoEditorConstructor}
-					<svelte:component this={MonacoEditorConstructor} bind:this={tsEditor} />
-				{/if}
+				<MonacoEditor
+					bind:this={tsEditor}
+					resourcePath={MONACO_EDITOR_RESOURCE_PATH}
+					language="typescript"
+					workerPath="ts.worker.bundle.js"
+				/>
 			</div>
 			<div slot="right" class="editor-container">
-				{#if browser && MonacoEditorConstructor}
-					<svelte:component this={MonacoEditorConstructor} bind:this={jsEditor} />
-				{/if}
+				<MonacoEditor
+					bind:this={jsEditor}
+					resourcePath={MONACO_EDITOR_RESOURCE_PATH}
+					language="javascript"
+				/>
 			</div>
 		</Splitter>
 	</div>

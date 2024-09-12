@@ -1,16 +1,8 @@
 <script>
-  import { onDestroy, createEventDispatcher, tick } from "svelte";
-  import {
-    createMonacoEditor,
-    createRange,
-    getMonacoKeyBindingConstant,
-    setWorkerUrl,
-    registerCustomLanguage as register,
-    setWarnings,
-    clearWarnings,
-  } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
+  import { onMount, onDestroy, createEventDispatcher, tick } from "svelte";
 
   const dispatch = createEventDispatcher();
+  let monacoBundleModule;
 
   export let resourcePath = null;
   export let bundleName = "monaco-editor-custom";
@@ -30,10 +22,17 @@
   export let autoFindMatches = false;
   export let showStatusBar = false;
 
-  export const registerCustomLanguage = register;
-  export const setEditorWarnings = (warnings) =>
-    editor && setWarnings(editor, warnings);
-  export const clearEditorWarnings = () => editor && clearWarnings(editor);
+  export const registerCustomLanguage = (langOpts) => {
+    monacoBundleModule.registerCustomLanguage(langOpts);
+  };
+
+  export const setEditorWarnings = (warnings) => {
+    editor && monacoBundleModule.setWarnings(editor, warnings);
+  };
+
+  export const clearEditorWarnings = () => {
+    editor && monacoBundleModule.clearWarnings(editor);
+  };
 
   let editorContainer;
   let editor;
@@ -98,11 +97,11 @@
       typeof range.endLineNumber === "number" &&
       typeof range.endColumn === "number"
     ) {
-      const r = createRange(
+      const r = monacoBundleModule.createRange(
         range.startLineNumber,
         range.startColumn,
         range.endLineNumber,
-        range.endColumn
+        range.endColumn,
       );
       editor.setSelection(r);
     } else {
@@ -126,12 +125,6 @@
     return null;
   }
 
-  onDestroy(() => {
-    if (editor) {
-      editor.dispose();
-    }
-  });
-
   function initMonacoEditor(container) {
     if (editor) {
       return;
@@ -152,10 +145,10 @@
     }
 
     if (workerPath) {
-      setWorkerUrl(`${resourcePath}/${workerPath}`);
+      monacoBundleModule.setWorkerUrl(`${resourcePath}/${workerPath}`);
     }
 
-    editor = createMonacoEditor(editorContainer, {
+    editor = monacoBundleModule.createMonacoEditor(editorContainer, {
       value,
       language,
       theme,
@@ -202,15 +195,15 @@
             false, // isRegex
             true, // matchCase
             null, // wordSeparators
-            true // captureMatches
+            true, // captureMatches
           );
 
           // 현재 선택된 영역의 범위
-          const selectionRange = createRange(
+          const selectionRange = monacoBundleModule.createRange(
             selection.startLineNumber,
             selection.startColumn,
             selection.endLineNumber,
-            selection.endColumn
+            selection.endColumn,
           );
 
           // 현재 선택된 영역을 제외한 매칭 결과
@@ -225,7 +218,7 @@
 
           currentDecorations = editor.deltaDecorations(
             currentDecorations,
-            decorations
+            decorations,
           );
         } else {
           currentDecorations = editor.deltaDecorations(currentDecorations, []);
@@ -243,7 +236,8 @@
       });
     }
 
-    const { keyMod, keyCode } = getMonacoKeyBindingConstant();
+    const { keyMod, keyCode } =
+      monacoBundleModule.getMonacoKeyBindingConstant();
     editor.addAction({
       id: "svelte-monaco-editor-action",
       label: "Run Code",
@@ -254,10 +248,19 @@
     });
   }
 
-  $: if (editorContainer) {
+  onMount(async () => {
+    monacoBundleModule = await import(
+      "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js"
+    );
     initMonacoEditor(editorContainer);
     dispatch("editorInit");
-  }
+  });
+
+  onDestroy(() => {
+    if (editor) {
+      editor.dispose();
+    }
+  });
 </script>
 
 <div class="editor-wrapper" style:background-color={editorBgColor}>

@@ -21,4 +21,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # some static files
-static/monaco-editor-custom.css
+static/resources

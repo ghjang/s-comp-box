@@ -1,14 +1,37 @@
+import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+import fs from 'fs-extra';
+
+function copyMonacoEditorResource() {
+	return {
+		name: 'copy-monaco-editor-resource',
+		buildStart() {
+			const sourcePath = resolve(
+				__dirname,
+				'../../vendor/monaco-editor/browser-rollup-custom/dist'
+			);
+			const destPath = resolve(__dirname, './static/resources/monaco-editor');
+
+			try {
+				fs.ensureDirSync(destPath);
+				fs.copySync(sourcePath, destPath, { overwrite: true });
+				console.log('successfully copied monaco editor resources.');
+			} catch (err) {
+				console.error('error occurred while copying monaco editor resources:', err);
+			}
+		}
+	};
+}
 
 export default defineConfig(() => {
 	return {
-		plugins: [sveltekit()],
+		plugins: [sveltekit(), copyMonacoEditorResource()],
 		test: {
 			include: ['src/**/*.{test,spec}.{js,ts}']
 		},
 		define: {
-			'import.meta.env.MONACO_CSS_PATH': JSON.stringify('/monaco-editor-custom.css')
+			'import.meta.env.MONACO_EDITOR_RESOURCE_PATH': JSON.stringify('/resources/monaco-editor')
 		}
 	};
 });
