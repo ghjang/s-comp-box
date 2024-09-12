@@ -16,9 +16,10 @@ function copyMonacoEditorResource() {
 			try {
 				fs.ensureDirSync(destPath);
 				fs.copySync(sourcePath, destPath, { overwrite: true });
-				console.log('successfully copied monaco editor resources.');
+				console.log('Successfully copied Monaco editor resources.');
 			} catch (err) {
-				console.error('error occurred while copying monaco editor resources:', err);
+				console.error('Error occurred while copying Monaco editor resources:', err);
+				throw new Error('Build aborted due to failure in copying Monaco editor resources.');
 			}
 		}
 	};
