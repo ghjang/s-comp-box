@@ -5,6 +5,7 @@
 	import MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
 	import { jsVersions, type JSVersion } from '$lib/jsVersions';
 	const MONACO_EDITOR_RESOURCE_PATH = import.meta.env.MONACO_EDITOR_RESOURCE_PATH;
+	const TS_CONTENT_LOCAL_STORAGE_KEY = 'ts-content';
 
 	let tsEditor: MonacoEditor;
 	let jsEditor: MonacoEditor;
@@ -21,6 +22,8 @@
 	});
 
 	const handleTsContentChange = debounce(async (tsCode: string) => {
+		localStorage.setItem(TS_CONTENT_LOCAL_STORAGE_KEY, tsCode);
+
 		try {
 			const response = await fetch('/api/ts-to-js', {
 				method: 'POST',
@@ -41,6 +44,13 @@
 			console.error('TypeScript를 JavaScript로 변환하는 데 실패했습니다:', error);
 		}
 	}, 500);
+
+	function onTsSourceEditorInit(_event: CustomEvent) {
+		const savedTsContent = localStorage.getItem(TS_CONTENT_LOCAL_STORAGE_KEY);
+		if (savedTsContent) {
+			tsEditor.setText(savedTsContent);
+		}
+	}
 
 	function onTsSourceEditorChange(event: CustomEvent) {
 		handleTsContentChange(event.detail.value);
@@ -65,6 +75,7 @@
 					resourcePath={MONACO_EDITOR_RESOURCE_PATH}
 					language="typescript"
 					workerPath="ts.worker.bundle.js"
+					on:editorInit={onTsSourceEditorInit}
 					on:contentChange={onTsSourceEditorChange}
 				/>
 			</div>
