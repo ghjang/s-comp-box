@@ -3,14 +3,16 @@
 	import { onMount } from 'svelte';
 	import type { ComponentType } from 'svelte';
 	import { Splitter } from 's-comp-core';
+	import type MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
 
 	const monacoCssPath = import.meta.env.MONACO_CSS_PATH;
-	let _MonacoEditor: ComponentType;
-	let jsEditor: any;
-	let tsEditor: any;
+	let MonacoEditorConstructor: ComponentType<MonacoEditor>;
+	let tsEditor: MonacoEditor;
+	let jsEditor: MonacoEditor;
 
 	onMount(async () => {
-		_MonacoEditor = (await import('../../../../src/MonacoEditor/MonacoEditor.svelte')).default;
+		MonacoEditorConstructor = (await import('../../../../src/MonacoEditor/MonacoEditor.svelte'))
+			.default;
 	});
 
 	$: if (jsEditor) {
@@ -31,13 +33,13 @@
 	<div class="main-container">
 		<Splitter orientation="horizontal">
 			<div slot="left" class="editor-container">
-				{#if browser && _MonacoEditor}
-					<svelte:component this={_MonacoEditor} bind:this={jsEditor} />
+				{#if browser && MonacoEditorConstructor}
+					<svelte:component this={MonacoEditorConstructor} bind:this={tsEditor} />
 				{/if}
 			</div>
 			<div slot="right" class="editor-container">
-				{#if browser && _MonacoEditor}
-					<svelte:component this={_MonacoEditor} bind:this={tsEditor} />
+				{#if browser && MonacoEditorConstructor}
+					<svelte:component this={MonacoEditorConstructor} bind:this={jsEditor} />
 				{/if}
 			</div>
 		</Splitter>
@@ -48,10 +50,11 @@
 	.page-container {
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
+		height: calc(100vh - 1em);
 
 		.main-container {
 			flex: 1;
+			margin-bottom: 0.5em;
 			overflow: hidden;
 
 			.editor-container {
