@@ -1,26 +1,33 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { debounce } from 'lodash-es';
 	import { Splitter } from 's-comp-core';
 	import MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
+	import { jsVersions, type JSVersion } from '$lib/jsVersions';
 	const MONACO_EDITOR_RESOURCE_PATH = import.meta.env.MONACO_EDITOR_RESOURCE_PATH;
 
 	let tsEditor: MonacoEditor;
 	let jsEditor: MonacoEditor;
+	let selectedJSVersion: JSVersion = jsVersions.find((v) => v.value === 'ES2015') || jsVersions[0];
 
-	$: {
+	const handleResize = debounce(() => {
 		tsEditor?.layout();
 		jsEditor?.layout();
-	}
+	}, 100);
 
-	const handleTsContentChange = debounce(async (event: CustomEvent) => {
-		const tsCode = event.detail.value;
+	onMount(() => {
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	});
+
+	const handleTsContentChange = debounce(async (tsCode: string) => {
 		try {
 			const response = await fetch('/api/ts-to-js', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ tsCode })
+				body: JSON.stringify({ tsCode, target: selectedJSVersion.value })
 			});
 
 			if (!response.ok) {
@@ -31,26 +38,45 @@
 			const { jsCode } = await response.json();
 			jsEditor.setText(jsCode);
 		} catch (error) {
-			console.error('Failed to convert TypeScript to JavaScript:', error);
+			console.error('TypeScript를 JavaScript로 변환하는 데 실패했습니다:', error);
 		}
 	}, 500);
+
+	function onTsSourceEditorChange(event: CustomEvent) {
+		handleTsContentChange(event.detail.value);
+	}
+
+	function onJSTargetVersionChange() {
+		if (tsEditor) {
+			handleTsContentChange(tsEditor.getText());
+		}
+	}
 </script>
 
 <div class="page-container">
-	<h1>TypeScript vs. JavaScript</h1>
-
 	<div class="main-container">
-		<Splitter orientation="horizontal">
+		<Splitter orientation="horizontal" on:panelSizeChanged={handleResize}>
 			<div slot="left" class="editor-container">
+				<div class="editor-header">
+					<h3 class="editor-title">TypeScript</h3>
+				</div>
 				<MonacoEditor
 					bind:this={tsEditor}
 					resourcePath={MONACO_EDITOR_RESOURCE_PATH}
 					language="typescript"
 					workerPath="ts.worker.bundle.js"
-					on:contentChange={handleTsContentChange}
+					on:contentChange={onTsSourceEditorChange}
 				/>
 			</div>
 			<div slot="right" class="editor-container">
+				<div class="editor-header">
+					<h3 class="editor-title">JavaScript:</h3>
+					<select bind:value={selectedJSVersion} on:change={onJSTargetVersionChange}>
+						{#each jsVersions as version}
+							<option value={version}>{version.label}</option>
+						{/each}
+					</select>
+				</div>
 				<MonacoEditor
 					bind:this={jsEditor}
 					resourcePath={MONACO_EDITOR_RESOURCE_PATH}
@@ -75,6 +101,20 @@
 			.editor-container {
 				width: 100%;
 				height: 100%;
+
+				.editor-header {
+					margin: 0;
+					padding: 0.2em 0.2em 0.2em 3em;
+
+					.editor-title {
+						display: inline-block;
+						margin: 0;
+					}
+
+					select {
+						outline: none;
+					}
+				}
 			}
 		}
 	}
