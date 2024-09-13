@@ -4,31 +4,14 @@
 FROM node:20-alpine AS root-builder
 
 WORKDIR /app
-COPY ./vendor/monaco-editor/browser-rollup-custom ./vendor/monaco-editor/browser-rollup-custom
-
-ARG TARGET_PACKAGES="rollup \
-    @rollup/plugin-commonjs \
-    @rollup/plugin-node-resolve \
-    @rollup/plugin-url \
-    @rollup/plugin-terser \
-    rollup-plugin-css-only \
-    rollup-plugin-styles \
-    monaco-editor@0.47.0"
+COPY ./vendor/monaco-editor/browser-rollup-custom \
+    ./vendor/monaco-editor/browser-rollup-custom
 
 WORKDIR /app/vendor/monaco-editor/browser-rollup-custom
-RUN npm install ${TARGET_PACKAGES}
+RUN npm ci
 
 RUN chmod +x ./bundle.sh
 RUN ./bundle.sh dist
-
-RUN npm cache clean --force \
-    && npm uninstall ${TARGET_PACKAGES} \
-    && rm -rf node_modules \
-    && rm -rf .rollup.cache \
-    && rm -rf /root/.npm \
-    && rm -rf /root/.node-gyp \
-    && rm -rf /tmp/*
-
 
 #==============================================================================
 # 2단계: 'ts-js-compare' 빌드
