@@ -1,0 +1,14 @@
+services:
+  ts-js-compare:
+    build:
+      context: ../
+      dockerfile: ./webapp/ts-js-compare/Dockerfile
+    ports:
+      - "3000:3000"
+  # 향후 추가될 앱들을 위한 예시
+  # future-app1:
+  #   build:
+  #     context: ../
+  #     dockerfile: ./webapp/future-app1/Dockerfile
+  #   ports:
+  #     - "3001:3000"

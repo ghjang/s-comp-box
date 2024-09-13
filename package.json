@@ -21,7 +21,14 @@
     "prebuild-pages-dist": "rimraf build/dist",
     "build-pages-dist": "rollup -c",
     "precopy-build-to-extension": "rimraf extension/chrome/build extension/chrome/test extension/chrome/vendor",
-    "copy-build-to-extension": "cp -R build extension/chrome && cp -R test extension/chrome && cp -R vendor extension/chrome"
+    "copy-build-to-extension": "cp -R build extension/chrome && cp -R test extension/chrome && cp -R vendor extension/chrome",
+    "docker-build": "docker compose -f webapp/docker-compose.yml build",
+    "docker-build-no-cache": "docker compose -f webapp/docker-compose.yml build --no-cache",
+    "docker-up": "docker compose -f webapp/docker-compose.yml up",
+    "docker-up:ts-js-compare": "docker compose -f webapp/docker-compose.yml up ts-js-compare",
+    "docker-down": "docker compose -f webapp/docker-compose.yml down",
+    "docker-start": "npm run docker-build && npm run docker-up",
+    "docker-start:ts-js-compare": "npm run docker-build && npm run docker-up:ts-js-compare"
   },
   "repository": {
     "type": "git",
