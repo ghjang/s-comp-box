@@ -40,5 +40,12 @@
 	"dependencies": {
 		"s-comp-core": "^0.1.0",
 		"typescript": "^5.6.2"
+	},
+	"overrides": {
+		"typescript": {
+			"dependencies": {
+				"typescript": "^5.0.0"
+			}
+		}
 	}
 }
