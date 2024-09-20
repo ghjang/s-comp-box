@@ -44,20 +44,18 @@
   let editAreaAdaptor: EditAreaAdaptor;
   let dataStore: DataStore;
 
-  $: if (editor) {
+  // NOTE: 'MonacoEditor' 자식 컴포넌트 내부에서 '모나코 에디터'가 'init'되는 시점이
+  //       현재 구현에서 'AbcRun' 컴포넌트의 'onMount' 이벤트 핸들러가 호출되는 시점보다
+  //       나중이다. 실제 모나코 에디터 내부 인스턴스가 생성되는 'editorInit' 시점에 텍스트를
+  //       로딩하도록 함.
+  function handleEditorInit() {
     const languageId = "abc";
     editor.registerCustomLanguage({
       id: languageId,
       languageDef: langdef,
       completionItemProvider,
     });
-  }
 
-  // NOTE: 'MonacoEditor' 자식 컴포넌트 내부에서 '모나코 에디터'가 'init'되는 시점이
-  //       현재 구현에서 'AbcRun' 컴포넌트의 'onMount' 이벤트 핸들러가 호출되는 시점보다
-  //       나중이다. 실제 모나코 에디터 내부 인스턴스가 생성되는 'editorInit' 시점에 텍스트를
-  //       로딩하도록 함.
-  function handleEditorInit() {
     editAreaAdaptor = new EditAreaAdaptor(editor);
     if (typeof abcText === "string") {
       editor.setText(abcText);
