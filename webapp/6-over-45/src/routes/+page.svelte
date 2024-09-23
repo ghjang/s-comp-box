@@ -1,2 +1,14 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import { Tab } from 's-comp-core';
+	import Null from './Null.svelte';
+
+	const tabs = [
+		{
+			label: 'Tab 1',
+			component: Null,
+			componentClassName: null
+		}
+	];
+</script>
+
+<Tab {tabs} />
