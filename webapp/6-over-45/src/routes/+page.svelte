@@ -12,11 +12,20 @@
 			componentClassName: null
 		},
 		{
-			label: '다음 당첨 번호 예측',
+			label: '다음 당첨 번호 뽑기',
 			component: NextGuess,
 			componentClassName: null
 		}
 	];
 </script>
 
-<Tab bind:this={tab} selectedTabIndex={1} {tabs} />
+<div class="tab-container">
+	<Tab bind:this={tab} selectedTabIndex={1} {tabs} />
+</div>
+
+<style lang="scss">
+	.tab-container {
+		border: 1px solid darkgray;
+		border-radius: 1px;
+	}
+</style>
