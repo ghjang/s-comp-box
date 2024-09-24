@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
 import svelte from "rollup-plugin-svelte";
-//import css from 'rollup-plugin-css-only';
 import postcss from "rollup-plugin-postcss";
-//import { string } from 'rollup-plugin-string';
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
@@ -17,7 +15,7 @@ import {
   writeSvelteComponentsNameToOutput,
   getExportedComponentsFromPackage,
 } from "./rollup-utils.js";
-import sass from 'sass';
+import sass from "sass";
 
 const production = !process.env.ROLLUP_WATCH;
 const isBuildPages = process.env.npm_lifecycle_event === "build-pages-dist";
@@ -125,7 +123,6 @@ function createConfig(
       }),
       production && terser({}),
     ].filter(Boolean),
-    external: ["node-fetch"],
     onwarn: function (warning, warn) {
       // HACK: 'svelte' 플러그인에서 발생하는 경고 중에서 특정 경고를 무시하도록 한다.
       // 1개의 '.svelte' 파일로 '보통의 스벨트 컴포넌트 번들링'과 '표준 웹 커스텀 컴포넌트 번들링'을 모두 하는 경우에 발생하는 경고 무시한다.

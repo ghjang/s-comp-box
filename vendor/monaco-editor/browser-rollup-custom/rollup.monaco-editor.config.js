@@ -16,9 +16,9 @@ const outputDirPath = `../../../build/${outputDirBaseName}/vendor/monaco-editor`
 const inputs = {
   "monaco-editor-custom": "./src/monaco-editor-custom.js",
   "editor.worker":
-    "../../../node_modules/monaco-editor/esm/vs/editor/editor.worker.js",
+    "./node_modules/monaco-editor/esm/vs/editor/editor.worker.js",
   "typescript.worker":
-    "../../../node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js",
+    "./node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js",
 };
 
 export default Object.keys(inputs).map((name) => {
