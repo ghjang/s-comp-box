@@ -1,9 +1,10 @@
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 import terser from "@rollup/plugin-terser";
 import css from "rollup-plugin-css-only";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import url from "@rollup/plugin-url";
+import commonjs from "@rollup/plugin-commonjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +42,7 @@ export default Object.keys(inputs).map((name) => {
         browser: true,
         preferBuiltins: false,
       }),
+      commonjs(),
       css({ output: `${name}.css` }),
       url({
         include: ["**/*.ttf"],
@@ -48,6 +50,7 @@ export default Object.keys(inputs).map((name) => {
       }),
       isProduction && terser(),
     ],
+    context: "window",
   };
 
   // NOTE: '모나코 에디터'의 '웹 워커'를 'ESM'으로 빌드시 '런타임 에러'가 발생함.
