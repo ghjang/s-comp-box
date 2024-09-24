@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 
 	type NextGuessData = {
 		next_guesses: number[][];
@@ -10,7 +11,7 @@
 	};
 
 	onMount(async () => {
-		const response = await fetch('/data/next_guess.json');
+		const response = await fetch(`${base}/data/next_guess.json`);
 		nextGuessesData = await response.json();
 	});
 </script>

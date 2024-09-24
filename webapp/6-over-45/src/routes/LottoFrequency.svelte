@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 	import { barChart } from '../actions/barChart';
 	import { ToggleGroup, RadioButton } from 's-comp-core';
 
@@ -37,7 +38,7 @@
 	};
 
 	onMount(async () => {
-		const response = await fetch('/data/frequency.json');
+		const response = await fetch(`${base}/data/frequency.json`);
 		frequencyData = await response.json();
 
 		// 전체 회차 계산
