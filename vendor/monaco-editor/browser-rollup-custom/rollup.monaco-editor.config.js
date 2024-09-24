@@ -1,8 +1,12 @@
 import path from "path";
+import { fileURLToPath } from 'url';
 import terser from "@rollup/plugin-terser";
 import css from "rollup-plugin-css-only";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import url from "@rollup/plugin-url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const isProduction = process.env.NODE_ENV === "dist";
 const outputDirBaseName = isProduction ? "dist" : "dev";

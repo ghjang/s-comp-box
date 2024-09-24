@@ -3,11 +3,11 @@ import path from "path";
 import svelte from "rollup-plugin-svelte";
 //import css from 'rollup-plugin-css-only';
 import postcss from "rollup-plugin-postcss";
-//import styles from 'rollup-plugin-styles';
 //import { string } from 'rollup-plugin-string';
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
+import autoprefixer from "autoprefixer";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import sveltePreprocess from "svelte-preprocess";
@@ -17,6 +17,7 @@ import {
   writeSvelteComponentsNameToOutput,
   getExportedComponentsFromPackage,
 } from "./rollup-utils.js";
+import sass from 'sass';
 
 const production = !process.env.ROLLUP_WATCH;
 const isBuildPages = process.env.npm_lifecycle_event === "build-pages-dist";
@@ -92,10 +93,11 @@ function createConfig(
         },
         preprocess: sveltePreprocess({
           scss: {
+            implementation: sass,
             includePaths: ["src"],
           },
           postcss: {
-            plugins: [require("autoprefixer")()],
+            plugins: [autoprefixer()],
           },
         }),
       }),
@@ -155,7 +157,9 @@ const configs = async () => {
 
     const buildTargetComponentsTxtFilePath = `src/${dirName}/build_target_components.txt`;
     if (fs.existsSync(buildTargetComponentsTxtFilePath)) {
-      console.log(`빌드 대상 컴포넌트 파일을 찾았습니다: ${buildTargetComponentsTxtFilePath}`);
+      console.log(
+        `빌드 대상 컴포넌트 파일을 찾았습니다: ${buildTargetComponentsTxtFilePath}`
+      );
       const buildTargetComponents = fs
         .readFileSync(buildTargetComponentsTxtFilePath, "utf-8")
         .split(/\r?\n/)
@@ -171,7 +175,9 @@ const configs = async () => {
     }
   });
 
-  const defaultBuildTargetFiles = svelteComponentFilePaths.map(([filePath, _]) => filePath);
+  const defaultBuildTargetFiles = svelteComponentFilePaths.map(
+    ([filePath, _]) => filePath
+  );
 
   for (const filePath of defaultBuildTargetFiles) {
     await runPreActionScript(filePath);
@@ -190,15 +196,19 @@ const configs = async () => {
   const combinedInputs = {
     ...packageComponents,
     ...Object.fromEntries(
-      defaultBuildTargetFiles.map(filePath => [
-        path.basename(filePath, '.svelte'),
-        filePath
+      defaultBuildTargetFiles.map((filePath) => [
+        path.basename(filePath, ".svelte"),
+        filePath,
       ])
-    )
+    ),
   };
 
   // 합쳐진 컴포넌트들에 대한 설정 생성
-  let defaultBuildConfig = createConfig(Object.values(combinedInputs), false, true);
+  let defaultBuildConfig = createConfig(
+    Object.values(combinedInputs),
+    false,
+    true
+  );
   defaultBuildConfig.input = combinedInputs;
   defaultBuildConfig.context = "globalThis";
 

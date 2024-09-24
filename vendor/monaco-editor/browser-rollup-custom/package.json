@@ -4,14 +4,14 @@
 		"bundle": "./bundle.sh dev",
 		"generate-imports": "node ./generate-imports.mjs"
 	},
+	"type": "module",
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^26.0.1",
 		"@rollup/plugin-node-resolve": "^15.2.3",
 		"@rollup/plugin-terser": "^0.4.4",
 		"@rollup/plugin-url": "^8.0.2",
 		"monaco-editor": "^0.47.0",
-		"rollup": "^2.79.1",
-		"rollup-plugin-css-only": "^4.5.2",
-		"rollup-plugin-styles": "^4.0.0"
+		"rollup": "^4.22.4",
+		"rollup-plugin-css-only": "^4.5.2"
 	}
 }

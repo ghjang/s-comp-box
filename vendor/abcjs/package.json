@@ -3,5 +3,9 @@
         "prebuild": "rimraf dist",
         "build": "npx rollup -c",
         "postbuild": "cp abcjs.html dist/"
+    },
+    "type": "module",
+    "dependencies": {
+        "rollup": "^4.22.4"
     }
 }

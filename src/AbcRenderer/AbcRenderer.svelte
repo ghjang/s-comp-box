@@ -239,6 +239,8 @@
 </div>
 
 <style lang="scss">
+  @use "sass:color";
+  
   $control-box-bg-color: rgb(240, 240, 240);
   $control-box-opacity: 0.25;
   $control-box-hover-opacity: 1;
@@ -332,8 +334,13 @@
 
             &:hover {
               font-weight: bold;
-              outline: 1px solid darken($control-box-bg-color, 20%);
-              background-color: darken($control-box-bg-color, 15%);
+              outline: 1px solid color.scale($control-box-bg-color, $lightness: -20%);
+              background-color: color.scale($control-box-bg-color, $lightness: -15%);
+            }
+
+            &:active {
+              outline: 1px solid color.scale($control-box-bg-color, $lightness: -20%);
+              background-color: color.scale($control-box-bg-color, $lightness: -15%);
             }
 
             &:last-child {
