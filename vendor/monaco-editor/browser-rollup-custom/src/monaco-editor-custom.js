@@ -587,7 +587,9 @@ function moveLines(editor, direction) {
   }
 }
 
+//==============================================================================
 export const CompletionItemKind = monaco.languages.CompletionItemKind;
+export const IndentAction = monaco.languages.IndentAction;
 
 export function setWorkerUrl(url) {
   workerUrl = new URL(url, import.meta.url);
