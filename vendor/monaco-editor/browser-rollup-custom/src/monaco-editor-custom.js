@@ -585,9 +585,8 @@ function moveLines(editor, direction) {
 }
 
 //==============================================================================
-import { languages } from "monaco-editor";
-export const CompletionItemKind = languages.CompletionItemKind;
-export const IndentAction = languages.IndentAction;
+export const CompletionItemKind = monaco.languages.CompletionItemKind;
+export const IndentAction = monaco.languages.IndentAction;
 
 export function getIndentAction(indentAction) {
   return monaco.languages.IndentAction[indentAction];
