@@ -1,6 +1,5 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import terser from "@rollup/plugin-terser";
 import css from "rollup-plugin-css-only";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import url from "@rollup/plugin-url";
@@ -37,6 +36,11 @@ export default Object.keys(inputs).map((name) => {
         }
       },
     },
+
+    // NOTE: 'terser' 플러그인을 사용하지 않음. terser는 모나코 에디터 번들링 결과를 다시 참조하는
+    //       프로젝트에서 번들링후 최종 결과물에서만 실행되도 충분할 것임.
+    //
+    //       참고로, terser를 잘못 사용하면 의도하지 않게 생성 결과물에서 특정 내용이 제거되어 문제가 발생할 수도 있음.
     plugins: [
       nodeResolve({
         browser: true,
@@ -52,13 +56,7 @@ export default Object.keys(inputs).map((name) => {
         include: ["**/*.ttf"],
         limit: Infinity,
       }),
-/*       isProduction &&
-        terser({
-          mangle: false,
-          keep_fnames: true,
-          keep_classnames: true,
-        }),
- */    ],
+    ],
     context: "window",
   };
 
