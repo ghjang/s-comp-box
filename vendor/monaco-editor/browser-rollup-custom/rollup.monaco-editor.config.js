@@ -41,6 +41,10 @@ export default Object.keys(inputs).map((name) => {
       nodeResolve({
         browser: true,
         preferBuiltins: false,
+        modulesOnly: true,
+        customResolveOptions: {
+          preserveSymlinks: false,
+        },
       }),
       commonjs(),
       css({ output: `${name}.css` }),
