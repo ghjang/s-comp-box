@@ -48,7 +48,12 @@ export default Object.keys(inputs).map((name) => {
         include: ["**/*.ttf"],
         limit: Infinity,
       }),
-      isProduction && terser(),
+      isProduction &&
+        terser({
+          mangle: false,
+          keep_fnames: true,
+          keep_classnames: true,
+        }),
     ],
     context: "window",
   };
