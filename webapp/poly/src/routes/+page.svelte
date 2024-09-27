@@ -1,17 +1,17 @@
-<script>
-	let prompt = '';
-	let response = '';
-	let isLoading = false;
+<script lang="ts">
+	let prompt: string = '';
+	let response: string = '';
+	let isLoading: boolean = false;
 
-	async function generateContent() {
+	async function generateContent(): Promise<void> {
 		isLoading = true;
 		try {
-			const res = await fetch('/api/gemini', {
+			const res: Response = await fetch('/api/gemini', {
 				method: 'POST',
 				body: JSON.stringify({ prompt }),
 				headers: { 'Content-Type': 'application/json' }
 			});
-			const data = await res.json();
+			const data: { response: string } = await res.json();
 			response = data.response;
 		} catch (error) {
 			console.error('오류:', error);
