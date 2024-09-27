@@ -1,58 +1,65 @@
 <script lang="ts">
-	let selectedAPI = 'gemini'; // 기본값으로 Gemini 선택
+	import type { LLMResponse } from '../types/api';
+
+	let selectedAPI = 'gemini';
 	let userInput = '';
 	let response = '';
-	let error = ''; // 오류 메시지를 저장할 변수 추가
+	let error = '';
+	let errorSource = '';
 
 	// 버튼 비활성화 상태를 결정하는 함수
 	$: isButtonDisabled = !userInput.trim();
 
+	function getApiEndpoint(selectedAPI: string): string {
+		switch (selectedAPI) {
+			case 'gemini':
+				return '/api/gemini';
+			case 'claude':
+				return '/api/claude';
+			case 'openai':
+				return '/api/openai';
+			case 'huggingface':
+				return '/api/huggingface';
+			case 'solarllm':
+				return '/api/solarllm';
+			default:
+				throw new Error('잘못된 API 선택');
+		}
+	}
+
+	async function callApi(apiEndpoint: string, userInput: string): Promise<LLMResponse> {
+		const res = await fetch(apiEndpoint, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+				},
+			body: JSON.stringify({ prompt: userInput })
+		});
+
+		return await res.json();
+	}
+
 	async function handleSubmit() {
 		if (isButtonDisabled) return;
 
-		error = ''; // 요청 시작 시 오류 메시지 초기화
-		response = ''; // 응답 초기화
+		error = '';
+		errorSource = '';
+		response = '';
 
 		try {
-			let apiEndpoint;
-			switch (selectedAPI) {
-				case 'gemini':
-					apiEndpoint = '/api/gemini';
-					break;
-				case 'claude':
-					apiEndpoint = '/api/claude';
-					break;
-				case 'openai':
-					apiEndpoint = '/api/openai';
-					break;
-				case 'huggingface':
-					apiEndpoint = '/api/huggingface';
-					break;
-				case 'solarllm':
-					apiEndpoint = '/api/solarllm';
-					break;
-				default:
-					throw new Error('잘못된 API 선택');
-			}
-
-			const res = await fetch(apiEndpoint, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ prompt: userInput })
-			});
-
-			const data = await res.json();
+			const apiEndpoint = getApiEndpoint(selectedAPI);
+			const data: LLMResponse = await callApi(apiEndpoint, userInput);
 
 			if (data.error) {
-				error = data.error; // API에서 반환된 오류 메시지 설정
+				error = data.error;
+				errorSource = data.source;
 			} else {
-				response = data.response;
+				response = data.response || '';
 			}
 		} catch (error) {
 			console.error('API 호출 오류:', error);
-			error = '네트워크 오류: 서버와 통신하는 중 문제가 발생했습니다.';
+			errorSource = '네트워크';
+			error = '서버와 통신하는 중 문제가 발생했습니다.';
 		}
 	}
 </script>
@@ -88,7 +95,7 @@
 
 	{#if error}
 		<div class="error">
-			<p>{error}</p>
+			<p><strong>{errorSource} 오류:</strong> {error}</p>
 		</div>
 	{:else if response}
 		<div class="response">
