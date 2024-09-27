@@ -21,6 +21,9 @@
 				case 'huggingface':
 					apiEndpoint = '/api/huggingface';
 					break;
+				case 'solarllm':
+					apiEndpoint = '/api/solarllm';
+					break;
 				default:
 					throw new Error('잘못된 API 선택');
 			}
@@ -61,6 +64,10 @@
 		<label>
 			<input type="radio" bind:group={selectedAPI} value="huggingface" />
 			Hugging Face
+		</label>
+		<label>
+			<input type="radio" bind:group={selectedAPI} value="solarllm" />
+			SolarLLM
 		</label>
 	</div>
 
