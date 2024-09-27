@@ -7,7 +7,20 @@
 		if (!userInput.trim()) return;
 
 		try {
-			let apiEndpoint = selectedAPI === 'gemini' ? '/api/gemini' : '/api/claude';
+			let apiEndpoint;
+			switch (selectedAPI) {
+				case 'gemini':
+					apiEndpoint = '/api/gemini';
+					break;
+				case 'claude':
+					apiEndpoint = '/api/claude';
+					break;
+				case 'openai':
+					apiEndpoint = '/api/openai';
+					break;
+				default:
+					throw new Error('잘못된 API 선택');
+			}
 
 			const res = await fetch(apiEndpoint, {
 				method: 'POST',
@@ -38,6 +51,10 @@
 			<input type="radio" bind:group={selectedAPI} value="claude" />
 			Claude
 		</label>
+		<label>
+			<input type="radio" bind:group={selectedAPI} value="openai" />
+			OpenAI
+		</label>
 	</div>
 
 	<textarea bind:value={userInput} placeholder="메시지를 입력하세요..."></textarea>
@@ -64,5 +81,11 @@
 	}
 	button {
 		padding: 10px 20px;
+	}
+	.response {
+		margin-top: 20px;
+		border: 1px solid #ccc;
+		padding: 10px;
+		border-radius: 5px;
 	}
 </style>
