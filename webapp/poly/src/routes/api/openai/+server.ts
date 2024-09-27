@@ -22,6 +22,27 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ response });
 	} catch (error) {
 		console.error('OpenAI API 오류:', error);
-		return json({ error: 'OpenAI API 호출 중 오류가 발생했습니다.' }, { status: 500 });
+		let errorMessage = 'OpenAI API 오류: 요청을 처리하는 중 문제가 발생했습니다.';
+
+		if (error instanceof OpenAI.APIError) {
+			switch (error.code) {
+				case 'insufficient_quota':
+					errorMessage = '현재 할당량을 초과했습니다. 요금제와 결제 정보를 확인해 주세요.';
+					break;
+				case 'rate_limit_exceeded':
+					errorMessage = '요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
+					break;
+				case 'invalid_api_key':
+					errorMessage = 'API 키가 유효하지 않습니다.';
+					break;
+				default:
+					errorMessage = error.message || errorMessage;
+			}
+		}
+
+		return json(
+			{ error: errorMessage },
+			{ status: error instanceof OpenAI.APIError ? error.status : 500 }
+		);
 	}
 };

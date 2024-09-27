@@ -17,14 +17,21 @@ export const POST: RequestHandler = async ({ request }) => {
 			messages: [{ role: 'user', content: prompt }]
 		});
 
-		if ('text' in response.content[0]) {
-			return json({ response: response.content[0].text });
-		} else {
-			console.error('예상치 못한 응답 형식:', response.content[0]);
-			return json({ error: '응답을 처리할 수 없습니다.' }, { status: 500 });
-		}
+		return json({ response: response.content[0].text });
 	} catch (error) {
 		console.error('Claude API 오류:', error);
-		return json({ error: 'Claude API 호출 중 오류가 발생했습니다.' }, { status: 500 });
+		let errorMessage = 'Claude API 호출 중 오류가 발생했습니다.';
+
+		if (error instanceof Anthropic.APIError) {
+			if (error.status === 400 && error.error?.error?.type === 'invalid_request_error') {
+				errorMessage = error.error.error.message || '잘못된 요청입니다.';
+			} else if (error.status === 401) {
+				errorMessage = 'API 키가 유효하지 않습니다.';
+			} else if (error.status === 429) {
+				errorMessage = '요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.';
+			}
+		}
+
+		return json({ error: errorMessage }, { status: 500 });
 	}
 };

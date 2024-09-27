@@ -2,9 +2,13 @@
 	let selectedAPI = 'gemini'; // 기본값으로 Gemini 선택
 	let userInput = '';
 	let response = '';
+	let error = ''; // 오류 메시지를 저장할 변수 추가
 
 	async function handleSubmit() {
 		if (!userInput.trim()) return;
+
+		error = ''; // 요청 시작 시 오류 메시지 초기화
+		response = ''; // 응답 초기화
 
 		try {
 			let apiEndpoint;
@@ -37,10 +41,15 @@
 			});
 
 			const data = await res.json();
-			response = data.response;
+
+			if (data.error) {
+				error = data.error; // API에서 반환된 오류 메시지 설정
+			} else {
+				response = data.response;
+			}
 		} catch (error) {
 			console.error('API 호출 오류:', error);
-			response = 'API 호출 중 오류가 발생했습니다.';
+			error = '네트워크 오류: 서버와 통신하는 중 문제가 발생했습니다.';
 		}
 	}
 </script>
@@ -74,7 +83,11 @@
 	<textarea bind:value={userInput} placeholder="메시지를 입력하세요..."></textarea>
 	<button on:click={handleSubmit}>전송</button>
 
-	{#if response}
+	{#if error}
+		<div class="error">
+			<p>{error}</p>
+		</div>
+	{:else if response}
 		<div class="response">
 			<h2>응답:</h2>
 			<p>{response}</p>
@@ -101,5 +114,13 @@
 		border: 1px solid #ccc;
 		padding: 10px;
 		border-radius: 5px;
+	}
+	.error {
+		margin-top: 20px;
+		border: 1px solid #ff0000;
+		padding: 10px;
+		border-radius: 5px;
+		color: #ff0000;
+		background-color: #ffeeee;
 	}
 </style>

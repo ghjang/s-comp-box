@@ -25,15 +25,30 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ response: generatedText });
 	} catch (error) {
 		console.error('Hugging Face API 오류:', error);
+		let errorMessage = 'Hugging Face API 오류: 요청을 처리하는 중 문제가 발생했습니다.';
+
 		if (axios.isAxiosError(error)) {
-			return json(
-				{ error: `Hugging Face API 오류: ${error.message}` },
-				{ status: error.response?.status || 500 }
-			);
+			const status = error.response?.status;
+			switch (status) {
+				case 401:
+					errorMessage = 'Hugging Face API 오류: 인증에 실패했습니다. API 키를 확인해 주세요.';
+					break;
+				case 403:
+					errorMessage = 'Hugging Face API 오류: 접근 권한이 없습니다.';
+					break;
+				case 404:
+					errorMessage = 'Hugging Face API 오류: 요청한 모델을 찾을 수 없습니다.';
+					break;
+				case 429:
+					errorMessage =
+						'Hugging Face API 오류: 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
+					break;
+				default:
+					errorMessage = `Hugging Face API 오류: ${error.message}`;
+			}
+			return json({ error: errorMessage }, { status: status || 500 });
 		}
-		return json(
-			{ error: 'Hugging Face API 호출 중 알 수 없는 오류가 발생했습니다.' },
-			{ status: 500 }
-		);
+
+		return json({ error: errorMessage }, { status: 500 });
 	}
 };

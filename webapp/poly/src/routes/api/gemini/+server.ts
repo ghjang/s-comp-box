@@ -12,7 +12,22 @@ export const POST: RequestHandler = async ({ request }) => {
 		const result = await model.generateContent(prompt);
 		return json({ response: result.response.text() });
 	} catch (error) {
-		console.error('제미나이 API 오류:', error);
-		return json({ error: '제미나이 API 호출 중 오류가 발생했습니다.' }, { status: 500 });
+		console.error('Gemini API 오류:', error);
+		let errorMessage = 'Gemini API 오류: 요청을 처리하는 중 문제가 발생했습니다.';
+
+		if (error instanceof Error) {
+			if (error.message.includes('404 Not Found')) {
+				errorMessage =
+					'Gemini API 오류: 요청한 모델을 찾을 수 없습니다. 모델 이름을 확인해 주세요.';
+			} else if (error.message.includes('401 Unauthorized')) {
+				errorMessage = 'Gemini API 오류: 인증에 실패했습니다. API 키를 확인해 주세요.';
+			} else if (error.message.includes('429 Too Many Requests')) {
+				errorMessage = 'Gemini API 오류: 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
+			} else {
+				errorMessage = `Gemini API 오류: ${error.message}`;
+			}
+		}
+
+		return json({ error: errorMessage }, { status: 500 });
 	}
 };
