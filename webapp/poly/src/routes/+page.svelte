@@ -1,36 +1,53 @@
 <script lang="ts">
-	let prompt: string = '';
-	let response: string = '';
-	let isLoading: boolean = false;
+	let selectedAPI = 'gemini'; // 기본값으로 Gemini 선택
+	let userInput = '';
+	let response = '';
 
-	async function generateContent(): Promise<void> {
-		isLoading = true;
+	async function handleSubmit() {
+		if (!userInput.trim()) return;
+
 		try {
-			const res: Response = await fetch('/api/gemini', {
+			let apiEndpoint = selectedAPI === 'gemini' ? '/api/gemini' : '/api/claude';
+
+			const res = await fetch(apiEndpoint, {
 				method: 'POST',
-				body: JSON.stringify({ prompt }),
-				headers: { 'Content-Type': 'application/json' }
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ prompt: userInput })
 			});
-			const data: { response: string } = await res.json();
+
+			const data = await res.json();
 			response = data.response;
 		} catch (error) {
-			console.error('오류:', error);
-			response = '오류가 발생했습니다.';
-		} finally {
-			isLoading = false;
+			console.error('API 호출 오류:', error);
+			response = 'API 호출 중 오류가 발생했습니다.';
 		}
 	}
 </script>
 
 <main>
-	<h1>제미나이 API 테스트</h1>
-	<textarea bind:value={prompt} placeholder="프롬프트를 입력하세요"></textarea>
-	<button on:click={generateContent} disabled={isLoading}>
-		{isLoading ? '생성 중...' : '내용 생성'}
-	</button>
+	<h1>AI 채팅</h1>
+
+	<div>
+		<label>
+			<input type="radio" bind:group={selectedAPI} value="gemini" />
+			Gemini
+		</label>
+		<label>
+			<input type="radio" bind:group={selectedAPI} value="claude" />
+			Claude
+		</label>
+	</div>
+
+	<textarea bind:value={userInput} placeholder="메시지를 입력하세요..."></textarea>
+	<button on:click={handleSubmit}>전송</button>
+
 	{#if response}
-		<h2>응답:</h2>
-		<p>{response}</p>
+		<div class="response">
+			<h2>응답:</h2>
+			<p>{response}</p>
+		</div>
 	{/if}
 </main>
 
