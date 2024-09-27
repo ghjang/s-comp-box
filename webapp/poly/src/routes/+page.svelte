@@ -4,8 +4,11 @@
 	let response = '';
 	let error = ''; // 오류 메시지를 저장할 변수 추가
 
+	// 버튼 비활성화 상태를 결정하는 함수
+	$: isButtonDisabled = !userInput.trim();
+
 	async function handleSubmit() {
-		if (!userInput.trim()) return;
+		if (isButtonDisabled) return;
 
 		error = ''; // 요청 시작 시 오류 메시지 초기화
 		response = ''; // 응답 초기화
@@ -81,7 +84,7 @@
 	</div>
 
 	<textarea bind:value={userInput} placeholder="메시지를 입력하세요..."></textarea>
-	<button on:click={handleSubmit}>전송</button>
+	<button on:click={handleSubmit} disabled={isButtonDisabled}>전송</button>
 
 	{#if error}
 		<div class="error">
@@ -122,5 +125,9 @@
 		border-radius: 5px;
 		color: #ff0000;
 		background-color: #ffeeee;
+	}
+	button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 </style>
