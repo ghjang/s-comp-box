@@ -8,6 +8,31 @@ const openai = new OpenAI({
 	baseURL: 'https://api.upstage.ai/v1/solar'
 });
 
+function handleSolarLLMError(error: unknown): { error: string; status: number } {
+	console.error('SolarLLM API 오류:', error);
+	let errorMessage = 'SolarLLM API 오류: 요청을 처리하는 중 문제가 발생했습니다.';
+	let status = 500;
+
+	if (error instanceof OpenAI.APIError) {
+		status = error.status;
+		switch (error.status) {
+			case 401:
+				errorMessage = 'SolarLLM API 오류: 인증에 실패했습니다. API 키를 확인해 주세요.';
+				break;
+			case 403:
+				errorMessage = 'SolarLLM API 오류: 접근 권한이 없습니다. API 키의 권한을 확인해 주세요.';
+				break;
+			case 429:
+				errorMessage = 'SolarLLM API 오류: 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
+				break;
+			default:
+				errorMessage = `SolarLLM API 오류: ${error.message || '알 수 없는 오류가 발생했습니다.'}`;
+		}
+	}
+
+	return { error: errorMessage, status };
+}
+
 export const POST: RequestHandler = async ({ request }) => {
 	const { prompt } = await request.json();
 
@@ -31,28 +56,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		return json({ response });
 	} catch (error) {
-		console.error('SolarLLM API 오류:', error);
-		let errorMessage = 'SolarLLM API 오류: 요청을 처리하는 중 문제가 발생했습니다.';
-
-		if (error instanceof OpenAI.APIError) {
-			switch (error.status) {
-				case 401:
-					errorMessage = 'SolarLLM API 오류: 인증에 실패했습니다. API 키를 확인해 주세요.';
-					break;
-				case 403:
-					errorMessage = 'SolarLLM API 오류: 접근 권한이 없습니다. API 키의 권한을 확인해 주세요.';
-					break;
-				case 429:
-					errorMessage = 'SolarLLM API 오류: 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
-					break;
-				default:
-					errorMessage = `SolarLLM API 오류: ${error.message || '알 수 없는 오류가 발생했습니다.'}`;
-			}
-		}
-
-		return json(
-			{ error: errorMessage },
-			{ status: error instanceof OpenAI.APIError ? error.status : 500 }
-		);
+		const { error: errorMessage, status } = handleSolarLLMError(error);
+		return json({ error: errorMessage }, { status });
 	}
 };

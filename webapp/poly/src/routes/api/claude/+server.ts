@@ -7,6 +7,25 @@ const anthropic = new Anthropic({
 	apiKey: CLAUDE_API_KEY
 });
 
+function handleClaudeError(error: unknown): { error: string; status: number } {
+	console.error('Claude API 오류:', error);
+	let errorMessage = 'Claude API 호출 중 오류가 발생했습니다.';
+	let status = 500;
+
+	if (error instanceof Anthropic.APIError) {
+		status = error.status;
+		if (error.status === 400 && error.error?.error?.type === 'invalid_request_error') {
+			errorMessage = error.error.error.message || '잘못된 요청입니다.';
+		} else if (error.status === 401) {
+			errorMessage = 'API 키가 유효하지 않습니다.';
+		} else if (error.status === 429) {
+			errorMessage = '요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.';
+		}
+	}
+
+	return { error: errorMessage, status };
+}
+
 export const POST: RequestHandler = async ({ request }) => {
 	const { prompt } = await request.json();
 
@@ -19,19 +38,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		return json({ response: response.content[0].text });
 	} catch (error) {
-		console.error('Claude API 오류:', error);
-		let errorMessage = 'Claude API 호출 중 오류가 발생했습니다.';
-
-		if (error instanceof Anthropic.APIError) {
-			if (error.status === 400 && error.error?.error?.type === 'invalid_request_error') {
-				errorMessage = error.error.error.message || '잘못된 요청입니다.';
-			} else if (error.status === 401) {
-				errorMessage = 'API 키가 유효하지 않습니다.';
-			} else if (error.status === 429) {
-				errorMessage = '요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.';
-			}
-		}
-
-		return json({ error: errorMessage }, { status: 500 });
+		const { error: errorMessage, status } = handleClaudeError(error);
+		return json({ error: errorMessage }, { status });
 	}
 };
