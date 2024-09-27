@@ -18,6 +18,9 @@
 				case 'openai':
 					apiEndpoint = '/api/openai';
 					break;
+				case 'huggingface':
+					apiEndpoint = '/api/huggingface';
+					break;
 				default:
 					throw new Error('잘못된 API 선택');
 			}
@@ -54,6 +57,10 @@
 		<label>
 			<input type="radio" bind:group={selectedAPI} value="openai" />
 			OpenAI
+		</label>
+		<label>
+			<input type="radio" bind:group={selectedAPI} value="huggingface" />
+			Hugging Face
 		</label>
 	</div>
 
