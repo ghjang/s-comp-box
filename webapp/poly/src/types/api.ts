@@ -14,7 +14,10 @@ export type APIProvider = 'Gemini' | 'Claude' | 'OpenAI' | 'Hugging Face' | 'Sol
 export enum GeminiModel {
 	GeminiPro = 'gemini-pro',
 	GeminiProVision = 'gemini-pro-vision',
-	Gemini4 = 'gemini-4'
+	Gemini4 = 'gemini-4',
+	Gemini15Pro = 'gemini-1.5-pro-002',
+	Gemini15Flash = 'gemini-1.5-flash-002',
+	Gemini15Flash8BExp = 'gemini-1.5-flash-8b-exp-0924'
 }
 
 export enum ClaudeModel {

@@ -29,7 +29,7 @@ export function getApiEndpoint(selectedAPI: APIProvider): string {
 export function getModelForAPI(api: APIProvider): ModelType {
 	switch (api) {
 		case 'Gemini':
-			return GeminiModel.GeminiPro;
+			return GeminiModel.Gemini15Flash8BExp;
 		case 'Claude':
 			return ClaudeModel.Claude3Opus;
 		case 'OpenAI':
