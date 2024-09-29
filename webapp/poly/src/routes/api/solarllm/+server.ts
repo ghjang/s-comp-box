@@ -2,9 +2,9 @@ import { json } from '@sveltejs/kit';
 import OpenAI from 'openai';
 import { SOLARLLM_API_KEY } from '$env/static/private';
 import type { RequestHandler } from './$types';
-import type { LLMResponse } from '../../../types/api';
+import type { LLMRequest, LLMResponse, APIProvider } from '../../../types/api';
 
-const API_SOURCE = 'SolarLLM API';
+const API_SOURCE: APIProvider = 'SolarLLM';
 
 const errorMap = new Map([
 	[401, '인증에 실패했습니다. API 키를 확인해 주세요.'],
@@ -31,11 +31,11 @@ function handleSolarLLMError(error: unknown): LLMResponse {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { prompt } = await request.json();
+	const { prompt, model } = await request.json() as LLMRequest;
 
 	try {
 		const chatCompletion = await openai.chat.completions.create({
-			model: 'solar-pro',
+			model: model,
 			messages: [
 				{
 					role: 'system',

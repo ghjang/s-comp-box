@@ -2,9 +2,9 @@ import { json } from '@sveltejs/kit';
 import OpenAI from 'openai';
 import { OPENAI_API_KEY } from '$env/static/private';
 import type { RequestHandler } from './$types';
-import type { LLMResponse } from '../../../types/api';
+import type { LLMRequest, LLMResponse, APIProvider } from '../../../types/api';
 
-const API_SOURCE = 'OpenAI API';
+const API_SOURCE: APIProvider = 'OpenAI';
 
 const errorMap = new Map([
 	['insufficient_quota', '현재 할당량을 초과했습니다. 요금제와 결제 정보를 확인해 주세요.'],
@@ -29,11 +29,11 @@ function handleOpenAIError(error: unknown): LLMResponse {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { prompt } = await request.json();
+	const { prompt, model } = (await request.json()) as LLMRequest;
 
 	try {
 		const chatCompletion = await openai.chat.completions.create({
-			model: 'gpt-3.5-turbo',
+			model: model,
 			messages: [{ role: 'user', content: prompt }],
 			max_tokens: 1000
 		});

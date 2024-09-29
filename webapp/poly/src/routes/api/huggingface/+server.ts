@@ -2,10 +2,9 @@ import { json } from '@sveltejs/kit';
 import axios from 'axios';
 import { HUGGINGFACE_API_KEY } from '$env/static/private';
 import type { RequestHandler } from './$types';
-import type { LLMResponse } from '../../../types/api';
+import type { LLMRequest, LLMResponse, APIProvider } from '../../../types/api';
 
-const API_SOURCE = 'Hugging Face API';
-const API_URL = 'https://api-inference.huggingface.co/models/gpt2';
+const API_SOURCE: APIProvider = 'Hugging Face';
 
 function handleHuggingFaceError(error: unknown): LLMResponse {
 	console.error(`${API_SOURCE} 오류:`, error);
@@ -28,7 +27,8 @@ function handleHuggingFaceError(error: unknown): LLMResponse {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { prompt } = await request.json();
+	const { prompt, model } = await request.json() as LLMRequest;
+	const API_URL = `https://api-inference.huggingface.co/models/${model}`;
 
 	try {
 		const response = await axios.post(

@@ -2,9 +2,11 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { json } from '@sveltejs/kit';
 import { GEMINI_API_KEY } from '$env/static/private';
 import type { RequestHandler } from './$types';
-import type { LLMResponse } from '../../../types/api';
+import type { LLMRequest, LLMResponse } from '../../../types/api';
+import type { APIProvider } from '../../../types/api';
+import { GeminiModel } from '../../../types/api';
 
-const API_SOURCE = 'Gemini API';
+const API_SOURCE: APIProvider = 'Gemini';
 
 const errorMap = new Map([
 	[404, '요청한 모델을 찾을 수 없습니다. 모델 이름을 확인해 주세요.'],
@@ -34,12 +36,12 @@ function handleGeminiError(error: unknown): LLMResponse {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
+	const { prompt, model } = await request.json() as LLMRequest;
 	const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-	const model: GenerativeModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+	const genModel: GenerativeModel = genAI.getGenerativeModel({ model: model as GeminiModel });
 
-	const { prompt } = await request.json();
 	try {
-		const result = await model.generateContent(prompt);
+		const result = await genModel.generateContent(prompt);
 		return json({ response: result.response.text(), source: API_SOURCE } as LLMResponse);
 	} catch (error) {
 		const errorResponse = handleGeminiError(error);

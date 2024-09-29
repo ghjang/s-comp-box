@@ -1,7 +1,8 @@
 <script lang="ts">
-	import type { LLMResponse } from '../types/api';
+	import type { LLMRequest, LLMResponse, APIProvider } from '../types/api';
+	import { getApiEndpoint, getModelForAPI, callApi } from '$lib';
 
-	let selectedAPI = 'gemini';
+	let selectedAPI: APIProvider = 'Gemini';
 	let userInput = '';
 	let response = '';
 	let error = '';
@@ -9,35 +10,6 @@
 
 	// 버튼 비활성화 상태를 결정하는 함수
 	$: isButtonDisabled = !userInput.trim();
-
-	function getApiEndpoint(selectedAPI: string): string {
-		switch (selectedAPI) {
-			case 'gemini':
-				return '/api/gemini';
-			case 'claude':
-				return '/api/claude';
-			case 'openai':
-				return '/api/openai';
-			case 'huggingface':
-				return '/api/huggingface';
-			case 'solarllm':
-				return '/api/solarllm';
-			default:
-				throw new Error('잘못된 API 선택');
-		}
-	}
-
-	async function callApi(apiEndpoint: string, userInput: string): Promise<LLMResponse> {
-		const res = await fetch(apiEndpoint, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-				},
-			body: JSON.stringify({ prompt: userInput })
-		});
-
-		return await res.json();
-	}
 
 	async function handleSubmit() {
 		if (isButtonDisabled) return;
@@ -48,7 +20,9 @@
 
 		try {
 			const apiEndpoint = getApiEndpoint(selectedAPI);
-			const data: LLMResponse = await callApi(apiEndpoint, userInput);
+			const model = getModelForAPI(selectedAPI);
+			const request: LLMRequest = { prompt: userInput, model };
+			const data: LLMResponse = await callApi(apiEndpoint, request);
 
 			if (data.error) {
 				error = data.error;
@@ -69,23 +43,23 @@
 
 	<div>
 		<label>
-			<input type="radio" bind:group={selectedAPI} value="gemini" />
+			<input type="radio" bind:group={selectedAPI} value="Gemini" />
 			Gemini
 		</label>
 		<label>
-			<input type="radio" bind:group={selectedAPI} value="claude" />
+			<input type="radio" bind:group={selectedAPI} value="Claude" />
 			Claude
 		</label>
 		<label>
-			<input type="radio" bind:group={selectedAPI} value="openai" />
+			<input type="radio" bind:group={selectedAPI} value="OpenAI" />
 			OpenAI
 		</label>
 		<label>
-			<input type="radio" bind:group={selectedAPI} value="huggingface" />
+			<input type="radio" bind:group={selectedAPI} value="Hugging Face" />
 			Hugging Face
 		</label>
 		<label>
-			<input type="radio" bind:group={selectedAPI} value="solarllm" />
+			<input type="radio" bind:group={selectedAPI} value="SolarLLM" />
 			SolarLLM
 		</label>
 	</div>
