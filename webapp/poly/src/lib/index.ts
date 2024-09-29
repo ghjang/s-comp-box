@@ -1,49 +1,9 @@
 // NOTE: place files you want to import through the `$lib` alias in this folder.
 
-import type { APIProvider, ModelType, LLMRequest, LLMResponse } from '../types/api';
-import {
-	GeminiModel,
-	ClaudeModel,
-	OpenAIModel,
-	HuggingFaceModel,
-	SolarLLMModel
-} from '../types/api';
+import type { LLMRequest, LLMResponse } from '../types/api';
+export { createLLMRequest, getApiEndpoint, getModelForAPI } from './llm';
 
-export function getApiEndpoint(selectedAPI: APIProvider): string {
-	switch (selectedAPI) {
-		case 'Gemini':
-			return '/api/gemini';
-		case 'Claude':
-			return '/api/claude';
-		case 'OpenAI':
-			return '/api/openai';
-		case 'Hugging Face':
-			return '/api/huggingface';
-		case 'SolarLLM':
-			return '/api/solarllm';
-		default:
-			throw new Error(`${selectedAPI} API 선택 오류`);
-	}
-}
-
-export function getModelForAPI(api: APIProvider): ModelType {
-	switch (api) {
-		case 'Gemini':
-			return GeminiModel.Gemini15Flash8BExp;
-		case 'Claude':
-			return ClaudeModel.Claude3Opus;
-		case 'OpenAI':
-			return OpenAIModel.GPT35Turbo;
-		case 'Hugging Face':
-			return HuggingFaceModel.GPT2;
-		case 'SolarLLM':
-			return SolarLLMModel.SolarPro;
-		default:
-			throw new Error(`${api} API 모델 선택 오류`);
-	}
-}
-
-export async function callApi(apiEndpoint: string, request: LLMRequest): Promise<LLMResponse> {
+export async function singleQuery(apiEndpoint: string, request: LLMRequest): Promise<LLMResponse> {
 	const res = await fetch(apiEndpoint, {
 		method: 'POST',
 		headers: {

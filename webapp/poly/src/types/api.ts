@@ -1,7 +1,20 @@
 export interface LLMRequest {
+	type: 'single-query' | 'chat';
 	prompt: string;
 	model: ModelType;
+	temperature?: number;
+	maxTokens?: number;
 }
+
+// 기본값을 가질 수 있는 필드들
+export type DefaultableFields = 'type' | 'temperature' | 'maxTokens';
+
+// 필수 필드들
+export type RequiredFields = Exclude<keyof LLMRequest, DefaultableFields>;
+
+// 생성 팩토리 함수의 매개변수 타입
+export type LLMRequestFactoryParam = Pick<LLMRequest, RequiredFields> &
+	Partial<Pick<LLMRequest, DefaultableFields>>;
 
 export interface LLMResponse {
 	source: APIProvider;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ToggleGroup, RadioButton } from 's-comp-core';
 	import type { LLMRequest, LLMResponse, APIProvider } from '../../types/api';
-	import { getApiEndpoint, getModelForAPI, callApi } from '$lib';
+	import { createLLMRequest, getApiEndpoint, getModelForAPI, singleQuery } from '$lib';
 
 	let selectedAPI: APIProvider = 'Gemini';
 	let userInput = '';
@@ -26,8 +26,8 @@
 		try {
 			const apiEndpoint = getApiEndpoint(selectedAPI);
 			const model = getModelForAPI(selectedAPI);
-			const request: LLMRequest = { prompt: userInput, model };
-			const data: LLMResponse = await callApi(apiEndpoint, request);
+			const request: LLMRequest = createLLMRequest({ prompt: userInput, model });
+			const data: LLMResponse = await singleQuery(apiEndpoint, request);
 
 			if (data.error) {
 				error = data.error;
