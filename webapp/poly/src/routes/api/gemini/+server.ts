@@ -35,16 +35,26 @@ function handleGeminiError(error: unknown): LLMResponse {
 	return { error: errorMessage, source: API_SOURCE };
 }
 
-export const POST: RequestHandler = async ({ request }) => {
-	const { prompt, model } = await request.json() as LLMRequest;
+async function handleSingleQuery(llmRequest: LLMRequest): Promise<LLMResponse> {
 	const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-	const genModel: GenerativeModel = genAI.getGenerativeModel({ model: model as GeminiModel });
+	const genModel: GenerativeModel = genAI.getGenerativeModel({
+		model: llmRequest.model as GeminiModel
+	});
 
 	try {
-		const result = await genModel.generateContent(prompt);
-		return json({ response: result.response.text(), source: API_SOURCE } as LLMResponse);
+		const result = await genModel.generateContent(llmRequest.prompt);
+		return { response: result.response.text(), source: API_SOURCE };
 	} catch (error) {
-		const errorResponse = handleGeminiError(error);
-		return json(errorResponse, { status: 500 });
+		return handleGeminiError(error);
+	}
+}
+
+export const POST: RequestHandler = async ({ request }) => {
+	const llmRequest = (await request.json()) as LLMRequest;
+	if (llmRequest.type === 'single-query') {
+		const response = await handleSingleQuery(llmRequest);
+		return json(response, { status: response.error ? 500 : 200 });
+	} else {
+		return json({ error: '잘못된 요청입니다.', source: API_SOURCE }, { status: 400 });
 	}
 };
