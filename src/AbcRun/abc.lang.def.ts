@@ -8,10 +8,43 @@
 //       해석 컨텍스트 내에서 유효한 '토큰'을 (어느 정도는 순서에 상관없이) 분리해내는 것이
 //       토크나이저의 주관심사이다.
 
-import { IndentAction } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
+import {
+  IMonarchLanguage,
+  IMonarchLanguageRule,
+  IndentAction,
+} from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 import { headers, headerRules } from "./abc.lang.header";
 
-const langdef = {
+interface LanguageDefinition extends IMonarchLanguage {
+  ignoreCase: boolean;
+  includeLF: boolean;
+  defaultToken: string;
+  escapes: RegExp;
+  headers: string[];
+  tokenizer: {
+    root: IMonarchLanguageRule[];
+    string: IMonarchLanguageRule[];
+    whitespace: IMonarchLanguageRule[];
+    [key: string]: IMonarchLanguageRule[];
+  };
+  brackets: [string, string, string][];
+  autoClosingPairs: { open: string; close: string }[];
+  surroundingPairs: { open: string; close: string }[];
+  folding: {
+    offSide: boolean;
+    markers: {
+      start: RegExp | string;
+      end: RegExp | string;
+    };
+  };
+  onEnterRules: {
+    beforeText: RegExp;
+    afterText?: RegExp;
+    action: languages.EnterAction;
+  }[];
+}
+
+const langdef: LanguageDefinition = {
   ignoreCase: false,
   includeLF: true,
   defaultToken: "invalid",

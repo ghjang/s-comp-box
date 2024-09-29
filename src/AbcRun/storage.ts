@@ -1,19 +1,22 @@
 import debounce from "lodash-es/debounce";
 
-export function saveToLocalStorage(key, value) {
+export function saveToLocalStorage(key: string, value: any): void {
   if (typeof value === "object") {
     value = JSON.stringify(value);
   }
   localStorage.setItem(key, value);
 }
 
-export function createLocalStorageDebouncedSaver(key, debounceTime = 3000) {
-  return debounce((value) => {
+export function createLocalStorageDebouncedSaver(
+  key: string,
+  debounceTime: number = 3000
+): (value: any) => void {
+  return debounce((value: any) => {
     saveToLocalStorage(key, value);
   }, debounceTime);
 }
 
-export function loadFromLocalStorage(key) {
+export function loadFromLocalStorage(key: string): any {
   const value = localStorage.getItem(key);
   if (value) {
     try {

@@ -1,5 +1,5 @@
 // 'ABC music notation' 헤더
-export const headers = [
+export const headers: string[] = [
   "X", // 참조 번호(Reference Number)
   "T", // 곡 제목(Title)
   "C", // 작곡가(Composer)
@@ -23,7 +23,14 @@ export const headers = [
   "V", // 음성(Voice)
 ];
 
-export const headerRules = {
+interface Rule {
+  token: string;
+  bracket?: "@open" | "@close";
+}
+
+type HeaderRule = (string | RegExp | Rule)[][];
+
+export const headerRules: Record<string, HeaderRule> = {
   headerX: [
     [/\d+/, "number"],
     [/[ \t]+/, "white"],

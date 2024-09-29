@@ -588,6 +588,8 @@ function moveLines(editor, direction) {
 }
 
 //==============================================================================
+export const IMonarchLanguage = monaco.languages.IMonarchLanguage;
+export const IMonarchLanguageRule = monaco.languages.IMonarchLanguageRule;
 export const CompletionItemKind = monaco.languages.CompletionItemKind;
 export const IndentAction = monaco.languages.IndentAction;
 

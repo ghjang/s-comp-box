@@ -1,32 +1,45 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { debounce } from 'lodash-es';
+	import MonacoEditor from '../../../../src/MonacoEditor/MonacoEditor.svelte';
+
+	const MONACO_EDITOR_RESOURCE_PATH = import.meta.env.MONACO_EDITOR_RESOURCE_PATH;
+
+	let editor: MonacoEditor;
+
+	const handleResize = debounce(() => {
+		editor?.layout();
+	}, 100);
+
+	onMount(() => {
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	});
+
+	function handleEditorInit(event: CustomEvent) {
+	}
+
+	function handleContentChange(event: CustomEvent) {
+	}
 </script>
 
 <main>
-	<h1>AI 채팅 서비스</h1>
-	
-	<nav>
-		<button on:click={() => goto('/single-query')}>단답형 질의응답</button>
-		<button on:click={() => goto('/chat')}>컨텍스트 유지 채팅</button>
-	</nav>
+	<MonacoEditor
+		bind:this={editor}
+		resourcePath={MONACO_EDITOR_RESOURCE_PATH}
+		on:editorInit={handleEditorInit}
+		on:contentChange={handleContentChange}
+	/>
 </main>
 
-<style>
+<style lang="scss">
+	:global(html, body) {
+		margin: 0;
+		padding: 0;
+	}
+
 	main {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 20px;
-		text-align: center;
-	}
-
-	nav {
-		margin-top: 20px;
-	}
-
-	button {
-		padding: 10px 20px;
-		margin: 0 10px;
-		font-size: 16px;
-		cursor: pointer;
+		width: 100%;
+		height: 100vh;
 	}
 </style>
