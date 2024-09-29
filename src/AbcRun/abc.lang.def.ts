@@ -40,7 +40,7 @@ interface LanguageDefinition extends IMonarchLanguage {
   onEnterRules: {
     beforeText: RegExp;
     afterText?: RegExp;
-    action: languages.EnterAction;
+    action: { indentAction: IndentAction };
   }[];
 }
 
