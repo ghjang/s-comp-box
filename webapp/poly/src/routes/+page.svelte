@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ToggleGroup, RadioButton } from 's-comp-core';
 	import type { LLMRequest, LLMResponse, APIProvider } from '../types/api';
 	import { getApiEndpoint, getModelForAPI, callApi } from '$lib';
 
@@ -36,33 +37,27 @@
 			error = '서버와 통신하는 중 문제가 발생했습니다.';
 		}
 	}
+
+	function handleToggleItemChanged(event: CustomEvent) {
+		selectedAPI = event.detail.value;
+	}
 </script>
 
 <main>
 	<h1>AI 채팅</h1>
 
-	<div>
-		<label>
-			<input type="radio" bind:group={selectedAPI} value="Gemini" />
-			Gemini
-		</label>
-		<label>
-			<input type="radio" bind:group={selectedAPI} value="Claude" />
-			Claude
-		</label>
-		<label>
-			<input type="radio" bind:group={selectedAPI} value="OpenAI" />
-			OpenAI
-		</label>
-		<label>
-			<input type="radio" bind:group={selectedAPI} value="Hugging Face" />
-			Hugging Face
-		</label>
-		<label>
-			<input type="radio" bind:group={selectedAPI} value="SolarLLM" />
-			SolarLLM
-		</label>
-	</div>
+	<ToggleGroup
+		direction="horizontal"
+		items={[
+			{ component: RadioButton, label: 'Gemini', value: 'Gemini' },
+			{ component: RadioButton, label: 'Claude', value: 'Claude' },
+			{ component: RadioButton, label: 'OpenAI', value: 'OpenAI' },
+			{ component: RadioButton, label: 'Hugging Face', value: 'Hugging Face' },
+			{ component: RadioButton, label: 'SolarLLM', value: 'SolarLLM' }
+		]}
+		activatedValue={selectedAPI}
+		on:toggleItemChanged={handleToggleItemChanged}
+	/>
 
 	<textarea bind:value={userInput} placeholder="메시지를 입력하세요..."></textarea>
 	<button on:click={handleSubmit} disabled={isButtonDisabled}>전송</button>

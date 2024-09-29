@@ -38,6 +38,7 @@
 		"@anthropic-ai/sdk": "^0.27.3",
 		"@google/generative-ai": "^0.19.0",
 		"axios": "^1.7.7",
-		"openai": "^4.65.0"
+		"openai": "^4.65.0",
+		"s-comp-core": "^0.1.4"
 	}
 }
