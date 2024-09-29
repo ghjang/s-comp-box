@@ -5,13 +5,8 @@ import type {
 	LLMRequestFactoryParam,
 	ModelType
 } from '../types/api';
-import {
-	GeminiModel,
-	ClaudeModel,
-	OpenAIModel,
-	HuggingFaceModel,
-	SolarLLMModel
-} from '../types/api';
+
+import { ModelEnumTypeMap, DefaultModelValueMap } from '../types/api';
 
 // 기본값 설정
 const defaultValues: Pick<LLMRequest, DefaultableFields> = {
@@ -45,19 +40,28 @@ export function getApiEndpoint(selectedAPI: APIProvider): string {
 	}
 }
 
-export function getModelForAPI(api: APIProvider): ModelType {
-	switch (api) {
-		case 'Gemini':
-			return GeminiModel.Gemini15Flash8BExp;
-		case 'Claude':
-			return ClaudeModel.Claude3Opus;
-		case 'OpenAI':
-			return OpenAIModel.GPT35Turbo;
-		case 'Hugging Face':
-			return HuggingFaceModel.GPT2;
-		case 'SolarLLM':
-			return SolarLLMModel.SolarPro;
-		default:
-			throw new Error(`${api} API 모델 선택 오류`);
+export function getDefaultModel(provider: APIProvider): ModelType {
+	return DefaultModelValueMap[provider];
+}
+
+const providerModels: Record<APIProvider, ModelType[]> = Object.fromEntries(
+	Object.entries(ModelEnumTypeMap).map(([provider, enumType]) => [
+		provider,
+		Object.values(enumType) as ModelType[]
+	])
+) as Record<APIProvider, ModelType[]>;
+
+const allModels: ModelType[] = Object.values(providerModels).flat();
+
+export function getProviderFromModel(model: ModelType): APIProvider {
+	for (const [provider, models] of Object.entries(providerModels)) {
+		if (models.includes(model)) {
+			return provider as APIProvider;
+		}
 	}
+	throw new Error(`${model} 모델에 해당하는 API 제공자를 찾을 수 없습니다.`);
+}
+
+export function getAllModels(): ModelType[] {
+	return allModels;
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { ToggleGroup, RadioButton } from 's-comp-core';
 	import type { LLMRequest, LLMResponse, APIProvider } from '../../types/api';
-	import { createLLMRequest, getApiEndpoint, getModelForAPI, singleQuery } from '$lib';
+	import { createLLMRequest, getDefaultModel, singleQuery } from '$lib';
 
-	let selectedAPI: APIProvider = 'Gemini';
+	let selectedProvider: APIProvider = 'Gemini';
 	let userInput = '';
 	let response = '';
 	let error = '';
@@ -24,10 +24,9 @@
 		resetResponse();
 
 		try {
-			const apiEndpoint = getApiEndpoint(selectedAPI);
-			const model = getModelForAPI(selectedAPI);
+			const model = getDefaultModel(selectedProvider);
 			const request: LLMRequest = createLLMRequest({ prompt: userInput, model });
-			const data: LLMResponse = await singleQuery(apiEndpoint, request);
+			const data: LLMResponse = await singleQuery(request);
 
 			if (data.error) {
 				error = data.error;
@@ -42,8 +41,8 @@
 		}
 	}
 
-	function handleToggleItemChanged(event: CustomEvent) {
-		selectedAPI = event.detail.value;
+	function handleToggleItemChanged(event: CustomEvent<{ value: APIProvider }>) {
+		selectedProvider = event.detail.value;
 		resetResponse();
 	}
 </script>
@@ -60,7 +59,7 @@
 			{ component: RadioButton, label: 'Hugging Face', value: 'Hugging Face' },
 			{ component: RadioButton, label: 'SolarLLM', value: 'SolarLLM' }
 		]}
-		activatedValue={selectedAPI}
+		activatedValue={selectedProvider}
 		on:toggleItemChanged={handleToggleItemChanged}
 	/>
 

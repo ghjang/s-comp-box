@@ -1,3 +1,31 @@
+export type APIProvider = 'Gemini' | 'Claude' | 'OpenAI' | 'Hugging Face' | 'SolarLLM';
+export type ModelType = GeminiModel | ClaudeModel | OpenAIModel | HuggingFaceModel | SolarLLMModel;
+
+type ProviderModelEnumTypeMap = {
+	Gemini: typeof GeminiModel;
+	Claude: typeof ClaudeModel;
+	OpenAI: typeof OpenAIModel;
+	'Hugging Face': typeof HuggingFaceModel;
+	SolarLLM: typeof SolarLLMModel;
+};
+
+type APIProviderModelEnumTypeMap = {
+	[P in APIProvider]: ProviderModelEnumTypeMap[P];
+};
+
+type ProviderModelValueMap = {
+	Gemini: GeminiModel;
+	Claude: ClaudeModel;
+	OpenAI: OpenAIModel;
+	'Hugging Face': HuggingFaceModel;
+	SolarLLM: SolarLLMModel;
+};
+
+type APIProviderModelValueMap = {
+	[P in APIProvider]: ProviderModelValueMap[P];
+};
+
+//=======================================================
 export interface LLMRequest {
 	type: 'single-query' | 'chat';
 	prompt: string;
@@ -22,8 +50,7 @@ export interface LLMResponse {
 	error?: string;
 }
 
-export type APIProvider = 'Gemini' | 'Claude' | 'OpenAI' | 'Hugging Face' | 'SolarLLM';
-
+//=======================================================
 export enum GeminiModel {
 	GeminiPro = 'gemini-pro',
 	GeminiProVision = 'gemini-pro-vision',
@@ -41,8 +68,7 @@ export enum ClaudeModel {
 
 export enum OpenAIModel {
 	GPT35Turbo = 'gpt-3.5-turbo',
-	GPT4 = 'gpt-4',
-	GPT4Turbo = 'gpt-4-turbo'
+	GPT4 = 'gpt-4'
 }
 
 export enum HuggingFaceModel {
@@ -55,4 +81,19 @@ export enum SolarLLMModel {
 	SolarPro = 'solar-pro'
 }
 
-export type ModelType = GeminiModel | ClaudeModel | OpenAIModel | HuggingFaceModel | SolarLLMModel;
+//=======================================================
+export const ModelEnumTypeMap: APIProviderModelEnumTypeMap = {
+	Gemini: GeminiModel,
+	Claude: ClaudeModel,
+	OpenAI: OpenAIModel,
+	'Hugging Face': HuggingFaceModel,
+	SolarLLM: SolarLLMModel
+};
+
+export const DefaultModelValueMap: APIProviderModelValueMap = {
+	Gemini: GeminiModel.Gemini15Flash8BExp,
+	Claude: ClaudeModel.Claude3Sonnet,
+	OpenAI: OpenAIModel.GPT35Turbo,
+	'Hugging Face': HuggingFaceModel.GPT2,
+	SolarLLM: SolarLLMModel.SolarPro
+};
