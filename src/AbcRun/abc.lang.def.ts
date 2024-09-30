@@ -9,17 +9,13 @@
 //       토크나이저의 주관심사이다.
 
 import {
-  IMonarchLanguage,
-  IMonarchLanguageRule,
+  type IMonarchLanguage,
+  type IMonarchLanguageRule,
   IndentAction,
 } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 import { headers, headerRules } from "./abc.lang.header";
 
 interface LanguageDefinition extends IMonarchLanguage {
-  ignoreCase: boolean;
-  includeLF: boolean;
-  defaultToken: string;
-  escapes: RegExp;
   headers: string[];
   tokenizer: {
     root: IMonarchLanguageRule[];
@@ -27,7 +23,6 @@ interface LanguageDefinition extends IMonarchLanguage {
     whitespace: IMonarchLanguageRule[];
     [key: string]: IMonarchLanguageRule[];
   };
-  brackets: [string, string, string][];
   autoClosingPairs: { open: string; close: string }[];
   surroundingPairs: { open: string; close: string }[];
   folding: {
@@ -40,7 +35,7 @@ interface LanguageDefinition extends IMonarchLanguage {
   onEnterRules: {
     beforeText: RegExp;
     afterText?: RegExp;
-    action: { indentAction: IndentAction };
+    action: { indentAction: number };
   }[];
 }
 
@@ -111,12 +106,16 @@ const langdef: LanguageDefinition = {
     ...headerRules,
   },
 
+  // NOTE: 'brackets' 속성은 IMonarchLanguageBracket 타입 원소의 배열 형태로 정의되어 있다.
+  //       IMonarchLanguageBracket은 '객체' 형태로 정의된 '인터페이스'이지만,
+  //       Monaco Editor의 실제 구현에서는 배열 형태를 지정하지 않으면 런타임 오류가 발생한다.
+  //       해서 임시로 타입 체크 경고를 무시하고 배열 형태로 사용한다.
   brackets: [
     ["{", "}", "delimiter.curly"],
     ["[", "]", "delimiter.square"],
     ["(", ")", "delimiter.parenthesis"],
     ["%{", "%}", "delimiter.bracket"],
-  ],
+  ] as any, // 'as any'를 사용하여 타입 체크 경고를 억제
 
   autoClosingPairs: [
     { open: "{", close: "}" },
