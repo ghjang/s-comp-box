@@ -42,6 +42,7 @@
 
 	$: debouncedHandleLastContentChange(lastInput.content);
 
+	// NOTE: 'onMount' 보다 나중에 호출된다.
 	async function handleEditorInit(_event: CustomEvent<MonacoEditorEvents['editorInit']>) {
 		if (!langdef) {
 			const module = await import('$lib/poly/lang.def');
