@@ -1,5 +1,7 @@
 import type * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
 
+export type IStandaloneCodeEditor = monaco.editor.IStandaloneCodeEditor;
+
 export type IMonarchLanguage = monaco.languages.IMonarchLanguage;
 export type IMonarchLanguageRule = monaco.languages.IMonarchLanguageRule;
 export type IMonarchLanguageBracket = monaco.languages.IMonarchLanguageBracket;
@@ -29,6 +31,11 @@ export function createRange(
   endLineNumber: number,
   endColumn: number
 ): monaco.Range;
+
+export function equalsRange(
+  range1: monaco.Range,
+  range2: monaco.Range
+): boolean;
 
 export function getMonacoKeyBindingConstant(): {
   keyMod: typeof monaco.KeyMod;
@@ -74,3 +81,34 @@ export function createMonacoEditor(
   element: HTMLElement,
   options: monaco.editor.IStandaloneEditorConstructionOptions
 ): monaco.editor.IStandaloneCodeEditor;
+
+//============================================================
+export interface MonacoBundleModule {
+  registerCustomLanguage: (langOpts: LanguageOptions) => void;
+  setWarnings: (
+    editor: IStandaloneCodeEditor,
+    warnings: Warning[]
+  ) => { [key: string]: Marker };
+  clearWarnings: (editor: IStandaloneCodeEditor) => void;
+  clearSpecificWarning: (
+    editor: IStandaloneCodeEditor,
+    markerId: string
+  ) => void;
+  createRange: (
+    startLineNumber: number,
+    startColumn: number,
+    endLineNumber: number,
+    endColumn: number
+  ) => monaco.Range;
+  equalsRange: (range1: monaco.Range, range2: monaco.Range) => boolean;
+  setWorkerUrl: (url: string) => void;
+  createMonacoEditor: (
+    element: HTMLElement,
+    options: any
+  ) => IStandaloneCodeEditor;
+  getMonacoKeyBindingConstant: () => { keyMod: any; keyCode: any };
+  getMarkerStore: () => { [key: string]: Marker };
+  CompletionItemKind: CompletionItemKindType;
+  IndentAction: IndentActionType;
+  getIndentAction: (indentAction: string) => IndentActionType;
+}

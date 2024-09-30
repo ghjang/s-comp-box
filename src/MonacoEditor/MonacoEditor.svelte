@@ -1,10 +1,17 @@
-<script>
+<script lang="ts">
   import { onMount, onDestroy, createEventDispatcher, tick } from "svelte";
+  import type {
+    IStandaloneCodeEditor as Editor,
+    IRange,
+    LanguageOptions,
+    MonacoBundleModule,
+    Warning,
+  } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
   const dispatch = createEventDispatcher();
-  let monacoBundleModule;
+  let monacoBundleModule: MonacoBundleModule;
 
-  export let resourcePath = null;
+  export let resourcePath: string | null = null;
   export let bundleName = "monaco-editor-custom";
   export let workerPath = "editor.worker.bundle.js";
 
@@ -16,41 +23,42 @@
   export let theme = "vs-dark";
   export let minimap = true;
   export let hover = false;
-  export let matchBrackets = "near";
+  export let matchBrackets: "never" | "near" | "always" = "near";
   export let bracketPairColorization = true;
-  export let autoFindInSelection = "multiline";
+  export let autoFindInSelection: "never" | "always" | "multiline" =
+    "multiline";
   export let autoFindMatches = false;
   export let showStatusBar = false;
 
-  export const registerCustomLanguage = (langOpts) => {
+  export const registerCustomLanguage = (langOpts: LanguageOptions): void => {
     monacoBundleModule.registerCustomLanguage(langOpts);
   };
 
-  export const setEditorWarnings = (warnings) => {
+  export const setEditorWarnings = (warnings: Warning[]): void => {
     editor && monacoBundleModule.setWarnings(editor, warnings);
   };
 
-  export const clearEditorWarnings = () => {
+  export const clearEditorWarnings = (): void => {
     editor && monacoBundleModule.clearWarnings(editor);
   };
 
-  let editorContainer;
-  let editor;
-  let editorBgColor;
-  let statusBar;
+  let editorContainer: HTMLElement;
+  let editor: Editor;
+  let editorBgColor: string | null;
+  let statusBar: HTMLElement;
 
-  export async function update() {
+  export async function update(): Promise<void> {
     await tick();
     layout();
   }
 
-  export function layout(revealPosition = false) {
+  export function layout(revealPosition = false): void {
     if (editor) {
       editor.layout();
 
       if (revealPosition) {
         const pos = editor.getPosition();
-        editor.revealPosition(pos);
+        pos && editor.revealPosition(pos);
       }
 
       if (!editorBgColor) {
@@ -59,17 +67,17 @@
     }
   }
 
-  export function focus() {
+  export function focus(): void {
     if (editor) {
       editor.focus();
     }
   }
 
-  export function getText() {
+  export function getText(): string {
     return editor ? editor.getValue() : "";
   }
 
-  export function setText(text, formatDocument = false) {
+  export function setText(text: string, formatDocument = false): void {
     if (!editor || text === undefined || text === null) {
       return;
     }
@@ -83,15 +91,15 @@
       //
       // 'Python'같은 언어의 경우에는 자체 지원은 없고 'Prettier' 같은
       // 외부 라이브러리를 사용해야 한다고 함(?).
-      editor.getAction("editor.action.formatDocument").run();
+      editor.getAction("editor.action.formatDocument")?.run();
     }
   }
 
-  export function getSelection() {
+  export function getSelection(): IRange | null {
     return editor ? editor.getSelection() : null;
   }
 
-  export function setSelection(range) {
+  export function setSelection(range: IRange): void {
     if (
       range &&
       typeof range.startLineNumber === "number" &&
@@ -115,10 +123,10 @@
     return editor ? editor.getModel() : null;
   }
 
-  export function getEditorBackgroundColor() {
+  export function getEditorBackgroundColor(): string | null {
     if (editorContainer) {
       const monacoEditorDiv = editorContainer.querySelector(".monaco-editor");
-      if (monacoEditorDiv) {
+      if (monacoEditorDiv instanceof HTMLElement) {
         const bgColor =
           window.getComputedStyle(monacoEditorDiv).backgroundColor;
         return bgColor;
@@ -127,7 +135,7 @@
     return null;
   }
 
-  function initMonacoEditor(container) {
+  function initMonacoEditor(container: HTMLElement): void {
     if (editor) {
       return;
     }
@@ -169,14 +177,14 @@
       },
     });
 
-    editor.getModel().onDidChangeContent(async () => {
+    editor.getModel()?.onDidChangeContent(async () => {
       value = editor.getValue();
       await tick();
       dispatch("contentChange", { value });
     });
 
     if (autoFindMatches) {
-      let currentDecorations = [];
+      let currentDecorations: string[] = [];
 
       editor.onDidChangeCursorPosition((e) => {
         dispatch("cursorPositionChange", { position: e.position });
@@ -184,14 +192,16 @@
 
       editor.onDidChangeCursorSelection((_e) => {
         const selection = editor.getSelection();
-        const selectedText = editor.getModel().getValueInRange(selection);
+        if (!selection) return;
+
+        const selectedText = editor.getModel()?.getValueInRange(selection);
 
         if (
           editor.hasTextFocus() &&
           selectedText &&
           selectedText.trim() !== ""
         ) {
-          const matches = editor.getModel().findMatches(
+          const matches = editor.getModel()?.findMatches(
             selectedText,
             true, // searchOnlyEditableRange
             false, // isRegex
@@ -199,6 +209,8 @@
             null, // wordSeparators
             true, // captureMatches
           );
+
+          if (!matches) return;
 
           // 현재 선택된 영역의 범위
           const selectionRange = monacoBundleModule.createRange(
@@ -210,7 +222,10 @@
 
           // 현재 선택된 영역을 제외한 매칭 결과
           const decorations = matches
-            .filter((match) => !selectionRange.equalsRange(match.range))
+            .filter(
+              (match) =>
+                !monacoBundleModule.equalsRange(selectionRange, match.range),
+            )
             .map((match) => ({
               range: match.range,
               options: {
@@ -218,6 +233,7 @@
               },
             }));
 
+          // FIXME: 'deprecated'된 'deltaDecorations' 메서드 제거
           currentDecorations = editor.deltaDecorations(
             currentDecorations,
             decorations,
@@ -233,7 +249,7 @@
         const lineNumber = e.position.lineNumber;
         const column = e.position.column;
         const model = editor.getModel();
-        const lineCount = model.getLineCount();
+        const lineCount = model?.getLineCount() ?? 0;
         statusBar.textContent = `Ln ${lineNumber}, Col ${column} (${lineCount} lines)`;
       });
     }
@@ -251,9 +267,9 @@
   }
 
   onMount(async () => {
-    monacoBundleModule = await import(
+    monacoBundleModule = (await import(
       "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js"
-    );
+    )) as unknown as MonacoBundleModule;
     initMonacoEditor(editorContainer);
     dispatch("editorInit");
   });

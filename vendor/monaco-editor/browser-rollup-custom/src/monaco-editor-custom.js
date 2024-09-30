@@ -378,7 +378,7 @@ export function createMonacoEditor(element, options) {
   return editor;
 }
 
-function addCommand(editor, editorId, keybinding, handler) {
+function addCommand(editor, _editorId, keybinding, handler) {
   editor.addCommand(keybinding, () => {
     const activeEditor = editorInstances.get(activeEditorId);
     if (activeEditor) {
@@ -611,6 +611,10 @@ export function createRange(
     endLineNumber,
     endColumn
   );
+}
+
+export function equalsRange(range1, range2) {
+  return monaco.Range.equals(range1, range2);
 }
 
 export function getMonacoKeyBindingConstant() {

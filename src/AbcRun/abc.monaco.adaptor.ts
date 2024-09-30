@@ -73,8 +73,14 @@ export default class MonacoAdaptor {
     let endOffset;
 
     if (range) {
-      startOffset = model.getOffsetAt(range.getStartPosition());
-      endOffset = model.getOffsetAt(range.getEndPosition());
+      startOffset = model.getOffsetAt({
+        lineNumber: range.startLineNumber,
+        column: range.startColumn,
+      });
+      endOffset = model.getOffsetAt({
+        lineNumber: range.endLineNumber,
+        column: range.endColumn,
+      });
     } else {
       const position = this.editor.getPosition();
       startOffset = model.getOffsetAt(position);
