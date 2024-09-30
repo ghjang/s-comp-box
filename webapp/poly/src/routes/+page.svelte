@@ -12,19 +12,35 @@
 	let editor: MonacoEditor;
 	let langdef: any;
 
-	let markers: string[] = [];
-	let lastInputContent: string = '';
+	const localStorageKey = 'poly-editor-content';
+	let editorContent: string = '';
+
+	let markers: Map<string, { lineNumber: number; column: number }> = new Map();
+	let lastInput: { content: string; markerId: string | null } = { content: '', markerId: null };
 
 	const handleResize = debounce(() => {
 		editor?.layout();
 	}, 100);
 
+	const debouncedHandleLastContentChange = debounce(handleLastContentChange, 100);
+
 	onMount(() => {
 		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+
+		// 로컬 스토리지에서 저장된 내용 불러오기
+		const savedContent = localStorage.getItem(localStorageKey);
+		if (savedContent) {
+			editorContent = savedContent;
+		}
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+			handleResize.cancel();
+			debouncedHandleLastContentChange.cancel();
+		};
 	});
 
-	$: handleLastContentChange(lastInputContent);
+	$: debouncedHandleLastContentChange(lastInput.content);
 
 	async function handleEditorInit(_event: CustomEvent<MonacoEditorEvents['editorInit']>) {
 		if (!langdef) {
@@ -39,7 +55,14 @@
 	}
 
 	function handleContentChange(event: CustomEvent<MonacoEditorEvents['contentChange']>) {
-		const { cursorPosition } = event.detail;
+		const { value, cursorPosition } = event.detail;
+
+		// 에디터 내용이 변경될 때마다 로컬 스토리지에 저장
+		if (value) {
+			editorContent = value;
+			localStorage.setItem(localStorageKey, value);
+		}
+
 		if (cursorPosition) {
 			const model = editor.getModel();
 			if (model) {
@@ -62,15 +85,15 @@
 				const wordAtPosition = model.getWordAtPosition(cursorPosition);
 
 				if (wordAtPosition) {
-					lastInputContent = lineContent.substring(
+					lastInput.content = lineContent.substring(
 						wordAtPosition.startColumn - 1,
 						wordAtPosition.endColumn - 1
 					);
 				} else {
-					lastInputContent = lineContent.charAt(cursorPosition.column - 2) || '';
+					lastInput.content = lineContent.charAt(cursorPosition.column - 2) || '';
 				}
 
-				if (lastInputContent === '#') {
+				if (lastInput.content === '#') {
 					const newDecorations = model.deltaDecorations(
 						[],
 						[
@@ -87,38 +110,49 @@
 							}
 						]
 					);
-					markers.push(newDecorations[0]);
+					const newMarkerId = newDecorations[0];
+					markers.set(newMarkerId, {
+						lineNumber: cursorPosition.lineNumber,
+						column: cursorPosition.column
+					});
+					lastInput.markerId = newMarkerId;
+				} else {
+					lastInput.markerId = null;
 				}
 			}
 		}
 	}
 
 	async function handleLastContentChange(content: string) {
-		const trimmedContent = content.trim();
-		if (trimmedContent === '#' && markers.length > 0) {
+		if (content.trim() === '#' && lastInput.markerId) {
 			const model = editor.getModel();
 			if (model) {
-				const markerId = markers[markers.length - 1];
+				const markerId = lastInput.markerId;
 				const marker = model.getDecorationRange(markerId);
-				if (marker) {
-					const lineContent = model.getLineContent(marker.startLineNumber);
-					const leftContent = lineContent.substring(0, marker.startColumn - 1).trim();
+				const markerPosition = markers.get(markerId);
+				if (marker && markerPosition) {
+					const lineContent = model.getLineContent(markerPosition.lineNumber);
+					const leftContent = lineContent.substring(0, markerPosition.column - 1).trim();
 
 					const apiResponse = await callGeminiAPI(leftContent);
 					const cleanedResponse = apiResponse.replace(/\n/g, ' ').trim();
 
 					const range = editor.createRange(
-						marker.startLineNumber,
-						marker.startColumn,
-						marker.endLineNumber,
-						model.getLineMaxColumn(marker.endLineNumber)
+						markerPosition.lineNumber,
+						markerPosition.column,
+						markerPosition.lineNumber,
+						model.getLineMaxColumn(markerPosition.lineNumber)
 					);
 
-					model.pushEditOperations([], [{ range: range, text: ` ${cleanedResponse}` }], () => null);
+					model.pushEditOperations([], [{ range, text: ` ${cleanedResponse}` }], () => null);
 
 					// 마커 제거
 					model.deltaDecorations([markerId], []);
-					markers = markers.filter((id) => id !== markerId);
+					markers.delete(markerId);
+
+					if (markerId === lastInput.markerId) {
+						lastInput.markerId = null;
+					}
 				}
 			}
 		}
@@ -157,10 +191,10 @@ ${content}`;
 	<MonacoEditor
 		bind:this={editor}
 		resourcePath={MONACO_EDITOR_RESOURCE_PATH}
+		value={editorContent}
 		on:editorInit={handleEditorInit}
 		on:contentChange={handleContentChange}
 	/>
-	<p>마지막 입력 내용: {lastInputContent}</p>
 </main>
 
 <style lang="scss">
