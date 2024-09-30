@@ -22,6 +22,10 @@ if [ -d "${BUILD_DIR}" ]; then
   cp ./src/codicon.ttf ${BUILD_DIR}
   echo "done."
 
+  printf "Copying 'monaco-editor-custom.d.ts'..."
+  cp ./src/monaco-editor-custom.d.ts ${BUILD_DIR}/monaco-editor-custom.bundle.d.ts
+  echo "done."
+
   printf "Copying build directory to destination..."
   cp -r ${BUILD_DIR} ${DEST_DIR}
   echo "done."
