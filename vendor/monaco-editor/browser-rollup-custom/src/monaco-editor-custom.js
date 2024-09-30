@@ -264,6 +264,87 @@ const commonCommands = [
     },
   },
   {
+    id: "deleteRight",
+    keybinding: monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyK,
+    handler: (editor) => {
+      const position = editor.getPosition();
+      const model = editor.getModel();
+      const lineNumber = position.lineNumber;
+      const column = position.column;
+      const lineLength = model.getLineLength(lineNumber);
+
+      if (column === lineLength + 1) {
+        // 커서가 라인 끝에 있을 경우, 다음 라인과 병합
+        if (lineNumber < model.getLineCount()) {
+          editor.executeEdits("", [
+            {
+              range: new monaco.Range(lineNumber, column, lineNumber + 1, 1),
+              text: "",
+              forceMoveMarkers: true,
+            },
+          ]);
+        }
+      } else {
+        // 현재 커서 위치부터 라인 끝까지 삭제
+        editor.executeEdits("", [
+          {
+            range: new monaco.Range(
+              lineNumber,
+              column,
+              lineNumber,
+              lineLength + 1
+            ),
+            text: "",
+            forceMoveMarkers: true,
+          },
+        ]);
+      }
+    },
+  },
+  {
+    id: "deleteLeft",
+    keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace,
+    handler: (editor) => {
+      const position = editor.getPosition();
+      const model = editor.getModel();
+      const lineNumber = position.lineNumber;
+      const column = position.column;
+
+      if (column === 1) {
+        // 커서가 라인 시작에 있을 경우, 이전 라인과 병합
+        if (lineNumber > 1) {
+          const prevLineLength = model.getLineLength(lineNumber - 1);
+          editor.executeEdits("", [
+            {
+              range: new monaco.Range(
+                lineNumber - 1,
+                prevLineLength + 1,
+                lineNumber,
+                1
+              ),
+              text: "",
+              forceMoveMarkers: true,
+            },
+          ]);
+          editor.setPosition({
+            lineNumber: lineNumber - 1,
+            column: prevLineLength + 1,
+          });
+        }
+      } else {
+        // 현재 커서 위치부터 라인 시작까지 삭제
+        editor.executeEdits("", [
+          {
+            range: new monaco.Range(lineNumber, 1, lineNumber, column),
+            text: "",
+            forceMoveMarkers: true,
+          },
+        ]);
+        editor.setPosition({ lineNumber: lineNumber, column: 1 });
+      }
+    },
+  },
+  {
     id: "joinLine",
     keybinding: monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyJ,
     handler: (editor) => {
