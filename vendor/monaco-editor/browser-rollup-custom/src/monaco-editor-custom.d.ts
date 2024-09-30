@@ -19,6 +19,10 @@ export type IndentActionType = typeof monaco.languages.IndentAction;
 export const CompletionItemKind: typeof monaco.languages.CompletionItemKind;
 export const IndentAction: typeof monaco.languages.IndentAction;
 
+// NOTE: 'monaco.editor.TrackedRangeStickiness'를 직접 참조할 경우에 추가적인 의존 모듈이 필요해져서
+//       결과적으로 'SvelteKit'에서 'SSR'시에 문제가 발생한다.
+//export const TrackedRangeStickiness: typeof monaco.editor.TrackedRangeStickiness;
+
 export function getIndentAction(
   indentAction: string
 ): monaco.languages.IndentAction;

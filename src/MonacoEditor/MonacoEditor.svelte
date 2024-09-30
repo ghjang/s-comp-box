@@ -1,3 +1,23 @@
+<script lang="ts" context="module">
+  import type { Position } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
+  export type { Position };
+
+  //export { TrackedRangeStickiness } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
+  export enum TrackedRangeStickiness {
+    AlwaysGrowsWhenTypingAtEdges = 0,
+    NeverGrowsWhenTypingAtEdges = 1,
+    GrowsOnlyWhenTypingBefore = 2,
+    GrowsOnlyWhenTypingAfter = 3,
+  }
+
+  export type MonacoEditorEvents = {
+    contentChange: { value: string; cursorPosition?: Position };
+    cursorPositionChange: { position: Position };
+    runCode: { value: string };
+    editorInit: void;
+  };
+</script>
+
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher, tick } from "svelte";
   import type {
@@ -8,7 +28,14 @@
     Warning,
   } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
-  const dispatch = createEventDispatcher();
+  type MonacoEditorEvents = {
+    contentChange: { value: string; cursorPosition?: Position };
+    cursorPositionChange: { position: Position };
+    runCode: { value: string };
+    editorInit: void;
+  };
+
+  const dispatch = createEventDispatcher<MonacoEditorEvents>();
   let monacoBundleModule: MonacoBundleModule;
 
   export let resourcePath: string | null = null;
@@ -123,6 +150,20 @@
     return editor ? editor.getModel() : null;
   }
 
+  export function createRange(
+    startLineNumber: number,
+    startColumn: number,
+    endLineNumber: number,
+    endColumn: number,
+  ): IRange {
+    return monacoBundleModule.createRange(
+      startLineNumber,
+      startColumn,
+      endLineNumber,
+      endColumn,
+    );
+  }
+
   export function getEditorBackgroundColor(): string | null {
     if (editorContainer) {
       const monacoEditorDiv = editorContainer.querySelector(".monaco-editor");
@@ -179,8 +220,12 @@
 
     editor.getModel()?.onDidChangeContent(async () => {
       value = editor.getValue();
+      const cursorPosition = editor.getPosition();
       await tick();
-      dispatch("contentChange", { value });
+      dispatch("contentChange", {
+        value,
+        cursorPosition: cursorPosition || undefined,
+      });
     });
 
     if (autoFindMatches) {
