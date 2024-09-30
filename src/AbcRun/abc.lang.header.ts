@@ -1,3 +1,5 @@
+import { type IMonarchLanguageRule } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
+
 // 'ABC music notation' 헤더
 export const headers: string[] = [
   "X", // 참조 번호(Reference Number)
@@ -23,12 +25,13 @@ export const headers: string[] = [
   "V", // 음성(Voice)
 ];
 
-interface Rule {
-  token: string;
-  bracket?: "@open" | "@close";
-}
+type SimpleRule =
+  | string
+  | RegExp
+  | { token: string; bracket?: "@open" | "@close" };
+type CustomMonarchLanguageRule = SimpleRule | IMonarchLanguageRule;
 
-type HeaderRule = (string | RegExp | Rule)[][];
+type HeaderRule = CustomMonarchLanguageRule[][];
 
 export const headerRules: Record<string, HeaderRule> = {
   headerX: [

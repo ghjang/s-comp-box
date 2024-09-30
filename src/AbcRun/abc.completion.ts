@@ -1,9 +1,24 @@
 import {
   createRange,
   CompletionItemKind as _,
+  type ITextModel,
+  type Position,
+  type CompletionItem as MonacoCompletionItem,
+  type CompletionItemProvider,
+  type CompletionList,
+  type ProviderResult,
 } from "../../vendor/monaco-editor/browser-rollup-custom/dist/monaco-editor-custom.bundle.js";
 
-function setCompletionItemReplaceInfo(model, position, items) {
+interface CompletionItem extends MonacoCompletionItem {
+  type?: string;
+  selectable?: boolean;
+}
+
+function setCompletionItemReplaceInfo(
+  model: ITextModel,
+  position: Position,
+  items: CompletionItem[]
+): void {
   items.forEach((item) => {
     switch (item.type) {
       case "key": {
@@ -88,13 +103,24 @@ function setCompletionItemReplaceInfo(model, position, items) {
   });
 }
 
-function createCompletionItems(model, position, items, itemType) {
+function createCompletionItems(
+  model: ITextModel,
+  position: Position,
+  items: [string, string, number?][],
+  itemType: string
+): CompletionItem[] {
   const _items = items.map((item, index) => ({
     type: itemType,
     kind: item[2] || _.Constant,
     label: item[0],
     insertText: item[1],
     sortText: String(index + 1).padStart(2, "0"),
+    range: createRange(
+      position.lineNumber,
+      position.column,
+      position.lineNumber,
+      position.column
+    ),
   }));
 
   setCompletionItemReplaceInfo(model, position, _items);
@@ -103,7 +129,10 @@ function createCompletionItems(model, position, items, itemType) {
 }
 
 // NOTE: 'whiteKeys'와 'blackKeys'에는 'b, #'을 최대 1개만 사용한 음이름만을 포함시킴.
-function createKeyCompletionItems(model, position) {
+function createKeyCompletionItems(
+  model: ITextModel,
+  position: Position
+): CompletionItem[] {
   const whiteKeys = ["C", "D", "E", "F", "G", "A", "B", "Cb", "Fb", "B#", "E#"];
 
   const blackKeys = [
@@ -132,12 +161,29 @@ function createKeyCompletionItems(model, position) {
     insertText: "",
     selectable: false,
     sortText: "00",
+    range: createRange(
+      position.lineNumber,
+      position.column,
+      position.lineNumber,
+      position.column
+    ),
   };
 
-  return [header, ...createCompletionItems(model, position, keyPairs, "key")];
+  return [
+    header,
+    ...createCompletionItems(
+      model,
+      position,
+      keyPairs as [string, string, number?][],
+      "key"
+    ),
+  ];
 }
 
-function createDefaultNoteLengthCompletionItems(model, position) {
+function createDefaultNoteLengthCompletionItems(
+  model: ITextModel,
+  position: Position
+): CompletionItem[] {
   const notes = [
     ["Whole", "1/1"],
     ["Half", "1/2"],
@@ -154,22 +200,41 @@ function createDefaultNoteLengthCompletionItems(model, position) {
     insertText: "",
     selectable: false,
     sortText: "00",
+    range: createRange(
+      position.lineNumber,
+      position.column,
+      position.lineNumber,
+      position.column
+    ),
   };
 
   return [
     header,
-    ...createCompletionItems(model, position, notes, "noteLength"),
+    ...createCompletionItems(
+      model,
+      position,
+      notes as [string, string, number?][],
+      "noteLength"
+    ),
   ];
 }
 
-function createDecorationCompletionItems(model, position) {
+function createDecorationCompletionItems(
+  model: ITextModel,
+  position: Position
+): CompletionItem[] {
   const decorations = [
     ["Arpeggio", "arpeggio", _.Text],
     ["Fermata", "fermata", _.Text],
     ["Trill", "trill", _.Text],
   ];
 
-  return createCompletionItems(model, position, decorations, "decoration");
+  return createCompletionItems(
+    model,
+    position,
+    decorations as [string, string, number?][],
+    "decoration"
+  );
 }
 
 // TODO: 'isAtDecoration' 함수 개선
@@ -179,7 +244,7 @@ function createDecorationCompletionItems(model, position) {
 // - '!'를 최초 입력후 자동완성을 발동하는 경우도 고려해야 함. '!' 문자 매칭 상태등을 고혀해야할 것으로 보임.
 //
 // (문자열 처리 관련 알고리즘?)
-function isAtDecoration(model, position) {
+function isAtDecoration(model: ITextModel, position: Position): boolean {
   const lineContent = model.getLineContent(position.lineNumber);
   if (position.column > 1 && lineContent[position.column - 2] === "!") {
     return true;
@@ -187,9 +252,12 @@ function isAtDecoration(model, position) {
   return false;
 }
 
-const completionItemProvider = {
-  provideCompletionItems: function (model, position) {
-    const matched = (regex) => {
+const completionItemProvider: CompletionItemProvider = {
+  provideCompletionItems: function (
+    model: ITextModel,
+    position: Position
+  ): ProviderResult<CompletionList> {
+    const matched = (regex: RegExp): RegExpMatchArray | null => {
       const textUntilPosition = model.getValueInRange({
         startLineNumber: position.lineNumber,
         startColumn: 1,
@@ -199,13 +267,16 @@ const completionItemProvider = {
       return textUntilPosition.match(regex);
     };
 
-    const patterns = [
+    const patterns: [
+      RegExp | ((model: ITextModel, position: Position) => boolean),
+      (model: ITextModel, position: Position) => CompletionItem[]
+    ][] = [
       [/.*K:\s*$/, createKeyCompletionItems],
       [/.*L:\s*$/, createDefaultNoteLengthCompletionItems],
       [isAtDecoration, createDecorationCompletionItems],
     ];
 
-    let suggestions = [];
+    let suggestions: CompletionItem[] = [];
 
     for (const [matchObj, createItems] of patterns) {
       if (
@@ -222,7 +293,7 @@ const completionItemProvider = {
             suggestion.model = model;
             suggestion.position = position;
         });
-        */
+    */
 
     return { suggestions };
   },
@@ -230,7 +301,9 @@ const completionItemProvider = {
   // TODO: 'item'에 맞는 설명 작성
   //
   // 'documentation' 속성에는 '일반 텍스트' 또는 '마크다운' 형식의 문자열을 설정할 수 있다.
-  resolveCompletionItem: function (item) {
+  resolveCompletionItem: function (
+    item: CompletionItem
+  ): ProviderResult<CompletionItem> {
     if (item.selectable === false) {
       return null;
     }

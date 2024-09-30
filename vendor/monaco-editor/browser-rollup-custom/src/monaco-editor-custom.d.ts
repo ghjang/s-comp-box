@@ -4,6 +4,14 @@ export type IMonarchLanguage = monaco.languages.IMonarchLanguage;
 export type IMonarchLanguageRule = monaco.languages.IMonarchLanguageRule;
 export type IMonarchLanguageBracket = monaco.languages.IMonarchLanguageBracket;
 
+export type IRange = monaco.IRange;
+export type ITextModel = monaco.editor.ITextModel;
+export type Position = monaco.Position;
+export type CompletionItem = monaco.languages.CompletionItem;
+export type CompletionItemProvider = monaco.languages.CompletionItemProvider;
+export type CompletionList = monaco.languages.CompletionList;
+export type ProviderResult<T> = monaco.languages.ProviderResult<T>;
+
 export type CompletionItemKindType = typeof monaco.languages.CompletionItemKind;
 export type IndentActionType = typeof monaco.languages.IndentAction;
 export const CompletionItemKind: typeof monaco.languages.CompletionItemKind;
