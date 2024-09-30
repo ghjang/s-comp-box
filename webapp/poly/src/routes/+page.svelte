@@ -159,11 +159,17 @@
 	}
 
 	async function callGeminiAPI(content: string): Promise<string> {
-		const apiPrompt = `다음 다항식의 최종 전개 결과만 계산해주세요.
-계산된 결과 다항식은 내림차순으로 정렬해주세요.
-부가적인 설명은 필요없습니다.
-곱셈 기호 '*'를 생략 가능한 경우 생략해주세요.
-거듭제곱 기호로 '^'를 사용해주세요.:
+		const apiPrompt = `다음 다항식의 최종 전개 결과만 계산해주세요!
+
+[제약사항]
+- 계산된 결과 다항식은 내림차순으로 정렬
+- 부가적인 설명은 필요없음.
+- 곱셈 기호 '*'를 생략 가능한 경우 생략
+- 거듭제곱 기호로 '^'를 사용
+- 숫자로만 구성된 수식일 경우에는 전개가 아니라 계산 결과 숫자값만 계산
+- 계산식이 잘못된 표현일 경우에 문제가된 내용에 대한 간결한 한글 설명제공
+
+[다항식]
 ${content}`;
 
 		try {
@@ -191,6 +197,7 @@ ${content}`;
 	<MonacoEditor
 		bind:this={editor}
 		resourcePath={MONACO_EDITOR_RESOURCE_PATH}
+		language="poly"
 		value={editorContent}
 		on:editorInit={handleEditorInit}
 		on:contentChange={handleContentChange}
