@@ -22,7 +22,7 @@
 		editor?.layout();
 	}, 100);
 
-	const debouncedHandleLastContentChange = debounce(handleLastContentChange, 100);
+	const debouncedHandleLastContentChange = debounce(handleLastContentChange, 300);
 
 	onMount(() => {
 		window.addEventListener('resize', handleResize);
