@@ -37,15 +37,55 @@
 		barBorderColor: '#FF8C00'
 	};
 
-	onMount(async () => {
-		const response = await fetch(`${base}/data/frequency.json`);
-		frequencyData = await response.json();
+	// 빈도 데이터를 업데이트하고 총 회차를 계산하는 함수
+	function updateFrequencyData(data: any) {
+		const frequencyWithoutBonus = [...data.cumulative_stats.frequency_without_bonus];
+		const frequencyWithBonus = [...data.cumulative_stats.frequency_without_bonus];
 
-		// 전체 회차 계산
-		const drawNumbers = Object.keys(frequencyData.recent_draws).map((key) =>
+		// recent_draws의 데이터를 반영
+		const recentDrawNumbers = Object.keys(data.recent_draws).map((key) =>
 			parseInt(key.replace('draw_', ''))
 		);
-		totalDraws = Math.max(...drawNumbers);
+		const maxRecentDraw = Math.max(...recentDrawNumbers);
+
+		Object.values(data.recent_draws).forEach((draw: any) => {
+			draw.winning_numbers.forEach((num: number) => {
+				frequencyWithoutBonus[num - 1]++;
+				frequencyWithBonus[num - 1]++;
+			});
+			frequencyWithBonus[draw.bonus_number - 1]++;
+		});
+
+		return {
+			frequency_without_bonus: frequencyWithoutBonus,
+			frequency_with_bonus: frequencyWithBonus,
+			totalDraws: maxRecentDraw
+		};
+	}
+
+	onMount(async () => {
+		const response = await fetch(`${base}/data/frequency.json`);
+		const rawData = await response.json();
+
+		// 빈도 데이터 업데이트 및 총 회차 계산
+		const {
+			frequency_without_bonus,
+			frequency_with_bonus,
+			totalDraws: updatedTotalDraws
+		} = updateFrequencyData(rawData);
+
+		frequencyData = {
+			...rawData,
+			cumulative_stats: {
+				...rawData.cumulative_stats,
+				frequency_without_bonus,
+				frequency_with_bonus,
+				end_draw: updatedTotalDraws // end_draw 업데이트
+			}
+		};
+
+		// totalDraws 설정
+		totalDraws = updatedTotalDraws;
 	});
 
 	$: if (frequencyData) {
@@ -97,17 +137,17 @@
 
 		.stats {
 			display: flex;
-			justify-content: center; // 중앙 정렬을 위해 변경
+			justify-content: center;
 			margin: 1em;
 
 			.chart-container {
 				width: 100%;
-				max-width: 800px; // 최대 너비 설정
+				max-width: 800px;
 				overflow-x: auto;
 
 				svg {
-					display: block; // inline-block에서 block으로 변경
-					margin: 0 auto; // 좌우 마진을 auto로 설정하여 중앙 정렬
+					display: block;
+					margin: 0 auto;
 				}
 			}
 		}
