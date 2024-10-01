@@ -40,7 +40,7 @@
 	// 빈도 데이터를 업데이트하고 총 회차를 계산하는 함수
 	function updateFrequencyData(data: any) {
 		const frequencyWithoutBonus = [...data.cumulative_stats.frequency_without_bonus];
-		const frequencyWithBonus = [...data.cumulative_stats.frequency_without_bonus];
+		const frequencyWithBonus = [...data.cumulative_stats.frequency_with_bonus];
 
 		// recent_draws의 데이터를 반영
 		const recentDrawNumbers = Object.keys(data.recent_draws).map((key) =>
