@@ -32,5 +32,11 @@ export default defineConfig({
 	},
 	define: {
 		'import.meta.env.MONACO_EDITOR_RESOURCE_PATH': JSON.stringify('/resources/monaco-editor')
+	},
+	resolve: {
+		alias: {
+			$s_comp_extra: resolve(__dirname, '../../src'),
+			$components: resolve(__dirname, './src/components')
+		}
 	}
 });
