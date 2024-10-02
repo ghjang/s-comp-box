@@ -22,14 +22,18 @@
 		};
 	});
 
-	async function callGeminiAPI(content: string, promptHeader: string): Promise<string> {
-		console.log(`called LLM API: ${content}`);
+	async function callGeminiAPI(
+		content: string,
+		promptHeader: string,
+		thinkThrough: boolean
+	): Promise<string> {
+		console.log(`called LLM API, content: ${content}, thinkThrough: ${thinkThrough}`);
 
 		const polynomialExpr = content;
 		const apiPrompt = `${promptHeader}${polynomialExpr}`;
 
 		try {
-			const model = GeminiModel.Gemini15Flash8BExp;
+			const model = thinkThrough ? GeminiModel.Gemini15Pro : GeminiModel.Gemini15Flash8BExp;
 			const request: LLMRequest = createLLMRequest({ prompt: apiPrompt, model });
 			const response: LLMResponse = await singleQuery(request);
 			if (response.error) {

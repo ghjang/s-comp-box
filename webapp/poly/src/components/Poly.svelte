@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
-	enum PolyPrompt {
-		Expand = `다음 다항식을 전개 후 최종 전개 결과만 주세요!
+	const _expand = `
+다음 다항식을 전개 후 최종 전개 결과만 주세요!
 
 [제약사항]
 - 계산된 결과 다항식은 내림차순으로 정렬
@@ -12,8 +12,10 @@
 - 표현식이 잘못된 표현일 경우에 문제가된 내용에 대한 간결한 한글 설명제공
 
 [다항식]
-`,
-		Refactor = `다음 다항식 표현을 인수분해 후 최종 인수분해 결과만 주세요!
+`;
+
+	const _refactor = `
+다음 다항식 표현을 인수분해 후 최종 인수분해 결과만 주세요!
 
 [제약사항]
 - 계산된 결과 다항식은 내림차순으로 정렬
@@ -25,12 +27,17 @@
 - 표현식이 잘못된 표현일 경우에 문제가된 내용에 대한 간결한 한글 설명제공
 
 [다항식]
-`
+`;
+
+	enum PolyPrompt {
+		Expand = _expand,
+		Refactor = _refactor
 	}
 
 	export type LLMSingleQueryFunction = (
 		content: string,
-		polyPromptHeader: string
+		polyPromptHeader: string,
+		thinkThrough: boolean
 	) => Promise<string>;
 </script>
 
@@ -62,6 +69,7 @@
 	let isLoading: boolean = false;
 
 	let polyPromptHeader: PolyPrompt = PolyPrompt.Expand;
+	let thinkThrough: boolean = false;
 
 	const localStorageKey = 'poly-editor-content';
 	const debouncedHandleLastContentChange = debounce(handleLastContentChange, 300);
@@ -103,7 +111,15 @@
 			label: 'Expand',
 			precondition: 'editorTextFocus',
 			keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyE],
-			run: () => handlePolyAction(PolyPrompt.Expand)
+			run: () => handlePolyAction(PolyPrompt.Expand, false)
+		});
+
+		editor.addAction({
+			id: 'poly-expand-think-through',
+			label: 'Expand (Think Through)',
+			precondition: 'editorTextFocus',
+			keybindings: [keyMod.WinCtrl | keyMod.Shift | keyCode.KeyE],
+			run: () => handlePolyAction(PolyPrompt.Expand, true)
 		});
 
 		editor.addAction({
@@ -111,7 +127,15 @@
 			label: 'Refactor',
 			precondition: 'editorTextFocus',
 			keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyR],
-			run: () => handlePolyAction(PolyPrompt.Refactor)
+			run: () => handlePolyAction(PolyPrompt.Refactor, false)
+		});
+
+		editor.addAction({
+			id: 'poly-refactor-think-through',
+			label: 'Refactor (Think Through)',
+			precondition: 'editorTextFocus',
+			keybindings: [keyMod.WinCtrl | keyMod.Shift | keyCode.KeyR],
+			run: () => handlePolyAction(PolyPrompt.Refactor, true)
 		});
 	}
 
@@ -210,7 +234,7 @@
 			const lineContent = model.getLineContent(markerPosition.lineNumber);
 			const leftContent = lineContent.substring(0, markerPosition.column - 2).trim(); // '#' 제외
 
-			const apiResponse = await llmSingleQuery(leftContent, polyPromptHeader);
+			const apiResponse = await llmSingleQuery(leftContent, polyPromptHeader, thinkThrough);
 			const cleanedResponse = apiResponse.replace(/\n/g, ' ').trim();
 
 			const range = editor.createRange(
@@ -236,7 +260,7 @@
 		}
 	}
 
-	function handlePolyAction(promptType: PolyPrompt) {
+	function handlePolyAction(promptType: PolyPrompt, through: boolean) {
 		if (isLoading) return;
 
 		const model = editor.getModel();
@@ -260,6 +284,7 @@
 		model.pushEditOperations([], [{ range, text: '' }], () => null);
 
 		polyPromptHeader = promptType;
+		thinkThrough = through;
 		isActionTriggered = true;
 	}
 </script>
