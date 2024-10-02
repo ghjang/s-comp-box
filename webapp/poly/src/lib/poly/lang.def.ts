@@ -48,7 +48,7 @@ export const langdef: LanguageDefinition = {
 			[/[()]/, 'delimiter.parenthesis'],
 
 			// 등호
-			[/=/, 'delimiter.equals']
+			//[/=/, 'delimiter.equals']
 		],
 
 		// 주석을 위한 새로운 토큰화 규칙
