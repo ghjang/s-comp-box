@@ -31,7 +31,6 @@
   type MonacoEditorEvents = {
     contentChange: { value: string; cursorPosition?: Position };
     cursorPositionChange: { position: Position };
-    runCode: { value: string };
     editorInit: void;
   };
 
@@ -101,7 +100,7 @@
   }
 
   export function getText(): string {
-    return editor ? editor.getValue() : "";
+    return editor?.getValue() ?? "";
   }
 
   export function setText(text: string, formatDocument = false): void {
@@ -150,6 +149,10 @@
     return editor ? editor.getModel() : null;
   }
 
+  export function getPosition(): Position | null {
+    return editor?.getPosition() ?? null;
+  }
+
   export function createRange(
     startLineNumber: number,
     startColumn: number,
@@ -174,6 +177,14 @@
       }
     }
     return null;
+  }
+
+  export function getMonacoKeyBindingConstant() {
+    return monacoBundleModule?.getMonacoKeyBindingConstant();
+  }
+
+  export function addAction(action: any): void {
+    editor?.addAction(action);
   }
 
   function initMonacoEditor(container: HTMLElement): void {
@@ -298,17 +309,6 @@
         statusBar.textContent = `Ln ${lineNumber}, Col ${column} (${lineCount} lines)`;
       });
     }
-
-    const { keyMod, keyCode } =
-      monacoBundleModule.getMonacoKeyBindingConstant();
-    editor.addAction({
-      id: "svelte-monaco-editor-action",
-      label: "Run Code",
-      keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyR],
-      run: function (ed) {
-        dispatch("runCode", { value: ed.getValue() });
-      },
-    });
   }
 
   onMount(async () => {

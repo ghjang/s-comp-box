@@ -23,6 +23,8 @@
 	});
 
 	async function callGeminiAPI(content: string, promptHeader: string): Promise<string> {
+		console.log(`called LLM API: ${content}`);
+
 		const polynomialExpr = content;
 		const apiPrompt = `${promptHeader}${polynomialExpr}`;
 

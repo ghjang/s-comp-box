@@ -58,9 +58,20 @@
     }
   }
 
-  function handleRunCodeFromEditor(event) {
-    const code = event.detail.value;
-    runCode(code);
+  function handleEditorInit() {
+    const { keyMod, keyCode } = editor.getMonacoKeyBindingConstant();
+
+    if (!keyMod || !keyCode) {
+      return;
+    }
+
+    editor.addAction({
+      id: "pyrun-run-code",
+      label: "Run Code",
+      precondition: "editorTextFocus",
+      keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyR],
+      run: () => runCode(editor.getText()),
+    });
   }
 
   function handlePanelSizeChange(event) {
@@ -111,12 +122,12 @@
 <div class="pyrun-box">
   {#if noConsole}
     <MonacoEditor
+      bind:this={editor}
       width="100%"
       height="100%"
       value={code}
       resourcePath={editorResourcePath}
-      bind:this={editor}
-      on:runCode={handleRunCodeFromEditor}
+      on:editorInit={handleEditorInit}
     />
     <DataStore
       bind:this={dataStore}
@@ -129,13 +140,13 @@
       on:panelSizeChanged={handlePanelSizeChange}
     >
       <MonacoEditor
+        bind:this={editor}
         slot="top"
         width="100%"
         height="100%"
         value={code}
         resourcePath={editorResourcePath}
-        bind:this={editor}
-        on:runCode={handleRunCodeFromEditor}
+        on:editorInit={handleEditorInit}
       />
       <Console
         slot="bottom"

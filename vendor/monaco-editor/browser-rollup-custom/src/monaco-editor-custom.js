@@ -698,6 +698,10 @@ export function equalsRange(range1, range2) {
   return monaco.Range.equals(range1, range2);
 }
 
+// NOTE: 'monaco.KeyMode'와 'monaco.KeyCode'를 정적으로 'export'하면
+//       'SvelteKit'의 'SSR' 관련하여 오류가 발생한다. 번들링된 모듈이 서버 사이드에서
+//       'window' 객체를 참조시도하기 때문인 것 같다. 이를 우회하는 방법으로 다음과 같이
+//       '런타임'에서 필요한 값을 동적으로 참조하는 것이 있다.
 export function getMonacoKeyBindingConstant() {
   return {
     keyMod: monaco.KeyMod,
