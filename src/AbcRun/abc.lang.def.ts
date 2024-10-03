@@ -75,7 +75,7 @@ const langdef: LanguageDefinition = {
       [/\d+/, "number"],
 
       // accidentals, factors and tie
-      [/[\^_=\/,>-]/, "operator"],
+      [/[\^_=\/,'>-]/, "operator"],
 
       [/\|:|:\||\|/, "delimiter"],
 
