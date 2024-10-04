@@ -46,13 +46,88 @@
 		return renderer;
 	}
 
+	function createTextTexture(THREE, text, size = 256, color = '#ffffff', backgroundColor = null) {
+		const canvas = document.createElement('canvas');
+		canvas.width = size;
+		canvas.height = size;
+		const context = canvas.getContext('2d');
+
+		// 배경을 투명하게 설정
+		context.clearRect(0, 0, size, size);
+
+		// 텍스트 그리기
+		context.font = `bold ${size / 2}px Arial`;
+		context.fillStyle = color;
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+
+		// 텍스트에 외곽선 추가
+		context.strokeStyle = '#000000';
+		context.lineWidth = size / 16;
+		context.strokeText(text, size / 2, size / 2);
+		context.fillText(text, size / 2, size / 2);
+
+		return new THREE.CanvasTexture(canvas);
+	}
+
 	function createCube(THREE) {
 		const geometry = new THREE.BoxGeometry(1, 1, 1);
 		const material = new THREE.MeshLambertMaterial({
-			// MeshLambertMaterial 사용
-			color: options.cubeColor
+			color: options.cubeColor,
+			transparent: true,
+			opacity: 0.8 // 약간의 투명도 추가
 		});
-		return new THREE.Mesh(geometry, material);
+		const cube = new THREE.Mesh(geometry, material);
+
+		const textures = [
+			createTextTexture(THREE, '1'),
+			createTextTexture(THREE, '2'),
+			createTextTexture(THREE, '3'),
+			createTextTexture(THREE, '4'),
+			createTextTexture(THREE, '5'),
+			createTextTexture(THREE, '6')
+		];
+
+		textures.forEach((texture, index) => {
+			const planeMaterial = new THREE.MeshBasicMaterial({
+				map: texture,
+				transparent: true,
+				side: THREE.DoubleSide
+			});
+			const planeGeometry = new THREE.PlaneGeometry(0.9, 0.9);
+			const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+			// 각 면의 중앙에 평면 위치 조정
+			switch (index) {
+				case 0:
+					plane.position.set(0, 0, 0.501);
+					break; // 앞
+				case 1:
+					plane.position.set(0, 0, -0.501);
+					plane.rotation.y = Math.PI;
+					break; // 뒤
+				case 2:
+					plane.position.set(0, 0.501, 0);
+					plane.rotation.x = -Math.PI / 2;
+					break; // 위
+				case 3:
+					plane.position.set(0, -0.501, 0);
+					plane.rotation.x = Math.PI / 2;
+					break; // 아래
+				case 4:
+					plane.position.set(0.501, 0, 0);
+					plane.rotation.y = Math.PI / 2;
+					break; // 오른쪽
+				case 5:
+					plane.position.set(-0.501, 0, 0);
+					plane.rotation.y = -Math.PI / 2;
+					break; // 왼쪽
+			}
+
+			cube.add(plane);
+		});
+
+		return cube;
 	}
 
 	function createPreciseEdges(THREE, geometry, thickness, color) {
