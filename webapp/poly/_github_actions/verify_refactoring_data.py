@@ -39,8 +39,8 @@ def preprocess_expression(expr):
     expr = re.sub(r"(\w)(\()", r"\1*\2", expr)
     expr = re.sub(r"(\))(\w)", r"\1*\2", expr)
 
-    # 괄호와 괄호 사이에 곱셈 기호 추가 (예: (a+b)(x-y) -> (a+b)*(x-y))
-    expr = re.sub(r"(\))(\()", r"\1*\2", expr)
+    # 괄호와 괄호 사이에 곱셈 기호 추가 (예: (a+b)(x-y) -> (a+b)*(x-y), (a+b)  (x-y) -> (a+b)*(x-y))
+    expr = re.sub(r"(\))\s*(\()", r"\1*\2", expr)
 
     return expr
 
