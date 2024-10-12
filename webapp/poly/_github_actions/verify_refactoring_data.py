@@ -9,7 +9,7 @@ import time
 # '변수명' 또는 '문자 상수명'은 '영문 대소문자 1자'로 가정한다.
 #   ex.) a, x, y, z, A, B, C, ...
 def preprocess_expression(expr):
-    # ^ 를 ** 로 변경
+    # poly에 사용하는 거듭제곱 기호 '^' 를 Python에서 사용하는 '**' 로 변경
     expr = expr.replace("^", "**")
 
     # 숫자와 변수 사이에 곱셈 기호 추가 (예: 2a -> 2*a, 10ab -> 10*ab)
@@ -88,9 +88,7 @@ def process_file(file_path):
             if is_correct:
                 print(f"Line {line_number}: {line} ... {elapsed_time:.2f}ms, OK")
             else:
-                error_msg = (
-                    f"Line {line_number}: {line} ... {elapsed_time:.2f}ms, Error: {message}"
-                )
+                error_msg = f"Line {line_number}: {line} ... {elapsed_time:.2f}ms, Error: {message}"
                 print(error_msg)
                 errors.append(error_msg)
 
