@@ -12,9 +12,6 @@ def preprocess_expression(expr):
     # ^ 를 ** 로 변경
     expr = expr.replace("^", "**")
 
-    # 2차 이상의 거듭제곱 처리 (예: a2 -> a**2)
-    expr = re.sub(r"([a-zA-Z])(\d+)", r"\1**\2", expr)
-
     # 숫자와 변수 사이에 곱셈 기호 추가 (예: 2a -> 2*a, 10ab -> 10*ab)
     expr = re.sub(r"(\d+)([a-zA-Z])", r"\1*\2", expr)
 
