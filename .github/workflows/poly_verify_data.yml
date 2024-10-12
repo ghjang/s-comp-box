@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - "webapp/poly/static/data/mid-school-refactoring.txt"
+  workflow_dispatch: # 수동 실행을 위한 트리거 추가
 
 jobs:
   verify_data:
