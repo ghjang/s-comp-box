@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
-	import { barChart } from '../actions/barChart';
 	import { ToggleGroup, RadioButton } from 's-comp-core';
+	import type { ChartOptions } from '../components/chartTypes';
+	import BarChart from '../components/BarChart.svelte';
+	import LineChart from '../components/LineChart.svelte';
 
 	// NOTE: Tab 컴포넌트에 해당 컴포넌트가 설정된 탭이 선택될 경우에
 	//       컴포넌트 내부에 'update' 함수 존재 여부를 동적으로 확인해서 호출해준다.
@@ -19,7 +21,8 @@
 	let frequencyWithBonus = true;
 	let totalDraws = 0;
 
-	let chartOptions = {
+	let chartOptions: ChartOptions = {
+		type: 'bar_chart',
 		data: [],
 		width: chartWidth,
 		height: chartHeight,
@@ -63,6 +66,9 @@
 		};
 	}
 
+	let frequencyDataWithBonus: number[] = [];
+	let frequencyDataWithoutBonus: number[] = [];
+
 	onMount(async () => {
 		const response = await fetch(`${base}/data/frequency.json`);
 		const rawData = await response.json();
@@ -74,6 +80,9 @@
 			totalDraws: updatedTotalDraws
 		} = updateFrequencyData(rawData);
 
+		frequencyDataWithBonus = frequency_with_bonus;
+		frequencyDataWithoutBonus = frequency_without_bonus;
+
 		frequencyData = {
 			...rawData,
 			cumulative_stats: {
@@ -81,24 +90,36 @@
 				frequency_without_bonus,
 				frequency_with_bonus,
 				end_draw: updatedTotalDraws // end_draw 업데이트
-			}
-		};
+				}
+			};
 
 		// totalDraws 설정
 		totalDraws = updatedTotalDraws;
 	});
 
 	$: if (frequencyData) {
-		chartOptions = {
-			...chartOptions,
-			data: frequencyWithBonus
-				? frequencyData.cumulative_stats.frequency_with_bonus
-				: frequencyData.cumulative_stats.frequency_without_bonus
-		};
+		if (chartOptions.type === 'line_chart') {
+			chartOptions = {
+				...chartOptions,
+				dataWithoutBonus: frequencyDataWithoutBonus,
+				dataWithBonus: frequencyDataWithBonus
+			};
+		} else {
+			chartOptions = {
+				...chartOptions,
+				data: frequencyWithBonus ? frequencyDataWithBonus : frequencyDataWithoutBonus
+			};
+		}
 	}
 
 	function handleToggleItemChanged(event: CustomEvent) {
-		frequencyWithBonus = event.detail.value === 'frequency_with_bonus';
+		if (event.detail.value === 'line_chart') {
+			chartOptions = { ...chartOptions, type: 'line_chart' };
+			frequencyWithBonus = false;
+		} else {
+			chartOptions = { ...chartOptions, type: 'bar_chart' };
+			frequencyWithBonus = event.detail.value === 'frequency_with_bonus';
+		}
 	}
 </script>
 
@@ -108,6 +129,7 @@
 		direction="vertical"
 		hAlign="right"
 		items={[
+			{ component: RadioButton, label: '꺽은선 그래프', value: 'line_chart' },
 			{ component: RadioButton, label: '보너스 번호 포함', value: 'frequency_with_bonus' },
 			{ component: RadioButton, label: '보너스 번호 제외', value: 'frequency_without_bonus' }
 		]}
@@ -115,11 +137,22 @@
 		on:toggleItemChanged={handleToggleItemChanged}
 	/>
 	{#if frequencyData}
-		<div class="stats">
-			<div class="chart-container">
-				<svg use:barChart={chartOptions}></svg>
+		{#if chartOptions.type === 'bar_chart'}
+			<div class="stats">
+				<BarChart {chartOptions} maxWidth="800px" />
 			</div>
-		</div>
+		{:else if chartOptions.type === 'line_chart'}
+			<LineChart 
+				{chartOptions} 
+				maxWidth="900px"
+				legendPadding={{ top: 0, right: 0, bottom: 0, left: 10 }}
+				colorWithBonus="orange"
+				colorWithoutBonus="steelblue"
+				verticalLineColor="#FF4081"
+			/>
+		{:else}
+			<p>차트 타입이 올바르지 않습니다.</p>
+		{/if}
 	{:else}
 		<p>로딩 중...</p>
 	{/if}
@@ -139,17 +172,6 @@
 			display: flex;
 			justify-content: center;
 			margin: 1em;
-
-			.chart-container {
-				width: 100%;
-				max-width: 800px;
-				overflow-x: auto;
-
-				svg {
-					display: block;
-					margin: 0 auto;
-				}
-			}
 		}
 	}
 </style>
