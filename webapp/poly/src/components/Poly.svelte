@@ -110,7 +110,7 @@
 			id: 'poly-expand',
 			label: 'Expand',
 			precondition: 'editorTextFocus',
-			keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyE],
+			keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyE], // 'Option + Shift + E'
 			run: () => handlePolyAction(PolyPrompt.Expand, false)
 		});
 
@@ -118,7 +118,7 @@
 			id: 'poly-expand-think-through',
 			label: 'Expand (Think Through)',
 			precondition: 'editorTextFocus',
-			keybindings: [keyMod.WinCtrl | keyMod.Shift | keyCode.KeyE],
+			keybindings: [keyMod.WinCtrl | keyMod.Shift | keyCode.KeyE], // 'Ctrl + Shift + E'
 			run: () => handlePolyAction(PolyPrompt.Expand, true)
 		});
 
@@ -126,7 +126,7 @@
 			id: 'poly-refactor',
 			label: 'Refactor',
 			precondition: 'editorTextFocus',
-			keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyR],
+			keybindings: [keyMod.Alt | keyMod.Shift | keyCode.KeyR], // 'Option + Shift + R'
 			run: () => handlePolyAction(PolyPrompt.Refactor, false)
 		});
 
@@ -134,7 +134,7 @@
 			id: 'poly-refactor-think-through',
 			label: 'Refactor (Think Through)',
 			precondition: 'editorTextFocus',
-			keybindings: [keyMod.WinCtrl | keyMod.Shift | keyCode.KeyR],
+			keybindings: [keyMod.WinCtrl | keyMod.Shift | keyCode.KeyR], // 'Ctrl + Shift + R'
 			run: () => handlePolyAction(PolyPrompt.Refactor, true)
 		});
 	}
